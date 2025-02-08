@@ -1,3 +1,5 @@
 venv
 configuration.ini
 wsgi.py
+.idea
+__pycache__
