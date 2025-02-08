@@ -1,0 +1,42 @@
+body {
+	padding: 2em;
+	padding-top: 55px;
+	padding-bottom: 25px;
+}
+
+textarea.nameentry {
+	width: 25em;
+	height: 25px;
+	resize: none;
+	white-space: nowrap;
+}
+
+form {
+    display:inline;
+}
+
+.basicpadding table, th, td {
+	padding: 5px;
+}
+
+.noteentry {
+	width: 600px;
+	height: 120px;
+}
+
+.charlist {
+	width: 100px;
+	height: 100px;
+}
+
+.halftable {
+	width: 50%;
+}
+
+pre {
+    white-space: pre-wrap;       /* Since CSS 2.1 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}

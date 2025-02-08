@@ -1,0 +1,60 @@
+==OVERVIEW==
+EQDB (EverQuest Database) is a gear search site that has been designed to support and assit with searching for gear available on The Heroes Journey EQ EMU server, with some potential applications to Live EQ.
+
+EQDB has close-to-live data that is updated on a frequent cadence to match information from what you'd expect on THJ itself.  While 99% of the site should be accurate, there are outliers and occasionally out-of-era items slip through.  If you find one of these items, please report it to Convection on the THJ discord.
+
+Additional features, such as generating a one-stop-BIS-list, are planned for the future in addition to site enhancements and changes.  Keep your eyes open on the changelog for more details!
+
+If new features are available on the beta site, head to www.eqdb.net:5001 to test those out.
+
+==USING GEAR SEARCH==
+Gear search has a number of options to allow you to apply filters and more easily display what you might be searching for.
+
+Note, exclusive searching (adding more filters that an item _must_ have) will speed up the searches, while inclusive searching (adding more things that an item _can_ have) will slow down searches.  Each option described in this document will be noted whether it is in exclusive or inclusive.
+
+SLOT: Determine the slot(s) you want to search for.  All Slots is an inclusive option, while each individual slot is exclusive.
+
+CLASSES: Determine the class(es) that the item must be usable by.  Any Class is an inclusive option, each class and each class beyond the first are exclusive options.
+
+ITEM TYPE: What kind of item do you want to be returned.  This selector is largely limited to Primary, Secondary, and Ranged options.  All Types is the default option that returns everything except augments that can be used in that slot, including non-weapons in Primary, Secondary, and Ranged slots.
+
+ADD STAT FILTER: Click this to select from a drop down list a stat that all items returned must have greater than or equal to the amount you provide.  **NOTE** THIS OPTION IS PRESENTLY DISABLED.
+
+ADD STAT WEIGHT: Click this to select from a drop down list a stat that any item that has that stat will create a value, with the amount of stat on the item times the amount you provide in the field.  Use this to create at-a-glance value on items.
+
+ITEM NAME: Supply a partial item name to limit what should be returned.  It is recommended to not use this, if you are looking for individual items, www.thjdi.cc has a better interface for this purpose.
+
+EXCLUDE EXPANSION: Select the expansions that you want to exclude from the results.  For example, highlighting "Classic" and "Planes of Power" will exclude items from the Classic and Planes of Power expansions from being shown.  You must supply at least one expansion to search through (e.g. you cannot select all options in this filter)
+
+WEAPONS WITH PROC: Set this to only to have only items with a combat proc spell returned.
+
+BASE/ENCHANTED/LEGENDARY ITEMS ONLY: Select which rarity/power level of items you wish returned.
+
+FOCUS TYPE: Select this to enable the Focus Effect field and provide additional filters to return items that only have the focus type and effect returned.  If a focus spell works on all spells, then it will be included in both Beneficial and Detrimental selectors.
+
+FOCUS EFFECT: Select the type of effect you want.
+
+INCLUDE ZERO WEIGHT ITEMS: Select this to show items that have a zero value when using weights.  One weight must be provided.
+
+INCLUDE TEMPORARY ITEMS: Select this to show items with the 'temporary' tag applied to them.  This is useful for including items that pets can use.
+
+SHOW ITEM DETAIL TABLE: Select this to show a comparison table of all items.  See below for item search output details.
+
+SHOW ONLY WEIGHT DETAILS: Select this in conjunction with Show Item Detail Table to limit the fields shown to only what fields you've provided a weight for.  Requires one weight to be specified to use.  See below for item search output details.
+
+==SEARCH OUTPUT==
+By default, search output will only show a list of items, the zone they're found in, and the NPC that drops them.  For tradeskill or quest items, these are indicated in both Zone and Source columns.
+
+Specifying an item weight will show an additional column, value, which is the sum of all the weight multipliers and the item stats per item.
+
+Specifying a focus type and effect will add the focus name, focus type, focus effect, and focus value to the output table.
+
+Specifying Show Item Detail Table will show all stats on an item, in addition to the above.
+
+Specifying Show Only Weight Details will show only the stats on the item that you have provided a weight for, in addition to the above.
+
+==TRADESKILLS==
+Tradeskills are still being actively worked on to pull in the correct tradeskill items for each expansion.  Unfortunately, this is proving to be difficult to do, so for the moment, tradeskill items are confined to Planes of Power well-known high strength tradeskill items such as Ornate and Elemental armors, and the bows from the elemental planes.
+
+==PROBLEMS, QUESTIONS, SUGGESTIONS?==
+Reach out to Convection on the THJ Discord or send a tell to Taliea in game.

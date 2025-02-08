@@ -1,0 +1,15 @@
+==0.1.1.0==
+* Stat restrictions are now available
+* Added filtering for items with click effects available to your class(es)
+* Added filtering for Sympathetic Strike and Sympathetic Healing items
+* Changed tooltips to load from eqdb.net instead of thjdi.cc
+** Are you a person who has more than 'oh god, I think it looks okay?' capabilities with CSS?  Contact Convection on
+   discord, Taliea in game, or sc2convection on reddit if you'd like to help make the tooltips look better!
+* Weapon efficiency has been renamed 'Weapon Ratio' because that's what it is.
+* Added "Backstab Damage" as a stat or weight filter.
+
+==1.0==
+Deployed to Prod: 2/4/2025
+
+* Initial live deployment.
+* Fixed relative file reads.

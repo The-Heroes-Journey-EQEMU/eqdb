@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block body %}
+<h4>Add New Era</h4>
+<form action="{{ url_for('admin_add_era')}}" method="post" class="add-entry">
+ <table>
+  <tr>
+   <td>Name</td>
+   <td><textarea name="name" class="nameentry" onkeydown = "return (event.keyCode!=13);"></textarea>
+  </tr>
+  <tr>
+   <td>Abbr</td>
+   <td><textarea name="abbr" class="nameentry" onkeydown = "return (event.keyCode!=13);"></textarea>
+  </tr>
+ </table>
+ <input type="submit" value="Create Era">
+</form>
+
+{% endblock %}
