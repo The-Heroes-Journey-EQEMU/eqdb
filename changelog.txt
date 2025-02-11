@@ -1,4 +1,26 @@
-==0.1.1.0==
+==1.2.0==
+* Continued to expand tooltips:
+  ** Elemental damage is now shown on tooltips
+  ** Aug slots are now shown on tooltips
+  ** Bane damage is now shown on tooltips
+* Corrected several tooltips to more closely match EverQuest's default item window.
+* Added 'Elemental Damage' and 'Bane Damage' as stat requirements and stat weights.
+  ** Selectors have been added for the type of elemental damage and bane damage, including all
+* Added Serubane weapons.
+* Added Corrupted Shissarbane weapons.
+* Fixed searching for tradeskill items by name.
+* Fixed searching for items by name after previously doing so.
+* Click and Proc effect names are now shown on the output page when requested as filters (including Clicks).
+  ** IMPORTANT: When searching for procs and clicks other than Sympathetics, the current code is taking awhile to load
+                the relevant data.  This will be fixed in the next update which is going to see a large refactoring
+                of the behind the scenes code.
+* Searching for base and enchanted items has been removed, as they were hardly used.
+* Re-ordered the radio buttons for Base/Legendary items to put them on the same line.
+* Added the ammo slot so that arrows can actually be searched for.
+** All arrows are presently made with tradeskills, so this will not actually do anything yet.
+
+==1.1.0==
+Deployed: 2/7/2025
 * Stat restrictions are now available
 * Added filtering for items with click effects available to your class(es)
 * Added filtering for Sympathetic Strike and Sympathetic Healing items
@@ -9,7 +31,7 @@
 * Added "Backstab Damage" as a stat or weight filter.
 
 ==1.0==
-Deployed to Prod: 2/4/2025
+Deployed: 2/4/2025
 
 * Initial live deployment.
 * Fixed relative file reads.

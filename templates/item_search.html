@@ -7,8 +7,22 @@ function checkSubmit(e) {
 	}
 }
 
+
 </script>
-<script language="javascript" type="text/javascript">  
+<script>
+$(document).ready(function() {
+
+    $('textarea').keypress(function(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
+    });
+});
+
+
+</script>
+<script language="javascript" type="text/javascript">
 $(document).ready(function() {
 	var filterId = 1;
 	var weightId = 1;
@@ -26,6 +40,8 @@ $(document).ready(function() {
 		  <option value=\"none\"><b>==Weapon Attributes==</b></option> \
 		  <option value=\"damage\">Damage</option> \
 		  <option value=\"backstabdmg\">Backstab DMG</option> \
+          <option value=\"elemdmgamt\">Elemental Damage</option> \
+		  <option value=\"bane_damage\">Bane Damage</option> \
 		  <option value=\"none\"><b>==Base Stats==</b></option> \
 		  <option value=\"aagi\">Agility</option> \
 		  <option value=\"acha\">Charisma</option> \
@@ -93,6 +109,8 @@ $(document).ready(function() {
 		  <option value=\"damage\">Damage</option> \
 		  <option value=\"backstabdmg\">Backstab DMG</option> \
 		  <option value=\"w_eff\">Weapon Ratio (dmg/delay)</option> \
+		  <option value=\"elemdmgamt\">Elemental Damage</option> \
+		  <option value=\"bane_damage\">Bane Damage</option> \
 		  <option value=\"none\"><b>==Base Stats==</b></option> \
 		  <option value=\"aagi\">Agility</option> \
 		  <option value=\"acha\">Charisma</option> \
@@ -210,12 +228,14 @@ function createOption(ddl, text, value) {
   ddl.options.add(opt);
 };
 
+
+
 </script>
 
 {% set classes = ['Bard', 'Beastlord', 'Berserker', 'Cleric', 'Druid', 'Enchanter', 'Magician', 'Monk', 'Necromancer',
 'Paladin', 'Ranger', 'Rogue', 'Shadow Knight', 'Shaman', 'Warrior', 'Wizard'] %}
 {% set slots = ['Arms', 'Back', 'Charm', 'Chest', 'Ear', 'Face', 'Feet', 'Finger', 'Hands', 'Head',
-'Legs', 'Neck', 'Primary', 'Range', 'Secondary', 'Shoulders', 'Waist', 'Wrist'] %}
+'Legs', 'Neck', 'Primary', 'Range', 'Secondary', 'Shoulders', 'Waist', 'Wrist', 'Ammo'] %}
 {% set i_types = ['Augment', 'One Hand Slash', 'One Hand Piercing', 'One Hand Blunt',
 'Hand to Hand', 'Any 1H Weapon', 'Exclude 1H Weapon', 'Two Hand Slash', 'Two Hand Blunt',
 'Two Hand Piercing', 'Any 2H Weapon', 'Exclude 2H Weapon', 'Bow', 'Arrow', 'Shield'] %}
@@ -330,22 +350,38 @@ function createOption(ddl, text, value) {
                         <td><input type="radio" checked="checked" name="proc" value="None"> Include</td>
                         <td><input type="radio" name="proc" value="True"> Only</td>
                     </tr>
-					<tr>
-						<td>Items with Click Effects:</td>
-						<td><input type="radio" checked="checked" name="click" value="None"> Include</td>
-						<td><input type="radio" name="click" value="True"> Only</td>
-					</tr>
                     <tr>
-                        <td>Base Items Only:</td>
-                        <td><input type="radio" checked="checked" name="thjtype" value="base_items"></td>
+                        <td>Weapon Elemental Damage:</td>
+                        <td>
+                            <select name="elemdmgtype" id="elemdmgtype">
+                                <option value="all" selected="selected">All Weapons</option>
+                                <option value="1">Magic</option>
+                                <option value="2">Fire</option>
+                                <option value="3">Cold</option>
+                                <option value="4">Poison</option>
+                                <option value="5">Disease</option>
+                                <option value="6">Chromatic</option>
+                                <option value="7">Prismatic</option>
+                                <option value="8">Phys</option>
+                                <option value="9">Corruption</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Enchanted Items Only:</td>
-                        <td><input type="radio" name="thjtype" value="ench_items"></td>
+                        <td>Weapon Bane Damage:</td>
+                        <td>
+                            <select name="banetype" id="banetype">
+                                <option value="all" selected="selected">All Weapons</option>
+                                <option value="body_14">Greater Akheva</option>
+                                <option value="race_217">Shissar</option>
+                                <option value="race_236">Seru</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
-                        <td>Legendary Items Only:</td>
-                        <td><input type="radio" name="thjtype" value="lego_items"></td>
+                        <td>Items with Click Effects:</td>
+                        <td><input type="radio" checked="checked" name="click" value="None"> Include</td>
+                        <td><input type="radio" name="click" value="True"> Only</td>
                     </tr>
                     <tr>
                         <td>Focus Type:</td>
@@ -414,7 +450,7 @@ function createOption(ddl, text, value) {
         </tr>
 
     </table>
-	<br><br>
+    <br><br>
     Item Name (partial allowed): <textarea rows="1" class="nameentry" name="item_name"
                                            onKeyPress="return checkSubmit(event)"></textarea><br>
     <input type="submit" value="Search">

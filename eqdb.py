@@ -78,6 +78,8 @@ def item_search():
         show_dmg_delay = False
         show_focus = False
         full_detail = False
+        show_click = False
+        show_proc = False
         data = request.form
 
         # Make sure _something_ was provided
@@ -136,8 +138,13 @@ def item_search():
                     flash(f'Cannot search for Two-Handed items in slot {g_slot}')
                     return redirect(url_for('error'))
 
+                # Handle arrows in non-ammo slots
+                if i_type == 'Arrow' and g_slot != 'Ammo':
+                    flash(f'Arrows can only go in the Ammo slot.')
+                    return redirect(url_for('error'))
+
                 # Handle weapons in non-weapon slots
-                if i_type not in ['Any', 'Shield', 'Bow', 'Augment'] and g_slot not in ['Primary', 'Secondary']:
+                if i_type not in ['Any', 'Shield', 'Bow', 'Augment', 'Arrow'] and g_slot not in ['Primary', 'Secondary']:
                     flash(f'Cannot search for weapons in slot {g_slot}')
                     return redirect(url_for('error'))
 
@@ -159,21 +166,17 @@ def item_search():
             if g_slot:
                 if g_slot == 'Primary' or g_slot == 'Secondary' or g_slot == 'Range':
                     filters.update({'proc': True})
+                    show_proc = True
 
         # Handle Click Effect Items
         if 'True' in data['click']:
             filters.update({'click': True})
+            show_click = True
 
         # Handle item value type
-        lego_search = False
-        if 'thjtype' in request.form:
-            if 'base_items' in request.form['thjtype']:
-                filters.update({'base_items': True})
-            elif 'ench_items' in request.form['thjtype']:
-                filters.update({'ench_items': True})
-            elif 'lego_items' in request.form['thjtype']:
-                lego_search = True
-                filters.update({'lego_items': True})
+        # TODO: DEPRECATED, remove this in 1.2
+        lego_search = True
+        filters.update({'lego_items': True})
 
         # Handle Sympathetics
         if data['sympathetic'] != 'None':
@@ -181,6 +184,7 @@ def item_search():
                 flash('Sympathetic spells only appear on legendary items.')
                 return redirect(url_for('error'))
             filters.update({'sympathetic': data['sympathetic']})
+            show_click = True
 
         # Handle Stat Requirements
         reduce_changed = False
@@ -301,11 +305,29 @@ def item_search():
                 filters.update({'sub_type': request.form['focus_type']})
                 show_focus = True
 
+        # Handle elem damage
+        if 'elemdmgtype' in data:
+            if g_slot:
+                if g_slot == 'Primary' or g_slot == 'Secondary' or g_slot == 'Range':
+                    if data['elemdmgtype'] != 'all':
+                        filters.update({'elemdmgtype': data['elemdmgtype']})
+
+        # Handle bane damage
+        if 'banetype' in data:
+            if g_slot:
+                if g_slot == 'Primary' or g_slot == 'Secondary' or g_slot == 'Range':
+                    if data['banetype'] != 'all':
+                        bane_id = int(data['banetype'].split('_')[1])
+                        if 'body' in data['banetype']:
+                            filters.update({'banedmgbody': bane_id})
+                        else:
+                            filters.update({'banedmgrace': bane_id})
+
         # Oh god, we've got everything...lets get a list of items
         ret_items = logic.get_items_with_filters(weights, ignore_zero, **filters)
         return render_template('item_search_results.html', data=ret_items, reduce=reduce_restrictions,
                                show_dmg_delay=show_dmg_delay, show_focus=show_focus, full_detail=full_detail,
-                               show_values=show_values)
+                               show_values=show_values, show_click=show_click, show_proc=show_proc)
 
 
 if __name__ == "__main__":

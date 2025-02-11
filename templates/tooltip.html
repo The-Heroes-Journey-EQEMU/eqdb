@@ -80,7 +80,7 @@
                     {% if item.ac != 0 %}
                     <tr>
                         <td>AC:</td>
-                        <td align="right">{{item.ac}}</td>
+                        <td colspan="2" align="right">{{item.ac}}</td>
                     </tr>
                     {% endif %}
                     {% if item.hp != 0 %}
@@ -91,13 +91,13 @@
                     {% endif %}
                     {% if item.mana != 0 %}
                     <tr>
-                        <td>MANA:</td>
+                        <td>Mana:</td>
                         <td align="right">{{item.mana}}</td>
                     </tr>
                     {% endif %}
                     {% if item.endur != 0 %}
                     <tr>
-                        <td>ENDUR:</td>
+                        <td>End:</td>
                         <td align="right">{{item.endur}}</td>
                     </tr>
                     {% endif %}
@@ -113,12 +113,18 @@
                 <table>
                     {% if item.damage != 0 %}
                     <tr>
-                        <td>Base Damage:</td>
+                        <td>Base Dmg:</td>
                         <td align="right">{{item.damage}}</td>
                     </tr>
                     {% else %}
                     <tr></tr>
-                    {% endif%}
+                    {% endif %}
+                    {% if item.elem_dmg_name %}
+                    <tr>
+                        <td>{{item.elem_dmg_name}} Dmg:</td>
+                        <td align="right">{{item.elem_dmg_amount}}</td>
+                    </tr>
+                     {% endif %}
                     {% if item.delay != 0 %}
                     <tr>
                         <td>Delay:</td>
@@ -324,19 +330,44 @@
                     {% endif %}
                     {% if item.spelldmg != 0 %}
                     <tr>
-                        <td>Spell Damage:</td>
+                        <td>Spell Dmg:</td>
                         <td>{{item.spelldmg}}</td>
                     </tr>
                     {% endif %}
                     {% if item.healamt != 0 %}
                     <tr>
-                        <td>Healing Amount:</td>
+                        <td>Heal Amount</td>
                         <td>{{item.healamt}}</td>
                     </tr>
                     {% endif %}
                 </table>
             </td>
         </tr>
+        {% if item.aug_slot_1 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 1, type {{item.aug_slot_1}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_2 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 2, type {{item.aug_slot_2}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_3 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 3, type {{item.aug_slot_3}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_4 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 4, type {{item.aug_slot_4}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_5 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 5, type {{item.aug_slot_5}}</td>
+        </tr>
+        {% endif %}
         {% if item.proceffect > 0 %}
         <tr>
             <td nowrap="1" colspan='3'>Effect: {{item.proc_name}} (Combat)</td>
@@ -350,6 +381,16 @@
         {% if item.focuseffect > 0 %}
         <tr>
             <td nowrap="1" colspan='3'>Effect: {{item.focus_name}} (Worn)</td>
+        </tr>
+        {% endif %}
+        {% if "bane_body_name" in item %}
+        <tr>
+            <td nowrap="1" colspan='3'>Bane Dmg: {{item.bane_body_name}} +{{item.bane_body_amount}}</td>
+        </tr>
+        {% endif %}
+        {% if "bane_race_name" in item %}
+        <tr>
+            <td nowrap="1" colspan='3'>Bane Dmg: {{item.bane_race_name}} +{{item.bane_race_amount}}</td>
         </tr>
         {% endif %}
         </tbody>

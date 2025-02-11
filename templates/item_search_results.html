@@ -166,6 +166,12 @@
      <th>Focus Type</th>
      <th>Focus Value</th>
     {% endif %}
+    {% if show_click %}
+      <th>Click Effect</th>
+    {% endif %}
+    {% if show_proc %}
+    <th>Proc Name</th>
+    {% endif %}
     </thead>
 {% for entry in data %}
     <tr>
@@ -331,6 +337,12 @@
          {% else %}
            <td>{{entry.focus_max_val}}%</td>
          {% endif %}
+        {% endif %}
+        {% if show_click %}
+        <td>{{entry.click_name}}</td>
+        {% endif %}
+        {% if show_proc %}
+        <td>{{entry.proc_name}}</td>
         {% endif %}
     </tr>
 {% endfor %}

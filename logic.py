@@ -104,6 +104,12 @@ def _get_arg_list(gather_base=False, get_focus_info=False, gather_e_l=False, too
         arg_list.append(Item.proceffect)
         arg_list.append(Item.focuseffect)
         arg_list.append(Item.clickeffect)
+        arg_list.append(Item.banedmgamt)
+        arg_list.append(Item.banedmgbody)
+        arg_list.append(Item.banedmgrace)
+        arg_list.append(Item.banedmgraceamt)
+        arg_list.append(Item.elemdmgamt)
+        arg_list.append(Item.elemdmgtype)
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -111,6 +117,17 @@ def _get_arg_list(gather_base=False, get_focus_info=False, gather_e_l=False, too
         arg_list.append(Item.proceffect)
         arg_list.append(Item.focuseffect)
         arg_list.append(Item.clickeffect)
+        arg_list.append(Item.banedmgamt)
+        arg_list.append(Item.banedmgbody)
+        arg_list.append(Item.banedmgrace)
+        arg_list.append(Item.banedmgraceamt)
+        arg_list.append(Item.elemdmgamt)
+        arg_list.append(Item.elemdmgtype)
+        arg_list.append(Item.augslot1type)
+        arg_list.append(Item.augslot2type)
+        arg_list.append(Item.augslot3type)
+        arg_list.append(Item.augslot4type)
+        arg_list.append(Item.augslot5type)
     if gather_base and not gather_e_l:
         arg_list.append(NPCTypes.name.label('npc_name'))
         arg_list.append(NPCTypes.id.label('npc_id'))
@@ -199,6 +216,15 @@ def _filter_file_based_items(items, gather_lego, gather_ench, gather_base, kwarg
             elif 'click' in entry:
                 if item.clickeffect < 1:
                     do_not_add = True
+            elif 'elemdmgtype' in entry:
+                if item.elemdmgtype != kwargs['elemdmgtype']:
+                    continue
+            elif 'banedmgbody' in entry:
+                if item.banedmgbody != kwargs['banedmgbody']:
+                    continue
+            elif 'banedmgrace' in entry:
+                if item.banedmgrace != kwargs['banedmgrace']:
+                    continue
             elif entry in quest_skip_entries:
                 continue
             elif 'focus_type' in entry:
@@ -240,9 +266,17 @@ def get_item_data(item_id):
         result = query.all()
         ret_dict = dict(result[0]._mapping)
 
-        proc = result[0]._mapping['proceffect']
-        click = result[0]._mapping['clickeffect']
-        focus = result[0]._mapping['focuseffect']
+        proc = ret_dict['proceffect']
+        click = ret_dict['clickeffect']
+        focus = ret_dict['focuseffect']
+        banebody = ret_dict['banedmgbody']
+        banerace = ret_dict['banedmgrace']
+        elemtype = ret_dict['elemdmgtype']
+        aug_slot_1 = ret_dict['augslot1type']
+        aug_slot_2 = ret_dict['augslot2type']
+        aug_slot_3 = ret_dict['augslot3type']
+        aug_slot_4 = ret_dict['augslot4type']
+        aug_slot_5 = ret_dict['augslot5type']
 
         if proc > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
@@ -252,6 +286,7 @@ def get_item_data(item_id):
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
             result = query.all()
             ret_dict['click_name'] = result[0][0]
+            # TODO: Make this a helper
             if 'Sympathetic Strike' in ret_dict['click_name']:
                 split_name = ret_dict['click_name'].split('of Flames')
                 ret_dict['click_name'] = f'{split_name[0]}{split_name[1]}'
@@ -262,6 +297,25 @@ def get_item_data(item_id):
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
             ret_dict['focus_name'] = result[0][0]
+        if banebody > 0:
+            ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)
+            ret_dict['bane_body_amount'] = ret_dict['banedmgamt']
+        if banerace > 0:
+            ret_dict['bane_race_name'] = utils.get_bane_dmg_race(banerace)
+            ret_dict['bane_race_amount'] = ret_dict['banedmgraceamt']
+        if elemtype > 0:
+            ret_dict['elem_dmg_name'] = utils.get_elem_dmg_type(elemtype)
+            ret_dict['elem_dmg_amount'] = ret_dict['elemdmgamt']
+        if aug_slot_1 > 0:
+            ret_dict['aug_slot_1'] = utils.get_aug_type(aug_slot_1)
+        if aug_slot_2 > 0:
+            ret_dict['aug_slot_2'] = utils.get_aug_type(aug_slot_2)
+        if aug_slot_3 > 0:
+            ret_dict['aug_slot_3'] = utils.get_aug_type(aug_slot_3)
+        if aug_slot_4 > 0:
+            ret_dict['aug_slot_4'] = utils.get_aug_type(aug_slot_4)
+        if aug_slot_5 > 0:
+            ret_dict['aug_slot_5'] = utils.get_aug_type(aug_slot_5)
 
     ret_dict['Name'] = utils.fix_item_name(ret_dict['Name'], ret_dict['id'])
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
@@ -284,6 +338,9 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     aug_search = False
     no_rent = False
     get_focus_info = False
+    get_click_info = False
+    get_proc_info = False
+    bane_body = None
     quest_items = []
     special_items = []
 
@@ -346,6 +403,14 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
                         if not item_entry:
                             continue
                         special_items.append(utils.FileItem(eval(item_entry)))
+                elif era == 'Luclin':
+                    with open(os.path.join(here, 'item_files/luclin_special.txt'), 'r') as fh:
+                        file_data = fh.read()
+                    era_ts_items = file_data.split('\n')
+                    for item_entry in era_ts_items:
+                        if not item_entry:
+                            continue
+                        special_items.append(utils.FileItem(eval(item_entry)))
         elif 'i_type' in entry:
             if kwargs['i_type'] == 'Any':
                 continue
@@ -373,8 +438,18 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
                 filters.append(Item.itemtype == utils.lookup_weapon_types(kwargs['i_type']))
         elif 'proc' in entry:
             filters.append(Item.proceffect >= 1)
+            get_proc_info = True
         elif 'click' in entry:
             filters.append(Item.clickeffect >= 1)
+            get_click_info = True
+        elif 'elemdmgtype' in entry:
+            filters.append(Item.elemdmgtype == kwargs['elemdmgtype'])
+        elif 'banedmgbody' in entry:
+            filters.append(Item.banedmgbody == kwargs['banedmgbody'])
+            bane_body = True
+        elif 'banedmgrace' in entry:
+            filters.append(Item.banedmgbody == kwargs['banedmgrace'])
+            bane_body = False
         elif entry in skip_entries:
             continue
         elif 'focus_type' in entry:
@@ -417,45 +492,45 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     base_items = query.all()
 
     # Okay, part one is done.  Now, get the legendary and enchanted items, if needed.
-    if gather_base:
-        all_items = []
-        for entry in base_items:
-            all_items.append(utils.ReducedItem(eval(str(entry._mapping))))
-    else:
-        item_filters = []
-        lookup = {}
-        for entry in base_items:
-            if gather_ench:
-                item_id = entry[0] + 1000000
-            else:
-                item_id = entry[0] + 2000000
-            if get_focus_info:
-                lookup.update({item_id: {'npc_name': entry[51], 'npc_id': entry[52], 'focus_name': entry[53],
-                                         'focus_min': entry[54], 'focus_max': entry[55]}})
-            else:
-                lookup.update({item_id: {'npc_name': entry[51], 'npc_id': entry[52]}})
-            item_filters.append(Item.id == item_id)
+    all_items = []
+    if base_items:
+        if gather_base:
+            for entry in base_items:
+                all_items.append(utils.ReducedItem(eval(str(entry._mapping))))
+        else:
+            item_filters = []
+            lookup = {}
+            for entry in base_items:
+                if gather_ench:
+                    item_id = entry[0] + 1000000
+                else:
+                    item_id = entry[0] + 2000000
+                if get_focus_info:
+                    lookup.update({item_id: {'npc_name': entry[57], 'npc_id': entry[58], 'focus_name': entry[59],
+                                             'focus_min': entry[60], 'focus_max': entry[61]}})
+                else:
+                    lookup.update({item_id: {'npc_name': entry[57], 'npc_id': entry[58]}})
+                item_filters.append(Item.id == item_id)
 
-        item_params = or_(*item_filters)
-        arg_list = _get_arg_list(True, False, gather_e_l=True)
-        query = session.query(*arg_list).filter(item_params).group_by(Item.id)
-        result = query.all()
-        all_items = []
+            item_params = or_(*item_filters)
+            arg_list = _get_arg_list(True, False, gather_e_l=True)
+            query = session.query(*arg_list).filter(item_params).group_by(Item.id)
+            result = query.all()
 
-        for entry in result:
-            entry = utils.ReducedItem(eval(str(entry._mapping)))
-            if get_focus_info:
-                entry.npc_name = lookup[entry.id]['npc_name']
-                entry.npc_id = lookup[entry.id]['npc_id']
-                entry.focus_spell_name = lookup[entry.id]['focus_name']
-                entry.focus_min_val = lookup[entry.id]['focus_min']
-                entry.focus_max_val = lookup[entry.id]['focus_max']
-                all_items.append(entry)
-            else:
-                entry.npc_name = lookup[entry.id]['npc_name']
-                entry.npc_id = lookup[entry.id]['npc_id']
-                all_items.append(entry)
-    session.close()
+            for entry in result:
+                entry = utils.ReducedItem(eval(str(entry._mapping)))
+                if get_focus_info:
+                    entry.npc_name = lookup[entry.id]['npc_name']
+                    entry.npc_id = lookup[entry.id]['npc_id']
+                    entry.focus_spell_name = lookup[entry.id]['focus_name']
+                    entry.focus_min_val = lookup[entry.id]['focus_min']
+                    entry.focus_max_val = lookup[entry.id]['focus_max']
+                    all_items.append(entry)
+                else:
+                    entry.npc_name = lookup[entry.id]['npc_name']
+                    entry.npc_id = lookup[entry.id]['npc_id']
+                    all_items.append(entry)
+        session.close()
 
     # Now, we need to filter out quest items that don't meet filters
     all_items += _filter_file_based_items(quest_items, gather_lego, gather_ench, gather_base, kwargs, 'Quest', -1)
@@ -472,9 +547,15 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
                          'awis', 'heroic_agi', 'heroic_cha', 'heroic_dex', 'heroic_int', 'heroic_sta', 'heroic_str',
                          'heroic_wis', 'cr', 'dr', 'fr', 'mr', 'pr', 'attack', 'haste', 'regen', 'managerenge',
                          'enduranceregen', 'healmt', 'spelldmg', 'accuracy', 'avoidance', 'combateffects',
-                         'damageshield', 'dotshielding', 'shielding', 'spellshield', 'strikethrough', 'stunresist']
+                         'damageshield', 'dotshielding', 'shielding', 'spellshield', 'strikethrough', 'stunresist',
+                         'elemdmgamt', 'bane_damage']
         do_not_add = False
         for check in check_filters:
+            if check == 'bane_damage':
+                if bane_body:
+                    check = 'banedmgamt'
+                else:
+                    check = 'banedmgraceamt'
             if check in kwargs:
                 if not getattr(entry, check) >= kwargs[check]:
                     do_not_add = True
@@ -505,13 +586,40 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
                     do_not_add = True
             if do_not_add:
                 continue
+            else:
+                get_click_info = True
 
         if get_focus_info:
             entry.focus_type = kwargs['focus_type']
             entry.sub_focus = kwargs['sub_type']
 
+        if get_click_info:
+            with Session(bind=engine) as session:
+                query = session.query(SpellsNewReference.id,
+                                      SpellsNewReference.name).filter(SpellsNewReference.id == entry.clickeffect)
+                result = query.all()
+            if result:
+                # TODO: Make this a helper
+                entry.click_id = result[0][0]
+                entry.click_name = result[0][1]
+                if 'Sympathetic Strike' in entry.click_name:
+                    split_name = entry.click_name.split('of Flames')
+                    entry.click_name = f'{split_name[0]}{split_name[1]}'
+                if 'Sympathetic Healing' in entry.click_name:
+                    split_name = entry.click_name.split('Burst')
+                    entry.click_name = f'{split_name[0]}{split_name[1]}'
+
+        if get_proc_info:
+            with Session(bind=engine) as session:
+                query = session.query(SpellsNewReference.id,
+                                      SpellsNewReference.name).filter(SpellsNewReference.id == entry.proceffect)
+                result = query.all()
+            if result:
+                entry.proc_id = result[0][0]
+                entry.proc_name = result[0][1]
+
         if weights:
-            entry.weight = utils.get_stat_weights(weights, entry)
+            entry.weight = utils.get_stat_weights(weights, entry, bane_body)
             if ignore_zero and entry.weight == 0:
                 continue
         else:

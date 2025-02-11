@@ -18,6 +18,151 @@ class ReducedItem:
             setattr(self, k, v)
 
 
+def get_bane_dmg_body(num):
+    """Returns the "Body Type" of a bane."""
+    if num == 1:
+        return 'Humanoid'
+    elif num == 3:
+        return 'Undead'
+    elif num == 6:
+        return 'Extraplanar'
+    elif num == 12:
+        return 'Vampyre'
+    elif num == 14:
+        return 'Greater Akheva'
+    elif num == 18:
+        return 'Draz Nurakk'
+    elif num == 19:
+        return 'Zek'
+    elif num == 20:
+        return 'Luggald'
+    elif num == 24:
+        return 'Elemental'
+    elif num == 25:
+        return 'Plant'
+    elif num == 26:
+        return 'Dragon'
+    elif num == 28:
+        return 'Summoned Creatures'
+    elif num == 34:
+        return 'Muramite'
+    elif num == 257:
+        return 'Terris Thule'
+    else:
+        raise Exception(f'Unknown body num: {num}')
+
+
+def get_bane_dmg_race(num):
+    """Returns the "Race Type" of a bane."""
+    if num == 12:
+        return 'Gnome'
+    elif num == 20:
+        return 'Venril Sathir'
+    elif num == 26:
+        return 'Froglok'
+    elif num == 39:
+        return 'Gnoll'
+    elif num == 40:
+        return 'Goblin'
+    elif num == 51:
+        return 'Lizard Man'
+    elif num == 54:
+        return 'Orc'
+    elif num == 60:
+        return 'Skeleton'
+    elif num == 134:
+        return 'Mosquito'
+    elif num == 202:
+        return 'Grimling'
+    elif num == 206:
+        return 'Owlbear'
+    elif num == 208:
+        return 'Vampire'
+    elif num == 215:
+        return 'Tegi'
+    elif num == 217:
+        return 'Shissar'
+    elif num == 220:
+        return 'Stonegrabber'
+    elif num == 230:
+        return 'Akheva'
+    elif num == 232:
+        return 'Sonic Wolf'
+    elif num == 236:
+        return 'Seru'
+    elif num == 356:
+        return 'Chokadai'
+    elif num == 392:
+        return 'Ukun'
+    elif num == 396:
+        return 'Kyv'
+    elif num == 400:
+        return 'Huvul'
+    elif num == 402:
+        return 'Mastruq'
+    elif num == 409:
+        return 'Bazu'
+    elif num == 410:
+        return 'Feran'
+    elif num == 432:
+        return 'Drake'
+    elif num == 456:
+        return 'Sporali'
+    elif num == 466:
+        return 'Dark Lord'
+    elif num == 520:
+        return 'Bixie'
+    elif num == 524:
+        return 'Gnoll'
+    elif num == 525:
+        return 'Griffin'
+    elif num == 574:
+        return 'Minotaur'
+    elif num == 579:
+        return 'Wereorc'
+    elif num == 581:
+        return 'Wyvern'
+    else:
+        raise Exception(f'Unknown race num: {num}')
+
+
+def get_elem_dmg_type(num):
+    """Returns the elemental damage type."""
+    if num == 1:
+        return 'Magic'
+    elif num == 2:
+        return 'Fire'
+    elif num == 3:
+        return 'Cold'
+    elif num == 4:
+        return 'Poison'
+    elif num == 5:
+        return 'Disease'
+    elif num == 6:
+        return 'Chromatic'
+    elif num == 7:
+        return 'Prismatic'
+    elif num == 8:
+        return 'Phys'
+    elif num == 9:
+        return 'Corruption'
+    else:
+        raise Exception(f'Unknown elemental type: {num}')
+
+
+def get_aug_type(num):
+    if num == 1:
+        return '1 (Stats)'
+    elif num == 2:
+        return '2 (Worn)'
+    elif num == 3:
+        return '3 (Spells)'
+    elif num == 4:
+        return '4 (Proc)'
+    else:
+        return 'HEY IDIOT, FIX ME'
+
+
 def get_class_string(num):
     """Returns the classes that can use this item."""
     out_str = ''
@@ -238,7 +383,7 @@ def lookup_weapon_types(name):
         return 10
 
 
-def get_stat_weights(weights, item):
+def get_stat_weights(weights, item, bane_body):
     """Helper to calculate and return stat weights."""
     value = 0
     for weight in weights:
@@ -258,6 +403,11 @@ def get_stat_weights(weights, item):
             if not item.delay or item.delay == 0:
                 continue
             value += round((item.damage / item.delay), 2) * weights[weight]
+        elif 'bane_damage' in weight:
+            if bane_body:
+                value += item.banedmgamt * weights[weight]
+            else:
+                value += item.banedmgraceamt * weights[weight]
         else:
             value += getattr(item, weight) * weights[weight]
     return value
@@ -320,6 +470,10 @@ def lookup_slot(name):
         return 524288
     elif 'Waist' in name:
         return 1048576
+    elif 'Ammo' in name:
+        return 2097152
+    else:
+        raise Exception(f'Unknown slot name: {name}.')
 
 
 def get_focus_values(focus_type, sub_type):
