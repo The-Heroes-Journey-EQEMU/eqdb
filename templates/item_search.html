@@ -351,6 +351,15 @@ function createOption(ddl, text, value) {
                         <td><input type="radio" name="proc" value="True"> Only</td>
                     </tr>
                     <tr>
+                        <td>Required Level to Proc</td>
+                        <td><select name="proc_level" id="proc_level">
+                            <option value="0" selected="selected">Any Level</option>
+                            {% for i in range(1,66) %}
+                            <option value="{{i}}">{{i}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
                         <td>Weapon Elemental Damage:</td>
                         <td>
                             <select name="elemdmgtype" id="elemdmgtype">
@@ -382,6 +391,15 @@ function createOption(ddl, text, value) {
                         <td>Items with Click Effects:</td>
                         <td><input type="radio" checked="checked" name="click" value="None"> Include</td>
                         <td><input type="radio" name="click" value="True"> Only</td>
+                    </tr>
+                    <tr>
+                        <td>Required Level to Click</td>
+                        <td><select name="click_level" id="click_level">
+                            <option value="0" selected="selected">Any Level</option>
+                            {% for i in range(1,66) %}
+                            <option value="{{i}}">{{i}}</option>
+                            {% endfor %}
+                        </select></td>
                     </tr>
                     <tr>
                         <td>Focus Type:</td>

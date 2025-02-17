@@ -176,11 +176,17 @@ def item_search():
                 if g_slot == 'Primary' or g_slot == 'Secondary' or g_slot == 'Range':
                     filters.update({'proc': True})
                     show_proc = True
+                    if 'proc_level' in data:
+                        if int(data['proc_level']) > 0:
+                            filters.update({'proclevel2': data['proc_level']})
 
         # Handle Click Effect Items
         if 'True' in data['click']:
             filters.update({'click': True})
             show_click = True
+            if 'click_level' in data:
+                if int(data['click_level']) > 0:
+                    filters.update({'clicklevel2': data['click_level']})
 
         # Handle Sympathetics
         if data['sympathetic'] != 'None':

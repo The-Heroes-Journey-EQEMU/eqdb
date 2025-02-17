@@ -4,9 +4,8 @@
 * TODO: Continue tooltip work
   ** The goal is to get tooltips to look like in-game EverQuest tooltips, minus some cruft.
   ** I am not an expert at CSS, so this might take a bit!
-* TODO: Added proc maximum level filter
-  ** Set this to only return procs that are proc level maximum or lower.
-  ** This can be used to find proc weapons for pets at different levels, since SK, Shaman, and Druid pets are lower level.
+* Added proc and click maximum level filter
+  ** Set this to only return procs or clicks that are proc/click level or lower to use.
 
 ==1.2.1==
 Deployed: 2/12/2025

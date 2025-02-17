@@ -139,14 +139,7 @@ def get_item_data(item_id):
         if click > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
             result = query.all()
-            ret_dict['click_name'] = result[0][0]
-            # TODO: Make this a helper
-            if 'Sympathetic Strike' in ret_dict['click_name']:
-                split_name = ret_dict['click_name'].split('of Flames')
-                ret_dict['click_name'] = f'{split_name[0]}{split_name[1]}'
-            if 'Sympathetic Healing' in ret_dict['click_name']:
-                split_name = ret_dict['click_name'].split('Burst')
-                ret_dict['click_name'] = f'{split_name[0]}{split_name[1]}'
+            ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
         if focus > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
@@ -316,10 +309,14 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     for entry in kwargs:
         if entry in skip_filters:
             continue
-        elif 'proc' in entry:
+        elif entry == 'proc':
             filters.append(Item.proceffect >= 1)
-        elif 'click' in entry:
+        elif 'proclevel2' in entry:
+            filters.append(Item.proclevel2 <= kwargs['proclevel2'])
+        elif entry == 'click':
             filters.append(Item.clickeffect >= 1)
+        elif 'clicklevel2' in entry:
+            filters.append(Item.clicklevel2 <= kwargs['clicklevel2'])
         elif 'elemdmgtype' in entry:
             filters.append(Item.elemdmgtype == kwargs['elemdmgtype'])
         elif 'banedmgbody' in entry:
