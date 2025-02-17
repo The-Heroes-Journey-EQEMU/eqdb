@@ -6,7 +6,7 @@ import os
 import utils
 
 from sqlalchemy import create_engine, and_, or_, Column, Integer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy.ext.automap import automap_base
 
 here = os.path.dirname(__file__)
@@ -41,6 +41,32 @@ NPCTypes = Base.classes.npc_types
 LootTableEntries = Base.classes.loottable_entries
 LootDropEntries = Base.classes.lootdrop_entries
 SpellsNewReference = Base.classes.spells_new_reference
+FocusSpell = aliased(SpellsNewReference)
+ClickSpell = aliased(SpellsNewReference)
+ProcSpell = aliased(SpellsNewReference)
+
+
+def _debugger():
+    data = []
+    args = [Item.id.label('item_id'), Item.Name.label('item_name'), Item.heroic_int.label('item_heroic_int'),
+            FocusSpell.id.label('focus_id'),
+            FocusSpell.name.label('focus_name'),
+            ClickSpell.id.label('click_id'),
+            ClickSpell.name.label('click_name'),
+            ProcSpell.id.label('proc_id'),
+            ProcSpell.id.label('proc_name')]
+    with Session(bind=engine) as session:
+        query = session.query(*args).\
+            join(FocusSpell, FocusSpell.id == Item.focuseffect, isouter=True).\
+            join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True).\
+            join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True).\
+            filter(Item.id.in_(session.query(Item.id + 2000000).filter(or_((Item.id == 1001), (Item.id == 26778), (Item.id == 1154), (Item.id == 7825))))).\
+            group_by(Item.id)
+        result = query.all()
+
+    for entry in result:
+        data.append(entry._mapping)
+    return data
 
 
 def _get_link_filters():
@@ -50,210 +76,38 @@ def _get_link_filters():
             LootDropEntries.item_id == Item.id]
 
 
-def _get_arg_list(gather_base=False, get_focus_info=False, gather_e_l=False, tooltip=False):
+def _get_arg_list(tooltip=False):
     """Helper to return things we want to search for."""
-    arg_list = [Item.id]
-    if gather_base:
-        arg_list.append(Item.Name)
-        arg_list.append(Item.hp)
-        arg_list.append(Item.mana)
-        arg_list.append(Item.endur)
-        arg_list.append(Item.ac)
-        arg_list.append(Item.damage)
-        arg_list.append(Item.aagi)
-        arg_list.append(Item.acha)
-        arg_list.append(Item.adex)
-        arg_list.append(Item.aint)
-        arg_list.append(Item.asta)
-        arg_list.append(Item.astr)
-        arg_list.append(Item.awis)
-        arg_list.append(Item.heroic_agi)
-        arg_list.append(Item.heroic_cha)
-        arg_list.append(Item.heroic_dex)
-        arg_list.append(Item.heroic_int)
-        arg_list.append(Item.heroic_sta)
-        arg_list.append(Item.heroic_str)
-        arg_list.append(Item.heroic_wis)
-        arg_list.append(Item.cr)
-        arg_list.append(Item.dr)
-        arg_list.append(Item.fr)
-        arg_list.append(Item.mr)
-        arg_list.append(Item.pr)
-        arg_list.append(Item.heroic_cr)
-        arg_list.append(Item.heroic_dr)
-        arg_list.append(Item.heroic_fr)
-        arg_list.append(Item.heroic_mr)
-        arg_list.append(Item.heroic_pr)
-        arg_list.append(Item.attack)
-        arg_list.append(Item.haste)
-        arg_list.append(Item.regen)
-        arg_list.append(Item.manaregen)
-        arg_list.append(Item.enduranceregen)
-        arg_list.append(Item.healamt)
-        arg_list.append(Item.spelldmg)
-        arg_list.append(Item.accuracy)
-        arg_list.append(Item.avoidance)
-        arg_list.append(Item.combateffects)
-        arg_list.append(Item.damageshield)
-        arg_list.append(Item.dotshielding)
-        arg_list.append(Item.shielding)
-        arg_list.append(Item.spellshield)
-        arg_list.append(Item.strikethrough)
-        arg_list.append(Item.stunresist)
-        arg_list.append(Item.delay)
-        arg_list.append(Item.proceffect)
-        arg_list.append(Item.focuseffect)
-        arg_list.append(Item.clickeffect)
-        arg_list.append(Item.banedmgamt)
-        arg_list.append(Item.banedmgbody)
-        arg_list.append(Item.banedmgrace)
-        arg_list.append(Item.banedmgraceamt)
-        arg_list.append(Item.elemdmgamt)
-        arg_list.append(Item.elemdmgtype)
+    arg_list = [Item.id, Item.Name, Item.hp, Item.mana, Item.endur, Item.ac, Item.damage, Item.aagi, Item.acha,
+                Item.adex, Item.aint, Item.asta, Item.astr, Item.awis, Item.heroic_agi, Item.heroic_cha,
+                Item.heroic_dex, Item.heroic_int, Item.heroic_sta, Item.heroic_str, Item.heroic_wis, Item.cr, Item.dr,
+                Item.fr, Item.mr, Item.pr, Item.heroic_cr, Item.heroic_dr, Item.heroic_fr, Item.heroic_mr,
+                Item.heroic_pr, Item.attack, Item.haste, Item.regen, Item.manaregen, Item.enduranceregen, Item.healamt,
+                Item.spelldmg, Item.accuracy, Item.avoidance, Item.combateffects, Item.damageshield, Item.dotshielding,
+                Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
+                Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
+                Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
         arg_list.append(Item.itemtype)
         arg_list.append(Item.proceffect)
-        arg_list.append(Item.focuseffect)
-        arg_list.append(Item.clickeffect)
-        arg_list.append(Item.banedmgamt)
-        arg_list.append(Item.banedmgbody)
-        arg_list.append(Item.banedmgrace)
-        arg_list.append(Item.banedmgraceamt)
-        arg_list.append(Item.elemdmgamt)
-        arg_list.append(Item.elemdmgtype)
         arg_list.append(Item.augslot1type)
         arg_list.append(Item.augslot2type)
         arg_list.append(Item.augslot3type)
         arg_list.append(Item.augslot4type)
         arg_list.append(Item.augslot5type)
-    if gather_base and not gather_e_l:
-        arg_list.append(NPCTypes.name.label('npc_name'))
-        arg_list.append(NPCTypes.id.label('npc_id'))
-    if get_focus_info:
-        arg_list.append(SpellsNewReference.name)
-        arg_list.append(SpellsNewReference.effect_base_value1)
-        arg_list.append(SpellsNewReference.effect_limit_value1)
+    else:
+        arg_list.append(FocusSpell.id.label('focus_id'))
+        arg_list.append(FocusSpell.name.label('focus_spell_name'))
+        arg_list.append(FocusSpell.effect_base_value1.label('focus_min_val'))
+        arg_list.append(FocusSpell.effect_limit_value1.label('focus_max_val'))
+        arg_list.append(ClickSpell.id.label('click_id'))
+        arg_list.append(ClickSpell.name.label('click_name'))
+        arg_list.append(ProcSpell.id.label('proc_id'))
+        arg_list.append(ProcSpell.id.label('proc_name'))
 
     return arg_list
-
-
-def _filter_file_based_items(items, gather_lego, gather_ench, gather_base, kwargs, source, zone_id):
-    """Helper to filter file based items."""
-    quest_skip_entries = ['base_items', 'ench_items', 'lego_items', 'sub_type', 'eras', 'proc', 'norent', 'click',
-                          'sympathetic']
-    filtered_quest_items = []
-    for item in items:
-        do_not_add = False
-        if gather_lego and item.id <= 2000000:
-            continue
-        elif gather_ench and (item.id > 2000000 or item.id <= 1000000):
-            continue
-        elif gather_base and item.id >= 1000000:
-            continue
-
-        usable_by_class = False
-        for entry in kwargs:
-            if do_not_add:
-                break
-            if 'item_name' in entry:
-                if kwargs['item_name'] not in item.Name:
-                    do_not_add = True
-            elif 'g_class_1' in entry:
-                class_value = utils.lookup_class(kwargs['g_class_1'])
-                if item.classes & class_value == class_value:
-                    usable_by_class = True
-            elif 'g_class_2' in entry:
-                class_value = utils.lookup_class(kwargs['g_class_2'])
-                if item.classes & class_value == class_value:
-                    usable_by_class = True
-            elif 'g_class_3' in entry:
-                class_value = utils.lookup_class(kwargs['g_class_3'])
-                if item.classes & class_value == class_value:
-                    usable_by_class = True
-            elif 'g_slot' in entry:
-                slot_value = utils.lookup_slot(kwargs['g_slot'])
-                if item.slots & slot_value != slot_value:
-                    do_not_add = True
-            elif 'i_type' in entry:
-                if kwargs['i_type'] == 'Any':
-                    continue
-                elif kwargs['i_type'] == 'Augment':
-                    if hasattr(item, 'augtype'):
-                        if item.augtype <= 0:
-                            do_not_add = True
-                    else:
-                        do_not_add = True
-                elif kwargs['i_type'] == 'Any 1H Weapon':
-                    if (item.itemtype != utils.lookup_weapon_types('One Hand Slash') and
-                        item.itemtype != utils.lookup_weapon_types('One Hand Piercing') and
-                        item.itemtype != utils.lookup_weapon_types('One Hand Blunt') and
-                        item.itemtype != utils.lookup_weapon_types('Hand to Hand')):
-                        do_not_add = True
-                elif kwargs['i_type'] == 'Any 2H Weapon':
-                    if (item.itemtype != utils.lookup_weapon_types('Two Hand Slash') and
-                        item.itemtype != utils.lookup_weapon_types('Two Hand Piercing') and
-                        item.itemtype != utils.lookup_weapon_types('Two Hand Blunt')):
-                        do_not_add = True
-                elif kwargs['i_type'] == 'Exclude 1H Weapon':
-                    if (item.itemtype == utils.lookup_weapon_types('One Hand Slash') or
-                        item.itemtype == utils.lookup_weapon_types('One Hand Piercing') or
-                        item.itemtype == utils.lookup_weapon_types('One Hand Blunt') or
-                        item.itemtype == utils.lookup_weapon_types('Hand to Hand')):
-                        do_not_add = True
-                elif kwargs['i_type'] == 'Exclude 2H Weapon':
-                    if (item.itemtype == utils.lookup_weapon_types('Two Hand Slash') or
-                        item.itemtype == utils.lookup_weapon_types('Two Hand Piercing') or
-                        item.itemtype == utils.lookup_weapon_types('Two Hand Blunt')):
-                        do_not_add = True
-                else:
-                    if item.itemtype != utils.lookup_weapon_types(kwargs['i_type']):
-                        do_not_add = True
-            elif 'proc' in entry:
-                if item.proceffect < 1:
-                    do_not_add = True
-            elif 'click' in entry:
-                if item.clickeffect < 1:
-                    do_not_add = True
-            elif 'elemdmgtype' in entry:
-                if item.elemdmgtype != kwargs['elemdmgtype']:
-                    continue
-            elif 'banedmgbody' in entry:
-                if item.banedmgbody != kwargs['banedmgbody']:
-                    continue
-            elif 'banedmgrace' in entry:
-                if item.banedmgrace != kwargs['banedmgrace']:
-                    continue
-            elif entry in quest_skip_entries:
-                continue
-            elif 'focus_type' in entry:
-                ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
-                valid_focus_found = False
-                for focus_id in ids:
-                    if item.focuseffect == focus_id:
-                        valid_focus_found = True
-                        break
-                if not valid_focus_found:
-                    do_not_add = True
-            else:
-                if getattr(item, entry) < kwargs[entry]:
-                    do_not_add = True
-        if not usable_by_class:
-            do_not_add = True
-        if do_not_add:
-            continue
-        else:
-            item.npc_name = source
-            item.npc_id = zone_id
-            if hasattr(item, 'name'):
-                item.focus_spell_name = item.name
-            if hasattr(item, 'effect_base_value1'):
-                item.focus_min_val = item.effect_base_value1
-            if hasattr(item, 'effect_limit_value1'):
-                item.focus_max_val = item.effect_limit_value1
-            filtered_quest_items.append(item)
-    return filtered_quest_items
 
 
 def get_item_data(item_id):
@@ -261,7 +115,7 @@ def get_item_data(item_id):
 
     with Session(bind=engine) as session:
         # Get the item
-        args = _get_arg_list(gather_base=True, get_focus_info=False, gather_e_l=True, tooltip=True)
+        args = _get_arg_list(tooltip=True)
         query = session.query(*args).filter(Item.id == item_id)
         result = query.all()
         ret_dict = dict(result[0]._mapping)
@@ -317,309 +171,199 @@ def get_item_data(item_id):
         if aug_slot_5 > 0:
             ret_dict['aug_slot_5'] = utils.get_aug_type(aug_slot_5)
 
-    ret_dict['Name'] = utils.fix_item_name(ret_dict['Name'], ret_dict['id'])
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
     ret_dict['type_str'] = utils.get_type_string(ret_dict['itemtype'])
     return ret_dict
 
 
-def get_items_with_filters(weights, ignore_zero, **kwargs):
-    """Returns all items with filters provided"""
-    # Set up basic database filters
-    filters = []
-    weapon_or_filters = []
-    era_or_filters = []
-    focus_or_filters = []
+def get_era_items(kwargs):
+    """Returns all base items with NPC names and IDs, as well as Tradeskill and Quest items."""
+    # We need to link through to all the NPCs in all the zones of the era to get all the items they drop.
     zone_or_filters = []
+    quest_item_ids = []
+    special_item_ids = []
+    for era in kwargs['eras']:
+        zone_id_list = utils.get_era_zones(era)
+        for zone_id in zone_id_list:
+            zone_or_filters.append(NPCTypes.id.like(f'{zone_id}___'))
+        # Now, we need to get the quest items.  These are stored in files
+        with open(os.path.join(here, 'item_files', f'{era}.txt'), 'r') as fh:
+            file_data = fh.read()
+        quest_item_ids += file_data.split('\n')
+
+        # Certain expansions have tradeskill items at the highest level, add those
+        if os.path.exists(os.path.join(here, f'item_files/{era.lower()}_special')):
+            with open(os.path.join(here, 'item_files/planes_special.txt'), 'r') as fh:
+                file_data = fh.read()
+            special_item_ids += file_data.split('\n')
+
+    filters = []
     class_or_filters = []
-    link_filters = _get_link_filters()
-    skip_entries = ['base_items', 'ench_items', 'lego_items', 'sub_type', 'sympathetic']
+    weapon_or_filters = []
     aug_search = False
     no_rent = False
-    get_focus_info = False
-    get_click_info = False
-    get_proc_info = False
-    bane_body = None
-    quest_items = []
-    special_items = []
-
-    # Determine if we need enchanted or legendary items
-    gather_base = True
-    gather_ench = True
-    gather_lego = True
-    if 'lego_items' in kwargs:
-        if kwargs['lego_items']:
-            gather_base = False
-            gather_ench = False
-            gather_lego = True
-    elif 'ench_items' in kwargs:
-        if kwargs['ench_items']:
-            gather_base = False
-            gather_ench = True
-            gather_lego = False
-    elif 'base_items' in kwargs:
-        if kwargs['base_items']:
-            gather_base = True
-            gather_ench = False
-            gather_lego = False
-
-    for entry in kwargs:
-        if 'item_name' in entry:
-            partial = "%%%s%%" % (kwargs['item_name'])
-            filters.append(Item.Name.like(partial))
-        elif 'g_class_1' in entry:
-            class_value = utils.lookup_class(kwargs['g_class_1'])
-            class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
-        elif 'g_class_2' in entry:
-            class_value = utils.lookup_class(kwargs['g_class_2'])
-            class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
-        elif 'g_class_3' in entry:
-            class_value = utils.lookup_class(kwargs['g_class_3'])
-            class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
-        elif 'g_slot' in entry:
-            slot_value = utils.lookup_slot(kwargs['g_slot'])
-            filters.append(Item.slots.op('&')(slot_value) == slot_value)
-        elif 'eras' in entry:
-            # We need to link through to all the NPCs in all the zones of the era to get all the items they drop.
-            for era in kwargs['eras']:
-                zone_id_list = utils.get_era_zones(era)
-                for zone_id in zone_id_list:
-                    zone_or_filters.append(NPCTypes.id.like(f'{zone_id}___'))
-                # Now, we need to get the quest items.  These are stored in files
-                with open(os.path.join(here, 'item_files', f'{era}.txt'), 'r') as fh:
-                    file_data = fh.read()
-                era_quest_items = file_data.split('\n')
-                for item_entry in era_quest_items:
-                    if not item_entry:
-                        continue
-                    quest_items.append(utils.FileItem(eval(item_entry)))
-                # Certain expansions have tradeskill items at the highest level, add those
-                if era == 'Planes':
-                    with open(os.path.join(here, 'item_files/planes_special.txt'), 'r') as fh:
-                        file_data = fh.read()
-                    era_ts_items = file_data.split('\n')
-                    for item_entry in era_ts_items:
-                        if not item_entry:
-                            continue
-                        special_items.append(utils.FileItem(eval(item_entry)))
-                elif era == 'Luclin':
-                    with open(os.path.join(here, 'item_files/luclin_special.txt'), 'r') as fh:
-                        file_data = fh.read()
-                    era_ts_items = file_data.split('\n')
-                    for item_entry in era_ts_items:
-                        if not item_entry:
-                            continue
-                        special_items.append(utils.FileItem(eval(item_entry)))
-        elif 'i_type' in entry:
-            if kwargs['i_type'] == 'Any':
-                continue
-            elif kwargs['i_type'] == 'Augment':
-                aug_search = True
-            elif kwargs['i_type'] == 'Any 1H Weapon':
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Slash'))
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Blunt'))
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Piercing'))
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Hand to Hand'))
-            elif kwargs['i_type'] == 'Any 2H Weapon':
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Slash'))
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Blunt'))
-                weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Piercing'))
-            elif kwargs['i_type'] == 'Exclude 1H Weapon':
-                filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Slash'))
-                filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Blunt'))
-                filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Piercing'))
-                filters.append(Item.itemtype != utils.lookup_weapon_types('Hand to Hand'))
-            elif kwargs['i_type'] == 'Exclude 2H Weapon':
-                filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Slash'))
-                filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Blunt'))
-                filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Piercing'))
-            else:
-                filters.append(Item.itemtype == utils.lookup_weapon_types(kwargs['i_type']))
-        elif 'proc' in entry:
-            filters.append(Item.proceffect >= 1)
-            get_proc_info = True
-        elif 'click' in entry:
-            filters.append(Item.clickeffect >= 1)
-            get_click_info = True
-        elif 'elemdmgtype' in entry:
-            filters.append(Item.elemdmgtype == kwargs['elemdmgtype'])
-        elif 'banedmgbody' in entry:
-            filters.append(Item.banedmgbody == kwargs['banedmgbody'])
-            bane_body = True
-        elif 'banedmgrace' in entry:
-            filters.append(Item.banedmgbody == kwargs['banedmgrace'])
-            bane_body = False
-        elif entry in skip_entries:
-            continue
-        elif 'focus_type' in entry:
-            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
-            for focus_id in ids:
-                focus_or_filters.append(Item.focuseffect == focus_id)
-            get_focus_info = True
-            link_filters.append(Item.focuseffect == SpellsNewReference.id)
-        elif 'no_rent' in entry:
-            no_rent = True
+    # Now, add the filters that can be applied at all levels to save time.
+    if 'item_name' in kwargs:
+        partial = "%%%s%%" % (kwargs['item_name'])
+        filters.append(Item.Name.like(partial))
+    if 'g_class_1' in kwargs:
+        class_value = utils.lookup_class(kwargs['g_class_1'])
+        class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
+    if 'g_class_2' in kwargs:
+        class_value = utils.lookup_class(kwargs['g_class_2'])
+        class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
+    if 'g_class_3' in kwargs:
+        class_value = utils.lookup_class(kwargs['g_class_3'])
+        class_or_filters.append(Item.classes.op('&')(class_value) == class_value)
+    if 'g_slot' in kwargs:
+        slot_value = utils.lookup_slot(kwargs['g_slot'])
+        filters.append(Item.slots.op('&')(slot_value) == slot_value)
+    if 'i_type' in kwargs:
+        if kwargs['i_type'] == 'Any':
+            pass
+        elif kwargs['i_type'] == 'Augment':
+            aug_search = True
+        elif kwargs['i_type'] == 'Any 1H Weapon':
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Slash'))
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Blunt'))
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Piercing'))
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Hand to Hand'))
+        elif kwargs['i_type'] == 'Any 2H Weapon':
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Slash'))
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Blunt'))
+            weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('Two Hand Piercing'))
+        elif kwargs['i_type'] == 'Exclude 1H Weapon':
+            filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Slash'))
+            filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Blunt'))
+            filters.append(Item.itemtype != utils.lookup_weapon_types('One Hand Piercing'))
+            filters.append(Item.itemtype != utils.lookup_weapon_types('Hand to Hand'))
+        elif kwargs['i_type'] == 'Exclude 2H Weapon':
+            filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Slash'))
+            filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Blunt'))
+            filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Piercing'))
+        else:
+            filters.append(Item.itemtype == utils.lookup_weapon_types(kwargs['i_type']))
+    if 'no_rent' in kwargs:
+        no_rent = True
 
     # Apply universal filters
     if aug_search:
         filters.append(Item.augtype > 0)
     else:
         filters.append(Item.augtype <= 0)
+
     if not no_rent:
         filters.append(Item.norent == 1)
 
+    # Run the base query to get item IDs for the
+    zone_or_params = or_(*zone_or_filters)
+    link_filters = _get_link_filters()
+    link_params = and_(*link_filters)
+    params = and_(*filters)
+    class_or_params = or_(*class_or_filters)
+    weapon_or_params = or_(*weapon_or_filters)
+
+    with Session(bind=engine) as session:
+        query = session.query(Item.id, NPCTypes.id.label('npc_id'), NPCTypes.name.label('npc_name')).\
+            filter(zone_or_params).\
+            filter(link_params).\
+            filter(params).\
+            filter(class_or_params).\
+            filter(weapon_or_params).\
+            group_by(Item.id)
+        result = query.all()
+
+    base_items = []
+    quest_items = []
+    special_items = []
+
+    for entry in result:
+        base_items.append(dict(entry._mapping))
+    for entry in quest_items:
+        quest_items.append({'id': entry, 'npc_id': -1, 'npc_name': 'Quested'})
+    for entry in special_items:
+        special_items.append({'id': entry, 'npc_id': -2, 'npc_name': 'Tradeskills'})
+    return base_items, special_items, quest_items
+
+
+def create_lookup_table(base_items, tradeskill_items, quest_items):
+    """Returns item id filters and an associated lookup table."""
+    lookup = {}
+    item_ids = []
+    for entry in base_items + tradeskill_items + quest_items:
+        item_ids.append(Item.id == entry['id'])
+        lookup.update({entry['id'] + 2000000: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
+
+    return item_ids, lookup
+
+
+def get_items_with_filters(weights, ignore_zero, **kwargs):
+    """Returns all items with filters provided"""
+    # Get the base items, tradeskill items, and quest items that drop from the zones in the eras requested.
+    base_items, tradeskill_items, quest_items = get_era_items(kwargs)
+
+    # Create the lookup table
+    item_ids, lookup_table = create_lookup_table(base_items, tradeskill_items, quest_items)
+
+    # Set up basic database filters
+    filters = []
+    focus_or_filters = []
+
+    skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
+                    'sympathetic', 'eras']
+    bane_body = False
+    for entry in kwargs:
+        if entry in skip_filters:
+            continue
+        elif 'proc' in entry:
+            filters.append(Item.proceffect >= 1)
+        elif 'click' in entry:
+            filters.append(Item.clickeffect >= 1)
+        elif 'elemdmgtype' in entry:
+            filters.append(Item.elemdmgtype == kwargs['elemdmgtype'])
+        elif 'banedmgbody' in entry:
+            bane_body = True
+            filters.append(Item.banedmgbody == kwargs['banedmgbody'])
+        elif 'banedmgrace' in entry:
+            bane_body = False
+            filters.append(Item.banedmgbody == kwargs['banedmgrace'])
+        elif 'focus_type' in entry:
+            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
+            for focus_id in ids:
+                focus_or_filters.append(Item.focuseffect == focus_id)
+        else:
+            filters.append(getattr(Item, entry) >= kwargs[entry])
+
     # Filters are set, run them!
     and_params = and_(*filters)
-    weapon_or_params = or_(*weapon_or_filters)
-    era_and_params = or_(*era_or_filters)
     focus_or_params = or_(*focus_or_filters)
-    zone_or_params = or_(*zone_or_filters)
-    class_or_params = or_(*class_or_filters)
-    link_params = and_(*link_filters)
-    arg_list = _get_arg_list(True, get_focus_info)
+    item_params = or_(*item_ids)
 
-    session = Session(bind=engine)
-    query = session.query(*arg_list) \
-        .filter(and_params) \
-        .filter(weapon_or_params) \
-        .filter(era_and_params) \
-        .filter(focus_or_params) \
-        .filter(zone_or_params) \
-        .filter(class_or_params) \
-        .filter(link_params) \
-        .group_by(Item.id)
-    base_items = query.all()
+    arg_list = _get_arg_list()
 
-    # Okay, part one is done.  Now, get the legendary and enchanted items, if needed.
-    all_items = []
-    if base_items:
-        if gather_base:
-            for entry in base_items:
-                all_items.append(utils.ReducedItem(eval(str(entry._mapping))))
-        else:
-            item_filters = []
-            lookup = {}
-            for entry in base_items:
-                if gather_ench:
-                    item_id = entry[0] + 1000000
-                else:
-                    item_id = entry[0] + 2000000
-                if get_focus_info:
-                    lookup.update({item_id: {'npc_name': entry[57], 'npc_id': entry[58], 'focus_name': entry[59],
-                                             'focus_min': entry[60], 'focus_max': entry[61]}})
-                else:
-                    lookup.update({item_id: {'npc_name': entry[57], 'npc_id': entry[58]}})
-                item_filters.append(Item.id == item_id)
-
-            item_params = or_(*item_filters)
-            arg_list = _get_arg_list(True, False, gather_e_l=True)
-            query = session.query(*arg_list).filter(item_params).group_by(Item.id)
-            result = query.all()
-
-            for entry in result:
-                entry = utils.ReducedItem(eval(str(entry._mapping)))
-                if get_focus_info:
-                    entry.npc_name = lookup[entry.id]['npc_name']
-                    entry.npc_id = lookup[entry.id]['npc_id']
-                    entry.focus_spell_name = lookup[entry.id]['focus_name']
-                    entry.focus_min_val = lookup[entry.id]['focus_min']
-                    entry.focus_max_val = lookup[entry.id]['focus_max']
-                    all_items.append(entry)
-                else:
-                    entry.npc_name = lookup[entry.id]['npc_name']
-                    entry.npc_id = lookup[entry.id]['npc_id']
-                    all_items.append(entry)
-        session.close()
-
-    # Now, we need to filter out quest items that don't meet filters
-    all_items += _filter_file_based_items(quest_items, gather_lego, gather_ench, gather_base, kwargs, 'Quest', -1)
-
-    # Do it again for special items
-    if special_items:
-        all_items += _filter_file_based_items(special_items, gather_lego, gather_ench, gather_base, kwargs,
-                                              'Tradeskill', -2)
+    # BEHOLD, THE QUERY
+    with Session(bind=engine) as session:
+        query = session.query(*arg_list). \
+            join(FocusSpell, FocusSpell.id == Item.focuseffect, isouter=True). \
+            join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True). \
+            join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
+            filter(Item.id.in_(session.query(Item.id + 2000000).filter(item_params))). \
+            filter(and_params). \
+            filter(focus_or_params). \
+            group_by(Item.id)
+        all_items = query.all()
 
     out_items = []
-    # Finally, lets get the value for the items and do some last minute cleanup
     for entry in all_items:
-        check_filters = ['hp', 'mana', 'endur', 'ac', 'damage', 'aagi', 'acha', 'adex', 'aint', 'asta', 'astr',
-                         'awis', 'heroic_agi', 'heroic_cha', 'heroic_dex', 'heroic_int', 'heroic_sta', 'heroic_str',
-                         'heroic_wis', 'cr', 'dr', 'fr', 'mr', 'pr', 'attack', 'haste', 'regen', 'managerenge',
-                         'enduranceregen', 'healmt', 'spelldmg', 'accuracy', 'avoidance', 'combateffects',
-                         'damageshield', 'dotshielding', 'shielding', 'spellshield', 'strikethrough', 'stunresist',
-                         'elemdmgamt', 'bane_damage']
-        do_not_add = False
-        for check in check_filters:
-            if check == 'bane_damage':
-                if bane_body:
-                    check = 'banedmgamt'
-                else:
-                    check = 'banedmgraceamt'
-            if check in kwargs:
-                if not getattr(entry, check) >= kwargs[check]:
-                    do_not_add = True
-                    break
-        if do_not_add:
-            continue
-
-        if gather_lego and 'sympathetic' in kwargs:
-            do_not_add = False
-            if kwargs['sympathetic'] == 'all_strike':
-                add = False
-                for i in range(24356, 24366):
-                    if int(entry.clickeffect) == i:
-                        add = True
-                        break
-                if not add:
-                    do_not_add = True
-            elif kwargs['sympathetic'] == 'all_heal':
-                add = False
-                for i in range(24434, 24444):
-                    if int(entry.clickeffect) == i:
-                        add = True
-                        break
-                if not add:
-                    do_not_add = True
-            else:
-                if int(entry.clickeffect) != int(kwargs['sympathetic']):
-                    do_not_add = True
-            if do_not_add:
-                continue
-            else:
-                get_click_info = True
-
-        if get_focus_info:
-            entry.focus_type = kwargs['focus_type']
-            entry.sub_focus = kwargs['sub_type']
-
-        if get_click_info:
-            with Session(bind=engine) as session:
-                query = session.query(SpellsNewReference.id,
-                                      SpellsNewReference.name).filter(SpellsNewReference.id == entry.clickeffect)
-                result = query.all()
-            if result:
-                # TODO: Make this a helper
-                entry.click_id = result[0][0]
-                entry.click_name = result[0][1]
-                if 'Sympathetic Strike' in entry.click_name:
-                    split_name = entry.click_name.split('of Flames')
-                    entry.click_name = f'{split_name[0]}{split_name[1]}'
-                if 'Sympathetic Healing' in entry.click_name:
-                    split_name = entry.click_name.split('Burst')
-                    entry.click_name = f'{split_name[0]}{split_name[1]}'
-
-        if get_proc_info:
-            with Session(bind=engine) as session:
-                query = session.query(SpellsNewReference.id,
-                                      SpellsNewReference.name).filter(SpellsNewReference.id == entry.proceffect)
-                result = query.all()
-            if result:
-                entry.proc_id = result[0][0]
-                entry.proc_name = result[0][1]
+        entry = utils.ReducedItem((dict(entry._mapping)))
+        entry.npc_id = lookup_table[entry.id]['npc_id']
+        entry.npc_name = lookup_table[entry.id]['npc_name']
+        entry.focus_type = kwargs.get('focus_type')
+        entry.sub_focus = kwargs.get('sub_type')
 
         if weights:
-            entry.weight = utils.get_stat_weights(weights, entry, bane_body)
+            entry.weight = utils.get_stat_weights(weights, entry, bane_body=bane_body)
             if ignore_zero and entry.weight == 0:
                 continue
         else:
@@ -631,10 +375,8 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         else:
             w_eff = 0
         entry.w_eff = w_eff
-        entry.Name = utils.fix_item_name(entry.Name, entry.id)
         entry.zone_name = utils.lookup_zone_name(entry.npc_id)
         entry.npc_name = utils.fix_npc_name(entry.npc_name)
-
         out_items.append(entry)
 
     out_items.sort(key=operator.attrgetter('weight'), reverse=True)

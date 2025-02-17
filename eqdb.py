@@ -67,6 +67,15 @@ def main_page():
     return render_template('main.html')
 
 
+@app.route("/debug/tester", methods=['GET'])
+def tester():
+    if SITE_TYPE != 'Development':
+        flash("Unauthorized")
+        return redirect(url_for('error'))
+    data = logic._debugger()
+    return render_template('blank.html', data=data)
+
+
 @app.route("/search/item", methods=['GET', 'POST'])
 def item_search():
     if request.method == 'GET':
@@ -173,16 +182,8 @@ def item_search():
             filters.update({'click': True})
             show_click = True
 
-        # Handle item value type
-        # TODO: DEPRECATED, remove this in 1.2
-        lego_search = True
-        filters.update({'lego_items': True})
-
         # Handle Sympathetics
         if data['sympathetic'] != 'None':
-            if not lego_search:
-                flash('Sympathetic spells only appear on legendary items.')
-                return redirect(url_for('error'))
             filters.update({'sympathetic': data['sympathetic']})
             show_click = True
 
@@ -233,11 +234,6 @@ def item_search():
             if thing in request.form:
                 if request.form[thing] in filters:
                     flash('Cannot add the same item stat filter twice.')
-                    return redirect(url_for('item_search'))
-                if (('heroic' in request.form[thing] or
-                     'spelldmg' in request.form[thing] or
-                     'healamt' in request.form[thing]) and not lego_search):
-                    flash('Base and Enchanted items do not have heroic stats, spell damage, or healing amount.')
                     return redirect(url_for('error'))
                 if 'none' in request.form[thing]:
                     continue
@@ -260,14 +256,9 @@ def item_search():
                 show_values = True
                 if request.form[thing] in weights:
                     flash('Cannot add the same item stat weight twice.')
-                    return redirect(url_for('item_search'))
+                    return redirect(url_for('error'))
                 if 'none' in request.form[thing]:
                     continue
-                if (('heroic' in request.form[thing] or
-                     'spelldmg' in request.form[thing] or
-                     'healamt' in request.form[thing]) and not lego_search):
-                    flash('Base and Enchanted items do not have heroic stats, spell damage, or healing amount.')
-                    return redirect(url_for('error'))
                 weights.update({
                     request.form[thing]: int(request.form[thing_val])})
                 if 'show_weight_detail' in request.form:

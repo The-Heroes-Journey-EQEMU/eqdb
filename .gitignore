@@ -3,3 +3,4 @@ configuration.ini
 wsgi.py
 .idea
 __pycache__
+__init__.py

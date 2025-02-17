@@ -4,13 +4,6 @@ import os
 here = os.path.dirname(__file__)
 
 
-class FileItem:
-    # TODO: These may be deprecated now
-    def __init__(self, dictionary):
-        for k, v in dictionary.items():
-            setattr(self, k, v)
-
-
 class ReducedItem:
     # TODO: These may be deprecated now
     def __init__(self, dictionary):
@@ -413,18 +406,6 @@ def get_stat_weights(weights, item, bane_body):
     return value
 
 
-def fix_item_name(name, item_id):
-    """Helper to fix names to THJ standards"""
-    if item_id < 1000000:
-        return name
-    elif 1000000 <= item_id < 2000000:
-        base_name = name.split('Rose Colored')[1].strip()
-        return f'{base_name} (Enchanted)'
-    else:
-        base_name = name.split('Apocryphal')[1].strip()
-        return f'{base_name} (Legendary)'
-
-
 def fix_npc_name(name):
     """Helper to fix names to readible standards"""
     if name.startswith('#'):
@@ -595,3 +576,14 @@ def lookup_zone_name(item_id):
     for line in zone_list.split('\n'):
         if f'{zone_id}\t' in line:
             return line.split(str(zone_id))[1].strip()
+
+
+def check_sympathetic(name):
+    if 'Sympathetic Strike' in name:
+        split_name = name.split('of Flames')
+        return f'{split_name[0]}{split_name[1]}'
+    elif 'Sympathetic Healing' in name:
+        split_name = name.split('Burst')
+        return f'{split_name[0]}{split_name[1]}'
+    else:
+        return name
