@@ -1,11 +1,10 @@
 ==1.3.0==
-* Refactored proc and click item searching logic.
-  ** This should speed up those searches dramatically.
-* TODO: Continue tooltip work
-  ** The goal is to get tooltips to look like in-game EverQuest tooltips, minus some cruft.
-  ** I am not an expert at CSS, so this might take a bit!
+* Refactored searching logic.
+  ** This should dramatically speed up results.
+* Added proc/click level to tooltips
 * Added proc and click maximum level filter
   ** Set this to only return procs or clicks that are proc/click level or lower to use.
+* Added a link to gear searching to the main for users that can't see the header bar for some reason.
 
 ==1.2.1==
 Deployed: 2/12/2025

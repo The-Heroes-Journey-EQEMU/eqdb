@@ -372,11 +372,21 @@
         <tr>
             <td nowrap="1" colspan='3'>Effect: {{item.proc_name}} (Combat)</td>
         </tr>
+        {% if item.proclevel2 > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Procs at level {{item.proclevel2}}</td>
+        </tr>
+        {% endif %}
         {% endif %}
         {% if item.clickeffect > 0 %}
         <tr>
             <td nowrap="1" colspan='3'>Effect: {{item.click_name}} (Click)</td>
         </tr>
+        {% if item.clicklevel2 > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Clickable at level {{item.clicklevel2}}</td>
+        </tr>
+        {% endif %}
         {% endif %}
         {% if item.focuseffect > 0 %}
         <tr>
