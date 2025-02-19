@@ -119,6 +119,12 @@
                     {% else %}
                     <tr></tr>
                     {% endif %}
+                    {% if item.backstabdmg %}
+                    <tr>
+                        <td>Backstab Dmg:</td>
+                        <td align="right">{{item.backstabdmg}}</td>
+                    </tr>
+                    {% endif %}
                     {% if item.elem_dmg_name %}
                     <tr>
                         <td>{{item.elem_dmg_name}} Dmg:</td>
