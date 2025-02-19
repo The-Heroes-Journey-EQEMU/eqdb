@@ -186,8 +186,8 @@ def get_era_items(kwargs):
         quest_item_ids += file_data.split('\n')
 
         # Certain expansions have tradeskill items at the highest level, add those
-        if os.path.exists(os.path.join(here, f'item_files/{era.lower()}_special')):
-            with open(os.path.join(here, 'item_files/planes_special.txt'), 'r') as fh:
+        if os.path.exists(os.path.join(here, f'item_files/{era.lower()}_special.txt')):
+            with open(os.path.join(here, f'item_files/{era.lower()}_special.txt'), 'r') as fh:
                 file_data = fh.read()
             special_item_ids += file_data.split('\n')
 
@@ -257,6 +257,7 @@ def get_era_items(kwargs):
     class_or_params = or_(*class_or_filters)
     weapon_or_params = or_(*weapon_or_filters)
 
+    base_items = []
     with Session(bind=engine) as session:
         query = session.query(Item.id, NPCTypes.id.label('npc_id'), NPCTypes.name.label('npc_name')).\
             filter(zone_or_params).\
@@ -266,17 +267,42 @@ def get_era_items(kwargs):
             filter(weapon_or_params).\
             group_by(Item.id)
         result = query.all()
-
-    base_items = []
-    quest_items = []
-    special_items = []
-
     for entry in result:
-        base_items.append(dict(entry._mapping))
-    for entry in quest_items:
-        quest_items.append({'id': entry, 'npc_id': -1, 'npc_name': 'Quested'})
-    for entry in special_items:
-        special_items.append({'id': entry, 'npc_id': -2, 'npc_name': 'Tradeskills'})
+        new_item = dict(entry._mapping)
+        new_item['id'] = new_item['id'] + 2000000
+        base_items.append(new_item)
+
+    quest_items = []
+    item_id_filters = []
+    for entry in quest_item_ids:
+        item_id_filters.append(Item.id == entry)
+    item_id_params = or_(*item_id_filters)
+    with Session(bind=engine) as session:
+        query = session.query(Item.id).\
+            filter(item_id_params).\
+            filter(params).\
+            filter(class_or_params).\
+            filter(weapon_or_params).\
+            group_by(Item.id)
+        result = query.all()
+    for entry in result:
+        quest_items.append({'id': entry[0], 'npc_id': -1, 'npc_name': 'Quested'})
+
+    special_items = []
+    item_id_filters = []
+    for entry in special_item_ids:
+        item_id_filters.append(Item.id == entry)
+    item_id_params = or_(*item_id_filters)
+    with Session(bind=engine) as session:
+        query = session.query(Item.id).\
+            filter(item_id_params).\
+            filter(params).\
+            filter(class_or_params).\
+            filter(weapon_or_params).\
+            group_by(Item.id)
+        result = query.all()
+    for entry in result:
+        special_items.append({'id': entry[0], 'npc_id': -2, 'npc_name': 'Tradeskills'})
     return base_items, special_items, quest_items
 
 
@@ -284,9 +310,12 @@ def create_lookup_table(base_items, tradeskill_items, quest_items):
     """Returns item id filters and an associated lookup table."""
     lookup = {}
     item_ids = []
-    for entry in base_items + tradeskill_items + quest_items:
+    for entry in base_items:
         item_ids.append(Item.id == entry['id'])
-        lookup.update({entry['id'] + 2000000: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
+        lookup.update({entry['id']: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
+    for entry in tradeskill_items + quest_items:
+        item_ids.append(Item.id == entry['id'])
+        lookup.update({entry['id']: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
 
     return item_ids, lookup
 
@@ -324,7 +353,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             filters.append(Item.banedmgbody == kwargs['banedmgbody'])
         elif 'banedmgrace' in entry:
             bane_body = False
-            filters.append(Item.banedmgbody == kwargs['banedmgrace'])
+            filters.append(Item.banedmgrace == kwargs['banedmgrace'])
         elif 'focus_type' in entry:
             ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
             for focus_id in ids:
@@ -345,7 +374,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             join(FocusSpell, FocusSpell.id == Item.focuseffect, isouter=True). \
             join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True). \
             join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
-            filter(Item.id.in_(session.query(Item.id + 2000000).filter(item_params))). \
+            filter(Item.id.in_(session.query(Item.id).filter(item_params))). \
             filter(and_params). \
             filter(focus_or_params). \
             group_by(Item.id)

@@ -5,6 +5,7 @@
 * Added proc and click maximum level filter
   ** Set this to only return procs or clicks that are proc/click level or lower to use.
 * Added a link to gear searching to the main for users that can't see the header bar for some reason.
+* Fixed Quest and Tradeskill item names.
 
 ==1.2.1==
 Deployed: 2/12/2025
