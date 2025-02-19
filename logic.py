@@ -267,6 +267,7 @@ def get_era_items(kwargs):
             filter(weapon_or_params).\
             group_by(Item.id)
         result = query.all()
+
     for entry in result:
         new_item = dict(entry._mapping)
         new_item['id'] = new_item['id'] + 2000000
@@ -310,13 +311,9 @@ def create_lookup_table(base_items, tradeskill_items, quest_items):
     """Returns item id filters and an associated lookup table."""
     lookup = {}
     item_ids = []
-    for entry in base_items:
+    for entry in base_items + tradeskill_items + quest_items:
         item_ids.append(Item.id == entry['id'])
         lookup.update({entry['id']: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
-    for entry in tradeskill_items + quest_items:
-        item_ids.append(Item.id == entry['id'])
-        lookup.update({entry['id']: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
-
     return item_ids, lookup
 
 
@@ -381,6 +378,9 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         all_items = query.all()
 
     out_items = []
+    # If we don't have any items, that's it, return early.
+    if not lookup_table:
+        return out_items
     for entry in all_items:
         entry = utils.ReducedItem((dict(entry._mapping)))
         entry.npc_id = lookup_table[entry.id]['npc_id']
