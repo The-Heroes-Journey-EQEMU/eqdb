@@ -1,4 +1,5 @@
 ==1.3.0==
+Deployed: 2/18/2025
 * Refactored searching logic.
   ** This should dramatically speed up results.
 * Added proc/click level to tooltips
