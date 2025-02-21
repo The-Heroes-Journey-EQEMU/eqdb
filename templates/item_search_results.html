@@ -329,14 +329,22 @@
         <td>{{entry.stunresist}}</td>
         {% endif %}
         {% if show_focus %}
-         <td>{{entry.focus_spell_name}}</td>
+         {% if entry.worn_name and entry.worn_value %}
+          <td>{{entry.worn_name}}</td>
+         {% else %}
+          <td>{{entry.focus_spell_name}}</td>
+         {% endif %}
          <td>{{entry.focus_type}}</td>
          <td>{{entry.sub_focus}}</td>
-         {% if entry.focus_max_val|int == 0 %}
+         {% if entry.worn_name and entry.worn_value %}
+          <td>{{entry.worn_value}}%</td>
+         {% else %}
+         {% if entry.focus_max_val|int < entry.focus_min_val|int %}
            <td>{{entry.focus_min_val}}%</td>
          {% else %}
            <td>{{entry.focus_max_val}}%</td>
          {% endif %}
+        {% endif %}
         {% endif %}
         {% if show_click %}
         <td>{{entry.click_name}}</td>

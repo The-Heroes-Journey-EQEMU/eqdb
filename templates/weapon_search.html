@@ -1,0 +1,422 @@
+{% extends "layout.html" %}
+{% block body %}
+<script>
+function checkSubmit(e) {
+	if(e && e.keyCode == 13) {
+		document.forms[0].submit();
+	}
+}
+
+
+</script>
+<script>
+$(document).ready(function() {
+
+    $('textarea').keypress(function(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
+    });
+});
+
+
+</script>
+<script language="javascript" type="text/javascript">
+$(document).ready(function() {
+	var filterId = 1;
+	var weightId = 1;
+	$("#add_filter").click(function() {
+		$("#stat_filters").append(
+	"<tr> \
+	  <td> \
+	    <select name=\"stat_" + filterId + "\"> \
+	      <option value=\"none\"><b><--Select Stat--></b></option> \
+		  <option value=\"none\"><b>==Basic Attributes==</b></option> \
+		  <option value=\"hp\">Hit Points</option> \
+		  <option value=\"mana\">Mana</option> \
+		  <option value=\"endur\">Endurance</option> \
+		  <option value=\"ac\">Armor Class</option> \
+		  <option value=\"none\"><b>==Weapon Attributes==</b></option> \
+		  <option value=\"damage\">Damage</option> \
+		  <option value=\"backstabdmg\">Backstab DMG</option> \
+          <option value=\"elemdmgamt\">Elemental Damage</option> \
+		  <option value=\"bane_damage\">Bane Damage</option> \
+		  <option value=\"none\"><b>==Base Stats==</b></option> \
+		  <option value=\"aagi\">Agility</option> \
+		  <option value=\"acha\">Charisma</option> \
+		  <option value=\"adex\">Dexterity</option> \
+		  <option value=\"aint\">Intelligence</option> \
+		  <option value=\"asta\">Stamina</option> \
+		  <option value=\"astr\">Strength</option> \
+		  <option value=\"awis\">Wisdom</option> \
+		  <option value=\"none\"><b>==Heroic Stats==</b></option> \
+		  <option value=\"heroic_agi\">Heroic Agility</option> \
+		  <option value=\"heroic_cha\">Heroic Charisma</option> \
+		  <option value=\"heroic_dex\">Heroic Dexterity</option> \
+		  <option value=\"heroic_int\">Heroic Intelligence</option> \
+		  <option value=\"heroic_sta\">Heroic Stamina</option> \
+		  <option value=\"heroic_str\">Heroic Strength</option> \
+		  <option value=\"heroic_wis\">Heroic Wisdom</option> \
+		  <option value=\"none\"><b>==Resists (Heroic Included)==</b></option> \
+		  <option value=\"cr\">Resist Cold</option> \
+		  <option value=\"dr\">Resist Disease</option> \
+		  <option value=\"fr\">Resist Fire</option> \
+		  <option value=\"mr\">Resist Magic</option> \
+		  <option value=\"pr\">Resist Poison</option> \
+		  <option value=\"none\"><b>==Mod 1s==</b></option> \
+		  <option value=\"attack\">Attack</option> \
+		  <option value=\"haste\">Haste</option> \
+		  <option value=\"regen\">HP Regeneration</option> \
+		  <option value=\"manaregen\">Mana Regeneration</option> \
+		  <option value=\"enduranceregen\">Endurance Regeneration</option> \
+		  <option value=\"healamt\">Healing Amount</option> \
+		  <option value=\"spelldmg\">Spell Damage</option> \
+		  <option value=\"none\"><b>==Mod 2s==</b></option> \
+		  <option value=\"accuracy\">Accuracy</option> \
+		  <option value=\"avoidance\">Avoidance</option> \
+		  <option value=\"combateffects\">Combat Effects</option> \
+		  <option value=\"damageshield\">Damage Shielding</option> \
+		  <option value=\"dotshielding\">DoT Shield</option> \
+		  <option value=\"shielding\">Shielding</option> \
+		  <option value=\"spellshield\">Spell Shield</option> \
+		  <option value=\"strikethrough\">Strikethrough</option> \
+		  <option value=\"stunresist\">Stun Resist</option> \
+		</select> \
+	  </td> \
+	  <td> >= <input name=\"stat_val_" + filterId + "\" size=\"3\" value=\"0\"></td> \
+	  <td> \
+	    <input type=\"button\" class=\"removerow\" value=\"-\"> \
+	  </td> \
+	</tr>");
+		filterId++;
+		$(".removerow").on('click', function() {
+			$(this).parent().parent().remove();
+		});
+	});
+	$("#add_weight").click(function() {
+		$("#stat_weights").append(
+"<tr> \
+  <td> \
+    <select name=\"weight_" + weightId + "\"> \
+	      <option value=\"none\"><b><--Select Stat--></b></option> \
+		  <option value=\"none\"><b>==Basic Attributes==</b></option> \
+		  <option value=\"hp\">Hit Points</option> \
+		  <option value=\"mana\">Mana</option> \
+		  <option value=\"endur\">Endurance</option> \
+		  <option value=\"ac\">Armor Class</option> \
+		  <option value=\"none\"><b>==Weapon Attributes==</b></option> \
+		  <option value=\"damage\">Damage</option> \
+		  <option value=\"backstabdmg\">Backstab DMG</option> \
+		  <option value=\"w_eff\">Weapon Ratio (dmg/delay)</option> \
+		  <option value=\"elemdmgamt\">Elemental Damage</option> \
+		  <option value=\"bane_damage\">Bane Damage</option> \
+		  <option value=\"none\"><b>==Base Stats==</b></option> \
+		  <option value=\"aagi\">Agility</option> \
+		  <option value=\"acha\">Charisma</option> \
+		  <option value=\"adex\">Dexterity</option> \
+		  <option value=\"aint\">Intelligence</option> \
+		  <option value=\"asta\">Stamina</option> \
+		  <option value=\"astr\">Strength</option> \
+		  <option value=\"awis\">Wisdom</option> \
+		  <option value=\"none\"><b>==Heroic Stats==</b></option> \
+		  <option value=\"heroic_agi\">Heroic Agility</option> \
+		  <option value=\"heroic_cha\">Heroic Charisma</option> \
+		  <option value=\"heroic_dex\">Heroic Dexterity</option> \
+		  <option value=\"heroic_int\">Heroic Intelligence</option> \
+		  <option value=\"heroic_sta\">Heroic Stamina</option> \
+		  <option value=\"heroic_str\">Heroic Strength</option> \
+		  <option value=\"heroic_wis\">Heroic Wisdom</option> \
+		  <option value=\"none\"><b>==Resists (Heroic Included)==</b></option> \
+		  <option value=\"cr\">Resist Cold</option> \
+		  <option value=\"dr\">Resist Disease</option> \
+		  <option value=\"fr\">Resist Fire</option> \
+		  <option value=\"mr\">Resist Magic</option> \
+		  <option value=\"pr\">Resist Poison</option> \
+		  <option value=\"none\"><b>==Mod 1s==</b></option> \
+		  <option value=\"attack\">Attack</option> \
+		  <option value=\"haste\">Haste</option> \
+		  <option value=\"regen\">HP Regeneration</option> \
+		  <option value=\"manaregen\">Mana Regeneration</option> \
+		  <option value=\"enduranceregen\">Endurance Regeneration</option> \
+		  <option value=\"healamt\">Healing Amount</option> \
+		  <option value=\"spelldmg\">Spell Damage</option> \
+		  <option value=\"none\"><b>==Mod 2s==</b></option> \
+		  <option value=\"accuracy\">Accuracy</option> \
+		  <option value=\"avoidance\">Avoidance</option> \
+		  <option value=\"combateffects\">Combat Effects</option> \
+		  <option value=\"damageshield\">Damage Shielding</option> \
+		  <option value=\"dotshielding\">DoT Shield</option> \
+		  <option value=\"shielding\">Shielding</option> \
+		  <option value=\"spellshield\">Spell Shield</option> \
+		  <option value=\"strikethrough\">Strikethrough</option> \
+		  <option value=\"stunresist\">Stun Resist</option> \
+	</select> \
+  </td> \
+  <td> \
+    <input name=\"stat_weight_" + weightId + "\" size=\"3\" value=\"0\"> \
+  </td> \
+  <td> \
+    <input type=\"button\" class=\"removerow\" value=\"-\"> \
+  </td> \
+</tr>");
+		weightId++;
+		$(".removerow").on('click', function() {
+			$(this).parent().parent().remove();
+		});
+	});
+});
+
+//If parent option is changed
+function configureDropDownLists(ddl1, ddl2) {
+//let's create arrays
+	var Beneficial = [
+		{display: "--All Items with Type--", value: "None"},
+    	{display: "Preservation", value: "Preservation" },
+    	{display: "Range", value: "Range" },
+    	{display: "Haste", value: "Haste" },
+		{display: "Duration", value: "Duration" },
+    	{display: "Healing", value: "Healing" }];
+
+	var Detrimental = [
+		{display: "--All Items with Type--", value: "None"},
+    	{display: "Preservation", value: "Preservation" },
+    	{display: "Range", value: "Range" },
+    	{display: "Haste", value: "Haste" },
+		{display: "Duration", value: "Duration" },
+    	{display: "Damage (All)", value: "Damage (All)" },
+		{display: "Damage (Fire)", value: "Damage (Fire)" },
+		{display: "Damage (Cold)", value: "Damage (Cold)" },
+		{display: "Damage (Magic)", value: "Damage (Magic)" },
+		{display: "Damage (Poison)", value: "Damage (Poison)" },
+		{display: "Damage (Disease)", value: "Damage (Disease)" },
+		{display: "Damage (DoT Only)", value: "Damage (DoT)"}];
+
+	var Pet = [
+		{display: "--All Items with Type--", value: "None"},
+		{display: "Pet Power", value: "Pet Power" }];
+
+  	switch (ddl1.value) {
+    case 'Beneficial':
+      ddl2.options.length = 0;
+      for (i = 0; i < Beneficial.length; i++) {
+        createOption(ddl2, Beneficial[i].display, Beneficial[i].value);
+      }
+      break;
+    case 'Detrimental':
+      ddl2.options.length = 0;
+      for (i = 0; i < Detrimental.length; i++) {
+        createOption(ddl2, Detrimental[i].display, Detrimental[i].value);
+      }
+      break;
+    case 'Pet':
+      ddl2.options.length = 0;
+      for (i = 0; i < Pet.length; i++) {
+        createOption(ddl2, Pet[i].display, Pet[i].value);
+      }
+      break;
+    default:
+      ddl2.options.length = 0;
+      break;
+  }
+};
+
+function createOption(ddl, text, value) {
+  var opt = document.createElement('option');
+  opt.value = value;
+  opt.text = text;
+  ddl.options.add(opt);
+};
+
+
+
+</script>
+
+{% set classes = ['Bard', 'Beastlord', 'Berserker', 'Cleric', 'Druid', 'Enchanter', 'Magician', 'Monk', 'Necromancer',
+'Paladin', 'Ranger', 'Rogue', 'Shadow Knight', 'Shaman', 'Warrior', 'Wizard'] %}
+{% set slots = ['Primary', 'Range', 'Secondary'] %}
+{% set i_types = ['One Hand Slash', 'One Hand Piercing', 'One Hand Blunt',
+'Hand to Hand', 'Any 1H Weapon', 'Exclude 1H Weapon', 'Two Hand Slash', 'Two Hand Blunt',
+'Two Hand Piercing', 'Any 2H Weapon', 'Exclude 2H Weapon', 'Bow', 'Arrow'] %}
+<h4>Weapon Search</h4>
+<form actions="{{ url_for('item_search') }}" method="post" class="add-entry" id="demoForm" target="_blank">
+    <table id="searchOpts">
+        <tr>
+            <td>
+                <table id="leftOpts" class="smallerfont">
+                    <tr>
+                        <td>Slot:</td>
+                        <td><select name="g_slot">
+                            <option value="None" selected="selected">-- Any Slot --</option>
+                            {% for option in slots %}
+                            <option value="{{option}}">{{option}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Class 1:</td>
+                        <td><select name="g_class_1">
+                            <option value="None" selected="selected">-- Any Class --</option>
+                            {% for option in classes %}
+                            <option value="{{option}}">{{option}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Class 2:</td>
+                        <td><select name="g_class_2">
+                            <option value="None" selected="selected">-- Any Class --</option>
+                            {% for option in classes %}
+                            <option value="{{option}}">{{option}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Class 3:</td>
+                        <td><select name="g_class_3">
+                            <option value="None" selected="selected">-- Any Class --</option>
+                            {% for option in classes %}
+                            <option value="{{option}}">{{option}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <td>Item Type:</td>
+                    <td><select name="i_type">
+                        <option value="None" selected="Selected">All Types</option>
+                        {% for option in i_types %}
+                        <option value="{{option}}">{{option}}</option>
+                        {% endfor %}
+                    </select>
+                        </tr>
+                                                <tr>
+                            <td colspan="3">
+                                <abbr title="Only items with the provided stats will be searched for.  Heroic resists are included when resists are selected.">
+                                <b>Restrict to Stats:</b>
+                                </abbr>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table id="stat_filters" class="smallerfont">
+                                </table>
+                                <input type="button" value="Add Stat Filter" id="add_filter"><br><br>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3">
+                                <abbr title="Weights take item stat amount and multiply it by the provided number to create a value.  Heroic resists are included when resists are selected.">
+                                <b>Stat Weights:</b>
+                                </abbr>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table id="stat_weights" class="smallerfont">
+                                </table>
+                                <input type="button" value="Add Stat Weight" id="add_weight"><br><br>
+                            </td>
+                        </tr>
+                </table>
+            </td>
+            <td>
+                <table id="rightOps" class="smallerfont">
+                    <tr>
+                        <td colspan="4">
+                            Exclude Expansions (Kunark includes Legacy of Ykesha):
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <select multiple name="eras" size="5">
+                                <option value="Classic">Classic</option>
+                                <option value="Kunark">Kunark</option>
+                                <option value="Velious">Velious</option>
+                                <option value="Luclin">Luclin</option>
+                                <option value="Planes">Planes of Power</option>
+                            </select>
+                    </tr>
+                    <tr>
+                        <td>Weapons with Proc:</td>
+                        <td><input type="radio" checked="checked" name="proc" value="None"> Include</td>
+                        <td><input type="radio" name="proc" value="True"> Only</td>
+                    </tr>
+                    <tr>
+                        <td>Required Level to Proc</td>
+                        <td><select name="proc_level" id="proc_level">
+                            <option value="0" selected="selected">Any Level</option>
+                            {% for i in range(1,66) %}
+                            <option value="{{i}}">{{i}}</option>
+                            {% endfor %}
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Weapon Elemental Damage:</td>
+                        <td>
+                            <select name="elemdmgtype" id="elemdmgtype">
+                                <option value="all" selected="selected">All Weapons</option>
+                                <option value="1">Magic</option>
+                                <option value="2">Fire</option>
+                                <option value="3">Cold</option>
+                                <option value="4">Poison</option>
+                                <option value="5">Disease</option>
+                                <option value="6">Chromatic</option>
+                                <option value="7">Prismatic</option>
+                                <option value="8">Phys</option>
+                                <option value="9">Corruption</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Weapon Bane Damage:</td>
+                        <td>
+                            <select name="banetype" id="banetype">
+                                <option value="all" selected="selected">All Weapons</option>
+                                <option value="body_14">Greater Akheva</option>
+                                <option value="race_217">Shissar</option>
+                                <option value="race_236">Seru</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Focus Type:</td>
+                        <td colspan="3"><select name="spell_type" id="spell_type"
+                                                onchange="configureDropDownLists(this,document.getElementById('focus_type'))">
+                            <option value="" selected="selected">--All Items--</option>
+                            <option value="Beneficial">Beneficial Spells</option>
+                            <option value="Detrimental">Detrimental Spells</option>
+                            <option value="Pet">Pet Focuses</option>
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Focus Effect:</td>
+                        <td colspan="2"><select name="focus_type" id="focus_type">
+                            <!-- js populates -->
+                        </select></td>
+                    </tr>
+                    <tr>
+                        <td>Include Zero weight items<br>(Requires one weight)</td>
+                        <td><input type="checkbox" name="ignore_zero" value="True"></td>
+                    </tr>
+                    <tr>
+                        <td>Include Temporary Items</td>
+                        <td><input type="checkbox" name="add_no_rent" value="True"></td>
+                    </tr>
+                    <tr>
+                        <td>Show Item Detail Table</td>
+                        <td><input type="checkbox" name="show_full_detail" value="True"></td>
+                    </tr>
+                    <tr>
+                        <td>Show Only Weight Details<br>(Requires one weight)</td>
+                        <td><input type="checkbox" name="show_weight_detail" value="True"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+    </table>
+    <br><br>
+    Item Name (partial allowed): <textarea rows="1" class="nameentry" name="item_name"
+                                           onKeyPress="return checkSubmit(event)"></textarea><br>
+    <input type="submit" value="Search">
+</form>
+{% endblock %}

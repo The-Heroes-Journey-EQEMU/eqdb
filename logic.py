@@ -44,6 +44,7 @@ SpellsNewReference = Base.classes.spells_new_reference
 FocusSpell = aliased(SpellsNewReference)
 ClickSpell = aliased(SpellsNewReference)
 ProcSpell = aliased(SpellsNewReference)
+WornSpell = aliased(SpellsNewReference)
 
 
 def _debugger():
@@ -93,6 +94,7 @@ def _get_arg_list(tooltip=False):
         arg_list.append(Item.slots)
         arg_list.append(Item.itemtype)
         arg_list.append(Item.proceffect)
+        arg_list.append(Item.worneffect)
         arg_list.append(Item.augslot1type)
         arg_list.append(Item.augslot2type)
         arg_list.append(Item.augslot3type)
@@ -106,7 +108,9 @@ def _get_arg_list(tooltip=False):
         arg_list.append(ClickSpell.id.label('click_id'))
         arg_list.append(ClickSpell.name.label('click_name'))
         arg_list.append(ProcSpell.id.label('proc_id'))
-        arg_list.append(ProcSpell.id.label('proc_name'))
+        arg_list.append(ProcSpell.name.label('proc_name'))
+        arg_list.append(WornSpell.name.label('worn_name'))
+        arg_list.append(WornSpell.effect_base_value1.label('worn_value'))
 
     return arg_list
 
@@ -124,6 +128,7 @@ def get_item_data(item_id):
         proc = ret_dict['proceffect']
         click = ret_dict['clickeffect']
         focus = ret_dict['focuseffect']
+        worn = ret_dict['worneffect']
         banebody = ret_dict['banedmgbody']
         banerace = ret_dict['banedmgrace']
         elemtype = ret_dict['elemdmgtype']
@@ -133,6 +138,10 @@ def get_item_data(item_id):
         aug_slot_4 = ret_dict['augslot4type']
         aug_slot_5 = ret_dict['augslot5type']
 
+        if worn > 0:
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
+            result = query.all()
+            ret_dict['worn_name'] = result[0][0]
         if proc > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
             result = query.all()
@@ -356,6 +365,9 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
             for focus_id in ids:
                 focus_or_filters.append(Item.focuseffect == focus_id)
+            if kwargs['focus_type'] == 'Melee':
+                for worn_id in ids:
+                    focus_or_filters.append(Item.worneffect == worn_id)
         else:
             filters.append(getattr(Item, entry) >= kwargs[entry])
 
@@ -372,6 +384,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             join(FocusSpell, FocusSpell.id == Item.focuseffect, isouter=True). \
             join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True). \
             join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
+            join(WornSpell, WornSpell.id == Item.worneffect, isouter=True). \
             filter(Item.id.in_(session.query(Item.id).filter(item_params))). \
             filter(and_params). \
             filter(focus_or_params). \

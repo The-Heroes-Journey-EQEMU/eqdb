@@ -374,6 +374,11 @@
             <td nowrap="1" colspan='3'>Slot 5, type {{item.aug_slot_5}}</td>
         </tr>
         {% endif %}
+        {% if item.worneffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Worn: {{item.worn_name}}</td>
+        </tr>
+        {% endif %}
         {% if item.proceffect > 0 %}
         <tr>
             <td nowrap="1" colspan='3'>Effect: {{item.proc_name}} (Combat)</td>

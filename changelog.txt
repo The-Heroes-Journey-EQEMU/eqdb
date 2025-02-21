@@ -1,3 +1,16 @@
+==1.4.0==
+* Added worn effects to tooltips
+* TODO: Added "only items with worn effects" as a search filter
+* Added "Melee Worn Effects" as a 'focus' search filter
+  ** These are: Ferocity, Cleaving, Improved Dodge, Improved Block/Parry, and Sharpshooting
+* Split weapons out into their own search page.
+  ** Options are starting to get a little clogged and weapons are very much their own thing.  This split moves everything
+  ** involved with searching for weapons to its own page.
+  ** You can still search for primary/secondary on the main Armor search page and weapons will show up, but only
+  ** based on their stats, not damage or efficiency.
+* TODO: Fixed poison and disease direct damage, and DoT damage focus searches
+  ** This includes a re-write to move them from static IDs to using the DB to find the relevant spell IDs.
+
 ==1.3.2==
 Deployed: 2/18/2025
 * Fixed searching for backstab damage

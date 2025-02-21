@@ -505,6 +505,19 @@ def get_focus_values(focus_type, sub_type):
                     5121, 4405, 4410, 5061, 6089]
         else:
             raise f'Unknown subtype: {sub_type}'
+    elif focus_type == 'Melee':
+        if sub_type == 'Ferocity':
+            return [3886, 3887, 3888, 6323, 6324, 7835, 9615, 15841, 20517]
+        elif sub_type == 'Cleave':
+            return [3883, 3884, 3885, 6321, 6322, 7834, 9614, 15840, 20516]
+        elif sub_type == 'Dodging':
+            return [3889, 3890, 3891, 7832, 9612, 15838, 20514]
+        elif sub_type == 'Parry':
+            return [3892, 3893, 3894, 6327, 6328, 6329, 7833, 7837, 9613, 9617, 15839, 20515]
+        elif sub_type == 'Sharpshooting':
+            return [3896, 3897, 3898, 6325, 6326, 7836, 9616, 15842, 20518]
+        else:
+            raise f'Unknown subtype: {sub_type}'
     else:
         raise f'Unknown focus type: {focus_type}'
 
