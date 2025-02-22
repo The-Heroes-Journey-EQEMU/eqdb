@@ -1,11 +1,13 @@
 """Utilities for EQDB"""
 import os
 
+from sqlalchemy import create_engine, and_, or_, Column, Integer
+from sqlalchemy.orm import Session, aliased
+
 here = os.path.dirname(__file__)
 
 
 class ReducedItem:
-    # TODO: These may be deprecated now
     def __init__(self, dictionary):
         for k, v in dictionary.items():
             setattr(self, k, v)
@@ -457,69 +459,342 @@ def lookup_slot(name):
         raise Exception(f'Unknown slot name: {name}.')
 
 
-def get_focus_values(focus_type, sub_type):
-    # TODO: This needs to get made into a dynamic method
-    if focus_type == 'Beneficial':
-        if sub_type == 'Preservation':
-            return [2342, 2343, 2344, 3537, 6419, 3114, 3113, 3117, 3122, 3112, 3116, 3543, 3544, 3545, 3538, 3539]
-        elif sub_type == 'Range':
-            return [3109, 3111, 2348, 2349, 2350, 3510, 6413, 3511, 3512]
-        elif sub_type == 'Haste':
-            return [3118, 3123, 3125, 3124, 2339, 2340, 2341, 3525, 6415, 3531, 3532, 3533]
-        elif sub_type == 'Duration':
-            return [3106, 2333, 2334, 2335, 3504, 6411, 3506, 3845, 3846]
-        elif sub_type == 'Healing':
-            return [3110, 2345, 2346, 2347, 3501, 6410, 3502, 3503]
+def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
+    with Session(bind=engine) as session:
+        ret_ids = []
+        # "All" queries
+        ignore_effects = []
+        for i in range(2, 13):
+            ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([137, 138]))
+        ignore_params = and_(*ignore_effects)
+        all_haste_query = session.query(SpellsNewReference.id).\
+            filter(SpellsNewReference.effectid1 == 127).\
+            filter(SpellsNewReference.effect_base_value1 > 0).\
+            filter(ignore_params).\
+            order_by(SpellsNewReference.id)
+
+        all_range_query = session.query(SpellsNewReference.id).\
+            filter(SpellsNewReference.effectid1 == 129).\
+            filter(SpellsNewReference.effect_base_value1 > 0).\
+            filter(ignore_params).\
+            order_by(SpellsNewReference.id)
+
+        add_effects = []
+        ignore_effects = []
+        for i in range(2, 13):
+            add_effects.append(getattr(SpellsNewReference, f'effectid{i}').in_([139]))
+            ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([138]))
+        add_params = or_(*add_effects)
+        ignore_params = and_(*ignore_effects)
+        all_pres_query = session.query(SpellsNewReference.id).\
+            filter(SpellsNewReference.effectid1 == 132).\
+            filter(SpellsNewReference.effect_base_value1 > 0).\
+            filter(ignore_params).\
+            filter(add_params).\
+            order_by(SpellsNewReference.id)
+
+        if focus_type == 'Beneficial':
+            add_effects = []
+            for i in range(2, 13):
+                add_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 138,
+                                        getattr(SpellsNewReference, f'effect_base_value{i}') == 1))
+            add_params = or_(*add_effects)
+
+            if sub_type == 'Preservation':
+                all_ids = all_pres_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 132). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Range':
+                all_ids = all_range_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 129). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Haste':
+                all_ids = all_haste_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 127). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Duration':
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 128). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Healing':
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 125). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            else:
+                raise f'Unknown subtype: {sub_type}'
+        elif focus_type == 'Detrimental':
+            add_effects = []
+            for i in range(2, 13):
+                add_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 138,
+                                        getattr(SpellsNewReference, f'effect_base_value{i}') == 0))
+            add_params = or_(*add_effects)
+            if sub_type == 'Preservation':
+                all_ids = all_pres_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                ignore_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([138]))
+                ignore_params = and_(*ignore_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 132). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Range':
+                all_ids = all_range_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 129). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Haste':
+                all_ids = all_haste_query.all()
+                for entry in all_ids:
+                    ret_ids.append(entry[0])
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 127). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Duration':
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 128). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (All)':
+                ignore_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([135, 140]))
+                ignore_params = and_(*ignore_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (Fire)':
+                ignore_effects = []
+                type_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 2))
+                ignore_params = and_(*ignore_effects)
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (Cold)':
+                ignore_effects = []
+                type_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 3))
+                ignore_params = and_(*ignore_effects)
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (Magic)':
+                ignore_effects = []
+                type_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 1))
+                ignore_params = and_(*ignore_effects)
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (Poison)':
+                ignore_effects = []
+                type_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 4))
+                ignore_params = and_(*ignore_effects)
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (Disease)':
+                ignore_effects = []
+                type_effects = []
+                for i in range(2, 13):
+                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 5))
+                ignore_params = and_(*ignore_effects)
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(ignore_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Damage (DoT)':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 140,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') >= 4))
+                type_effects = or_(*type_effects)
+
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 124). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(add_params). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            else:
+                raise f'Unknown subtype: {sub_type}'
+        elif focus_type == 'Pet':
+            if sub_type == 'Pet Power':
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 167). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            else:
+                raise f'Unknown subtype: {sub_type}'
+        elif focus_type == 'Melee':
+            if sub_type == 'Ferocity':
+                return [3886, 3887, 3888, 6323, 6324, 7835, 9615, 15841, 20517]
+            elif sub_type == 'Cleave':
+                return [3883, 3884, 3885, 6321, 6322, 7834, 9614, 15840, 20516]
+            elif sub_type == 'Dodging':
+                return [3889, 3890, 3891, 7832, 9612, 15838, 20514]
+            elif sub_type == 'Parry':
+                return [3892, 3893, 3894, 6327, 6328, 6329, 7833, 7837, 9613, 9617, 15839, 20515]
+            elif sub_type == 'Sharpshooting':
+                return [3896, 3897, 3898, 6325, 6326, 7836, 9616, 15842, 20518]
+            else:
+                raise f'Unknown subtype: {sub_type}'
         else:
-            raise f'Unknown subtype: {sub_type}'
-    elif focus_type == 'Detrimental':
-        if sub_type == 'Preservation':
-            return [2342, 2343, 2344, 3537, 6419, 3114, 3113, 3112, 3120, 3121, 3119, 3538, 3539, 3540, 3541, 3542,
-                    3547]
-        elif sub_type == 'Range':
-            return [3109, 3111, 2349, 2350, 3510, 6413, 3511, 3512]
-        elif sub_type == 'Haste':
-            return [3118, 3123, 3128, 3124, 3127, 2339, 2340, 2341, 3525, 6415, 2339, 2340, 2341, 3525, 6415, 3528,
-                    3529, 3530]
-        elif sub_type == 'Duration':
-            return [3106, 3843, 3844]
-        elif sub_type == 'Damage (All)':
-            return [3108, 3101, 3104, 2336, 2337, 2338, 3513, 6414, 3514, 3515]
-        elif sub_type == 'Damage (Fire)':
-            return [3102, 3516, 3517, 3518]
-        elif sub_type == 'Damage (Cold)':
-            return [3103, 3519, 3520, 3521]
-        elif sub_type == 'Damage (Magic)':
-            return [3105, 3522, 3523, 3524]
-        elif sub_type == 'Damage (Poison)':
-            return []
-        elif sub_type == 'Damage (Disease)':
-            return [3923]
-        elif sub_type == 'Damage (DoT)':
-            return [2366, 2367, 2368, 3507, 6412]
-        else:
-            raise f'Unknown subtype: {sub_type}'
-    elif focus_type == 'Pet':
-        if sub_type == 'Pet Power':
-            return [4406, 4407, 4399, 4398, 4397, 4396, 4404, 4403, 4402, 4401, 4400, 4409, 5062, 5124, 5123, 5122,
-                    5121, 4405, 4410, 5061, 6089]
-        else:
-            raise f'Unknown subtype: {sub_type}'
-    elif focus_type == 'Melee':
-        if sub_type == 'Ferocity':
-            return [3886, 3887, 3888, 6323, 6324, 7835, 9615, 15841, 20517]
-        elif sub_type == 'Cleave':
-            return [3883, 3884, 3885, 6321, 6322, 7834, 9614, 15840, 20516]
-        elif sub_type == 'Dodging':
-            return [3889, 3890, 3891, 7832, 9612, 15838, 20514]
-        elif sub_type == 'Parry':
-            return [3892, 3893, 3894, 6327, 6328, 6329, 7833, 7837, 9613, 9617, 15839, 20515]
-        elif sub_type == 'Sharpshooting':
-            return [3896, 3897, 3898, 6325, 6326, 7836, 9616, 15842, 20518]
-        else:
-            raise f'Unknown subtype: {sub_type}'
-    else:
-        raise f'Unknown focus type: {focus_type}'
+            raise f'Unknown focus type: {focus_type}'
 
 
 def get_era_zones(era_name):

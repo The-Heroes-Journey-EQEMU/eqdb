@@ -362,7 +362,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             bane_body = False
             filters.append(Item.banedmgrace == kwargs['banedmgrace'])
         elif 'focus_type' in entry:
-            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'])
+            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNewReference)
             for focus_id in ids:
                 focus_or_filters.append(Item.focuseffect == focus_id)
             if kwargs['focus_type'] == 'Melee':
