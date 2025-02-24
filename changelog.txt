@@ -1,3 +1,21 @@
+==1.5==
+* Most tradeskill items added.
+  ** There is a chance out of era stuff will show up in gear searches.  Be aware of this if exceptionally powerful items
+  ** show up, and please let me know via Discord if you find any.  Additionally, there may not be items showing up,
+  ** if they're particularly useful, again, let me know!
+* Removed out of era quest items.
+  ** These are almost invariably Epic 1.5 and 2.0 weapons, as the quests tended to reuse a lot of the original quest
+  ** givers, such as the sarnak imitator in Burning Woods for both Enchanter Epic 1.0 and 1.5.  Let me know if you find
+  ** any items missing or quest items that are still clearly out of era for the search you are conducting.
+* TODO: Added bard instrument modifier search.
+  ** Bard items, usually visible armor and starting in Planes of Power, will have instrument modifiers.  This search
+  ** will let you find the best items that have the instrument modifier in question.
+
+==1.4.1==
+Deployed: 2/21/2025
+* Armor search "All Types" will now find augs in addition to regular items.
+  ** Aug-only search remains the same by selecting item type 'Augment'
+
 ==1.4.0==
 Deployed: 2/21/2025
 * Added worn effects to tooltips

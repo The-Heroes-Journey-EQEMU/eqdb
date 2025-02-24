@@ -196,8 +196,13 @@ def get_era_items(kwargs):
         quest_item_ids += file_data.split('\n')
 
         # Certain expansions have tradeskill items at the highest level, add those
-        if os.path.exists(os.path.join(here, f'item_files/{era.lower()}_special.txt')):
-            with open(os.path.join(here, f'item_files/{era.lower()}_special.txt'), 'r') as fh:
+        if os.path.exists(os.path.join(here, f'item_files/{era}_ts.txt')):
+            with open(os.path.join(here, f'item_files/{era}_ts.txt'), 'r') as fh:
+                file_data = fh.read()
+            special_item_ids += file_data.split('\n')
+
+        if os.path.exists(os.path.join(here, f'item_files/{era}_special.txt')):
+            with open(os.path.join(here, f'item_files/{era}_special.txt'), 'r') as fh:
                 file_data = fh.read()
             special_item_ids += file_data.split('\n')
 
@@ -253,8 +258,6 @@ def get_era_items(kwargs):
     # Apply universal filters
     if aug_search:
         filters.append(Item.augtype > 0)
-    else:
-        filters.append(Item.augtype <= 0)
 
     if not no_rent:
         filters.append(Item.norent == 1)
