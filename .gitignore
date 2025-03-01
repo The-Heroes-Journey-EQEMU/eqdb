@@ -3,5 +3,5 @@ configuration.ini
 wsgi.py
 .idea
 __pycache__
-__init__.py
-gather_item_ids.py
+/__init__.py
+/gather_item_ids.py
