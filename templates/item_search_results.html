@@ -331,6 +331,8 @@
         {% if show_focus %}
          {% if entry.worn_name and entry.worn_value %}
           <td>{{entry.worn_name}}</td>
+        {% elif entry.inst_name and entry.inst_value %}
+        <td>{{entry.inst_name}}</td>
          {% else %}
           <td>{{entry.focus_spell_name}}</td>
          {% endif %}
@@ -338,6 +340,8 @@
          <td>{{entry.sub_focus}}</td>
          {% if entry.worn_name and entry.worn_value %}
           <td>{{entry.worn_value}}%</td>
+         {% elif entry.inst_name and entry.inst_value %}
+        <td>{{entry.inst_value}}</td>
          {% else %}
          {% if entry.focus_max_val|int < entry.focus_min_val|int %}
            <td>{{entry.focus_min_val}}%</td>

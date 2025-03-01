@@ -193,6 +193,14 @@ function configureDropDownLists(ddl1, ddl2) {
 	    {display: "Improved Parry/Block", value: "Parry"},
 	    {display: "Sharpshooting", value: "Sharpshooting"}]
 
+	var Bard = [
+	    {display: "--All Items with Type--", value: "None"},
+	    {display: "Singing", value: "Singing"},
+	    {display: "Stringed", value: "Stringed"},
+	    {display: "Brass", value: "Brass"},
+	    {display: "Percussion", value: "Percussion"},
+	    {display: "Wind", value: "Wind"}]
+
   	switch (ddl1.value) {
     case 'Beneficial':
       ddl2.options.length = 0;
@@ -216,6 +224,12 @@ function configureDropDownLists(ddl1, ddl2) {
       ddl2.options.length = 0;
       for (i = 0; i < Worn.length; i++) {
         createOption(ddl2, Worn[i].display, Worn[i].value);
+      }
+      break;
+    case 'Bard':
+      ddl2.options.length = 0;
+      for (i = 0; i < Bard.length; i++) {
+        createOption(ddl2, Bard[i].display, Bard[i].value);
       }
       break;
     default:
@@ -352,13 +366,17 @@ function createOption(ddl, text, value) {
                         </select></td>
                     </tr>
                     <tr>
-                        <td>Focus Type:</td>
+
+                        <td><abbr title="Includes Beneficial, Detrimental, and Pet Focuses; Melee worn effects; and Bard Instrument Modifiers">
+                                Focus/Worn Type:
+                                </abbr></td>
                         <td colspan="3"><select name="spell_type" id="spell_type"
                                                 onchange="configureDropDownLists(this,document.getElementById('focus_type'))">
                             <option value="" selected="selected">--All Items--</option>
                             <option value="Beneficial">Beneficial Spells</option>
                             <option value="Detrimental">Detrimental Spells</option>
                             <option value="Melee">Melee Worn Focuses</option>
+                            <option value="Bard">Bard Instruments</option>
                             <option value="Pet">Pet Focuses</option>
                         </select></td>
                     </tr>

@@ -45,6 +45,7 @@ FocusSpell = aliased(SpellsNewReference)
 ClickSpell = aliased(SpellsNewReference)
 ProcSpell = aliased(SpellsNewReference)
 WornSpell = aliased(SpellsNewReference)
+BardSpell = aliased(SpellsNewReference)
 
 
 def _debugger():
@@ -88,7 +89,7 @@ def _get_arg_list(tooltip=False):
                 Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
-                Item.backstabdmg]
+                Item.backstabdmg, Item.bardeffect]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -111,6 +112,8 @@ def _get_arg_list(tooltip=False):
         arg_list.append(ProcSpell.name.label('proc_name'))
         arg_list.append(WornSpell.name.label('worn_name'))
         arg_list.append(WornSpell.effect_base_value1.label('worn_value'))
+        arg_list.append(BardSpell.name.label('inst_name'))
+        arg_list.append(BardSpell.effect_base_value1.label('inst_value'))
 
     return arg_list
 
@@ -129,6 +132,7 @@ def get_item_data(item_id):
         click = ret_dict['clickeffect']
         focus = ret_dict['focuseffect']
         worn = ret_dict['worneffect']
+        inst = ret_dict['bardeffect']
         banebody = ret_dict['banedmgbody']
         banerace = ret_dict['banedmgrace']
         elemtype = ret_dict['elemdmgtype']
@@ -154,6 +158,10 @@ def get_item_data(item_id):
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
             ret_dict['focus_name'] = result[0][0]
+        if inst > 0:
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
+            result = query.all()
+            ret_dict['inst_name'] = result[0][0]
         if banebody > 0:
             ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)
             ret_dict['bane_body_amount'] = ret_dict['banedmgamt']
@@ -194,6 +202,17 @@ def get_era_items(kwargs):
         with open(os.path.join(here, 'item_files', f'{era}.txt'), 'r') as fh:
             file_data = fh.read()
         quest_item_ids += file_data.split('\n')
+
+        if era == 'Kunark':
+            # Add LoY
+            if os.path.exists(os.path.join(here, f'item_files/LoY.txt')):
+                with open(os.path.join(here, 'item_files', f'LoY.txt'), 'r') as fh:
+                    file_data = fh.read()
+                quest_item_ids += file_data.split('\n')
+            if os.path.exists(os.path.join(here, f'item_files/LoY_ts.txt')):
+                with open(os.path.join(here, f'item_files/LoY_ts.txt'), 'r') as fh:
+                    file_data = fh.read()
+                special_item_ids += file_data.split('\n')
 
         # Certain expansions have tradeskill items at the highest level, add those
         if os.path.exists(os.path.join(here, f'item_files/{era}_ts.txt')):
@@ -371,6 +390,9 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             if kwargs['focus_type'] == 'Melee':
                 for worn_id in ids:
                     focus_or_filters.append(Item.worneffect == worn_id)
+            if kwargs['focus_type'] == 'Bard':
+                for bard_id in ids:
+                    focus_or_filters.append(Item.bardeffect == bard_id)
         else:
             filters.append(getattr(Item, entry) >= kwargs[entry])
 
@@ -388,6 +410,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True). \
             join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
             join(WornSpell, WornSpell.id == Item.worneffect, isouter=True). \
+            join(BardSpell, BardSpell.id == Item.bardeffect, isouter=True). \
             filter(Item.id.in_(session.query(Item.id).filter(item_params))). \
             filter(and_params). \
             filter(focus_or_params). \

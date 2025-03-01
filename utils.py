@@ -793,8 +793,86 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 return [3896, 3897, 3898, 6325, 6326, 7836, 9616, 15842, 20518]
             else:
                 raise f'Unknown subtype: {sub_type}'
+        elif focus_type == 'Bard':
+            if sub_type == 'Wind':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 54))
+                type_effects = or_(*type_effects)
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 413). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Stringed':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 49))
+                type_effects = or_(*type_effects)
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 413). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Brass':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 12))
+                type_effects = or_(*type_effects)
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 413). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Percussion':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 70))
+                type_effects = or_(*type_effects)
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 413). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            elif sub_type == 'Singing':
+                type_effects = []
+                for i in range(2, 13):
+                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
+                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 41))
+                type_effects = or_(*type_effects)
+                query = session.query(SpellsNewReference.id). \
+                    filter(SpellsNewReference.effectid1 == 413). \
+                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                    filter(type_effects). \
+                    order_by(SpellsNewReference.id)
+                ids = query.all()
+                for entry in ids:
+                    ret_ids.append(entry[0])
+                return ret_ids
+            else:
+                raise Exception(f'Unknown sub_type: {sub_type}')
         else:
-            raise f'Unknown focus type: {focus_type}'
+            raise Exception(f'Unknown focus type: {focus_type}')
 
 
 def get_era_zones(era_name):
@@ -805,6 +883,8 @@ def get_era_zones(era_name):
     elif era_name == 'Kunark':
         return [106, 82, 103, 84, 92, 88, 102, 97, 85, 87, 90, 104, 86, 94, 78, 105, 107, 93, 89, 91, 83, 81, 80,
                 79, 96, 95, 108, 277, 225, 228, 227, 224, 226]
+    elif era_name == 'LoY':
+        return [277, 225, 228, 227, 224, 226]
     elif era_name == 'Velious':
         return [117, 123, 116, 129, 113, 125, 114, 115, 121, 118, 110, 127, 126, 128, 100, 124, 111, 119, 101, 120,
                 109, 112]
