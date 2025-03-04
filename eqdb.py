@@ -82,7 +82,7 @@ def item_search():
     filters = {}
     g_slot = None
     show_dmg_delay = False
-    show_focus = False
+    show_spells = False
     full_detail = False
     show_click = False
     show_proc = False
@@ -300,7 +300,7 @@ def item_search():
         if request.form['spell_type'] is not None and request.form['spell_type'] != '':
             filters.update({'focus_type': request.form['spell_type']})
             filters.update({'sub_type': request.form['focus_type']})
-            show_focus = True
+            show_spells = True
 
     # Handle elem damage
     if 'elemdmgtype' in data:
@@ -321,10 +321,11 @@ def item_search():
                         filters.update({'banedmgrace': bane_id})
 
     # Oh god, we've got everything...lets get a list of items
-    ret_items = logic.get_items_with_filters(weights, ignore_zero, **filters)
+    ret_items, focus, worn, inst = logic.get_items_with_filters(weights, ignore_zero, **filters)
     return render_template('item_search_results.html', data=ret_items, reduce=reduce_restrictions,
-                           show_dmg_delay=show_dmg_delay, show_focus=show_focus, full_detail=full_detail,
-                           show_values=show_values, show_click=show_click, show_proc=show_proc)
+                           show_dmg_delay=show_dmg_delay, show_focus=focus, full_detail=full_detail,
+                           show_values=show_values, show_click=show_click, show_proc=show_proc, show_worn=worn,
+                           show_inst=inst, show_spells=show_spells)
 
 
 @app.route("/search/weapon", methods=['GET', 'POST'])
@@ -341,6 +342,12 @@ def armor_search():
         return render_template('item_search.html')
     else:
         return redirect(url_for('item_search'), code=307)
+
+
+@app.route("/report/<item_id>", methods=['GET', 'POST'])
+def report_item(item_id):
+    if request.method == 'GET':
+        return render_template('item_report.html', item=logic.get_item_data(item_id))
 
 
 if __name__ == "__main__":

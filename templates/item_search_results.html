@@ -160,11 +160,17 @@
     {% if reduce.stunresist and full_detail %}
     <th>Stun Res.</th>
     {% endif %}
-    {% if show_focus %}
+    {% if show_focus and show_spells %}
      <th>Focus Name</th>
      <th>Focus Affects</th>
      <th>Focus Type</th>
      <th>Focus Value</th>
+    {% endif %}
+    {% if show_worn and show_spells %}
+     <th>Worn Effect</th>
+    {% endif %}
+    {% if show_inst and show_spells %}
+     <th>Instrument Effect Name</th>
     {% endif %}
     {% if show_click %}
       <th>Click Effect</th>
@@ -172,6 +178,7 @@
     {% if show_proc %}
     <th>Proc Name</th>
     {% endif %}
+    <th>Report Item</th>
     </thead>
 {% for entry in data %}
     <tr>
@@ -328,34 +335,44 @@
         {% if reduce.stunresist and full_detail %}
         <td>{{entry.stunresist}}</td>
         {% endif %}
-        {% if show_focus %}
-         {% if entry.worn_name and entry.worn_value %}
-          <td>{{entry.worn_name}}</td>
-        {% elif entry.inst_name and entry.inst_value %}
-        <td>{{entry.inst_name}}</td>
-         {% else %}
-          <td>{{entry.focus_spell_name}}</td>
-         {% endif %}
+        {% if show_focus and show_spells %}
+         {% if not entry.focus_spell_name %}
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        {% else %}
+        <td><a href="https://thjdi.cc/spell/{{entry.focus_id}}">{{entry.focus_spell_name}}</a></td>
          <td>{{entry.focus_type}}</td>
          <td>{{entry.sub_focus}}</td>
-         {% if entry.worn_name and entry.worn_value %}
-          <td>{{entry.worn_value}}%</td>
-         {% elif entry.inst_name and entry.inst_value %}
-        <td>{{entry.inst_value}}</td>
-         {% else %}
-         {% if entry.focus_max_val|int < entry.focus_min_val|int %}
+        {% if entry.focus_max_val|int < entry.focus_min_val|int %}
            <td>{{entry.focus_min_val}}%</td>
          {% else %}
            <td>{{entry.focus_max_val}}%</td>
          {% endif %}
         {% endif %}
         {% endif %}
+         {% if show_worn and show_spells %}
+          {% if entry.worn_name %}
+          <td><a href="https://thjdi.cc/spell/{{entry.worn_id}}">{{entry.worn_name}}</a></td>
+          {% else %}
+          <td></td>
+          {% endif %}
+        {% endif %}
+        {% if show_inst and show_spells %}
+        {% if entry.inst_name %}
+        <td><a href="https://thjdi.cc/spell/{{entry.inst_id}}">{{entry.inst_name}}</a></td>
+        {% else %}
+        <td></td>
+        {% endif %}
+        {% endif %}
         {% if show_click %}
-        <td>{{entry.click_name}}</td>
+        <td><a href="https://thjdi.cc/spell/{{entry.click_id}}">{{entry.click_name}}</a></td>
         {% endif %}
         {% if show_proc %}
-        <td>{{entry.proc_name}}</td>
+        <td><a href="https://thjdi.cc/spell/{{entry.proc_id}}">{{entry.proc_name}}</a></td>
         {% endif %}
+        <td><a href="/report/{{entry.id}}">Report</a></td>
     </tr>
 {% endfor %}
 </table>

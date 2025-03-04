@@ -89,13 +89,12 @@ def _get_arg_list(tooltip=False):
                 Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
-                Item.backstabdmg, Item.bardeffect]
+                Item.backstabdmg, Item.bardeffect, Item.worneffect]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
         arg_list.append(Item.itemtype)
         arg_list.append(Item.proceffect)
-        arg_list.append(Item.worneffect)
         arg_list.append(Item.augslot1type)
         arg_list.append(Item.augslot2type)
         arg_list.append(Item.augslot3type)
@@ -110,8 +109,10 @@ def _get_arg_list(tooltip=False):
         arg_list.append(ClickSpell.name.label('click_name'))
         arg_list.append(ProcSpell.id.label('proc_id'))
         arg_list.append(ProcSpell.name.label('proc_name'))
+        arg_list.append(WornSpell.id.label('worn_id'))
         arg_list.append(WornSpell.name.label('worn_name'))
         arg_list.append(WornSpell.effect_base_value1.label('worn_value'))
+        arg_list.append(BardSpell.id.label('inst_id'))
         arg_list.append(BardSpell.name.label('inst_name'))
         arg_list.append(BardSpell.effect_base_value1.label('inst_value'))
 
@@ -421,12 +422,21 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     # If we don't have any items, that's it, return early.
     if not lookup_table:
         return out_items
+    show_worn = False
+    show_inst = False
+    show_focus = False
     for entry in all_items:
         entry = utils.ReducedItem((dict(entry._mapping)))
         entry.npc_id = lookup_table[entry.id]['npc_id']
         entry.npc_name = lookup_table[entry.id]['npc_name']
         entry.focus_type = kwargs.get('focus_type')
         entry.sub_focus = kwargs.get('sub_type')
+        if entry.focuseffect > 0:
+            show_focus = True
+        if entry.worneffect > 0:
+            show_worn = True
+        if entry.bardeffect > 0:
+            show_inst = True
 
         if weights:
             entry.weight = utils.get_stat_weights(weights, entry, bane_body=bane_body)
@@ -446,4 +456,4 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         out_items.append(entry)
 
     out_items.sort(key=operator.attrgetter('weight'), reverse=True)
-    return out_items
+    return out_items, show_focus, show_worn, show_inst

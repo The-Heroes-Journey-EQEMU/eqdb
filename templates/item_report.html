@@ -1,0 +1,475 @@
+{% extends "layout.html" %}
+{% block body %}
+<style>
+    .item-card {
+        border: 1px solid transparent;
+        border-collapse: collapse;
+    }
+
+    .item-card td, item-card th {
+        border: 1px solid transparent;
+        vertical-align: top;
+        padding-top: 1px;
+    }
+
+    td > table {
+        width: 100%;
+        height: 100%;
+        border-collapse: collapse;
+    }
+
+    td > table td {
+        vertical-align: top;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+</style>
+<div class="" id="" style="width: 450px;">
+    <table class='item-card'>
+        <tbody>
+        <tr>
+            <td colspan='3'>
+            <table>
+                <colgroup>
+                    <col style="width: 45px;"/>
+                </colgroup>
+                <tr>
+                    <td></td>
+                    <td>{{item.Name}}</td>
+                </tr>
+            </table>
+            </td>
+        </tr>
+        <tr></tr>
+        <tr>
+            <td colspan='3'>
+                <table>
+                    <tr>
+                        Class: {{item.class_str}}
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan='3'>
+                <table>
+                    <tr>
+                        {{item.slot_str}}
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr></tr>
+        <tr>
+            <td>
+                <table>
+                    <tr></tr>
+                    <tr></tr>
+                    {% if item.type_str != '__na__' %}
+                    <tr>
+                        <td>Skill:</td>
+                        <td>{{item.type_str}}</td>
+                    </tr>
+                    {% else %}
+                    <tr></tr>
+                    {% endif %}
+                </table>
+            </td>
+            <td>
+                <table>
+                    {% if item.ac != 0 %}
+                    <tr>
+                        <td>AC:</td>
+                        <td colspan="2" align="right">{{item.ac}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.hp != 0 %}
+                    <tr>
+                        <td>HP:</td>
+                        <td align="right">{{item.hp}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.mana != 0 %}
+                    <tr>
+                        <td>Mana:</td>
+                        <td align="right">{{item.mana}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.endur != 0 %}
+                    <tr>
+                        <td>End:</td>
+                        <td align="right">{{item.endur}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.haste != 0 %}
+                    <tr>
+                        <td>Haste:</td>
+                        <td align="right">{{item.haste}}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+            <td>
+                <table>
+                    {% if item.damage != 0 %}
+                    <tr>
+                        <td>Base Dmg:</td>
+                        <td align="right">{{item.damage}}</td>
+                    </tr>
+                    {% else %}
+                    <tr></tr>
+                    {% endif %}
+                    {% if item.backstabdmg %}
+                    <tr>
+                        <td>Backstab Dmg:</td>
+                        <td align="right">{{item.backstabdmg}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.elem_dmg_name %}
+                    <tr>
+                        <td>{{item.elem_dmg_name}} Dmg:</td>
+                        <td align="right">{{item.elem_dmg_amount}}</td>
+                    </tr>
+                     {% endif %}
+                    {% if item.delay != 0 %}
+                    <tr>
+                        <td>Delay:</td>
+                        <td align="right">{{item.delay}}</td>
+                    </tr>
+                    {% else %}
+                    <tr></tr>
+                    {% endif%}
+                </table>
+            </td>
+        </tr>
+        <tr></tr>
+        <tr>
+            <td>
+                <table>
+                    {% if item.astr != 0 or item.heroic_str != 0 %}
+                    <tr>
+                        <td>Strength:</td>
+                        <td align="right">{{item.astr}}</td>
+                        {% if item.heroic_str != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_str}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.asta != 0 or item.heroic_sta != 0 %}
+                    <tr>
+                        <td>Stamina:</td>
+                        <td align="right">{{item.asta}}</td>
+                        {% if item.heroic_sta != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_sta}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.adex != 0 or item.heroic_dex != 0 %}
+                    <tr>
+                        <td>Dexterity:</td>
+                        <td align="right">{{item.adex}}</td>
+                        {% if item.heroic_dex != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_dex}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.aagi != 0 or item.heroic_agi != 0 %}
+                    <tr>
+                        <td>Agility:</td>
+                        <td align="right">{{item.aagi}}</td>
+                        {% if item.heroic_agi != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_agi}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.awis != 0 or item.heroic_wis != 0 %}
+                    <tr>
+                        <td>Wisdom:</td>
+                        <td align="right">{{item.awis}}</td>
+                        {% if item.heroic_wis != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_wis}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.aint != 0 or item.heroic_int != 0 %}
+                    <tr>
+                        <td>Intelligence:</td>
+                        <td align="right">{{item.aint}}</td>
+                        {% if item.heroic_int != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_int}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.acha != 0 or item.heroic_cha != 0 %}
+                    <tr>
+                        <td>Charisma:</td>
+                        <td align="right">{{item.acha}}</td>
+                        {% if item.heroic_cha != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_cha}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+            <td>
+                <table>
+                    {% if item.fr != 0 or item.heroic_fr != 0 %}
+                    <tr>
+                        <td>Fire:</td>
+                        <td align="right">{{item.fr}}</td>
+                        {% if item.heroic_fr != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_fr}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.cr != 0 or item.heroic_cr != 0 %}
+                    <tr>
+                        <td>Cold:</td>
+                        <td align="right">{{item.cr}}</td>
+                        {% if item.heroic_cr != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_cr}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.mr != 0 or item.heroic_mr != 0 %}
+                    <tr>
+                        <td>Magic:</td>
+                        <td align="right">{{item.mr}}</td>
+                        {% if item.heroic_mr != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_mr}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.dr != 0 or item.heroic_dr != 0 %}
+                    <tr>
+                        <td>Disease:</td>
+                        <td align="right">{{item.dr}}</td>
+                        {% if item.heroic_dr != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_dr}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                    {% if item.pr != 0 or item.heroic_pr != 0 %}
+                    <tr>
+                        <td>Poison:</td>
+                        <td align="right">{{item.pr}}</td>
+                        {% if item.heroic_pr != 0 %}
+                        <td align="left"><font color="Orange">+{{item.heroic_pr}}</font></td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+            <td>
+                <table>
+                    {% if item.attack != 0 %}
+                    <tr>
+                        <td>Attack:</td>
+                        <td>{{item.attack}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.regen != 0 %}
+                    <tr>
+                        <td>HP Regen:</td>
+                        <td>{{item.regen}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.manaregen != 0 %}
+                    <tr>
+                        <td>Mana Regen:</td>
+                        <td>{{item.manaregen}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.accuracy != 0 %}
+                    <tr>
+                        <td>Accuracy:</td>
+                        <td>{{item.accuracy}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.avoidance != 0 %}
+                    <tr>
+                        <td>Avoidance:</td>
+                        <td>{{item.avoidance}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.combateffects|int != 0 %}
+                    <tr>
+                        <td>Combat Effects:</td>
+                        <td>{{item.combateffects}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.damageshield != 0 %}
+                    <tr>
+                        <td>Damage Shield:</td>
+                        <td>{{item.damageshield}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.dotshielding != 0 %}
+                    <tr>
+                        <td>DoT Shielding:</td>
+                        <td>{{item.dotshielding}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.shielding != 0 %}
+                    <tr>
+                        <td>Shielding:</td>
+                        <td>{{item.shielding}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.spellshield != 0 %}
+                    <tr>
+                        <td>Spell Shield:</td>
+                        <td>{{item.spellshield}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.strikethrough != 0 %}
+                    <tr>
+                        <td>Strikethrough:</td>
+                        <td>{{item.strikethrough}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.stunresist != 0 %}
+                    <tr>
+                        <td>Stun Resist:</td>
+                        <td>{{item.stunresist}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.spelldmg != 0 %}
+                    <tr>
+                        <td>Spell Dmg:</td>
+                        <td>{{item.spelldmg}}</td>
+                    </tr>
+                    {% endif %}
+                    {% if item.healamt != 0 %}
+                    <tr>
+                        <td>Heal Amount</td>
+                        <td>{{item.healamt}}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+        </tr>
+        {% if item.aug_slot_1 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 1, type {{item.aug_slot_1}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_2 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 2, type {{item.aug_slot_2}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_3 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 3, type {{item.aug_slot_3}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_4 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 4, type {{item.aug_slot_4}}</td>
+        </tr>
+        {% endif %}
+        {% if item.aug_slot_5 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Slot 5, type {{item.aug_slot_5}}</td>
+        </tr>
+        {% endif %}
+        {% if item.worneffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Worn: {{item.worn_name}}</td>
+        </tr>
+        {% endif %}
+        {% if item.proceffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Effect: {{item.proc_name}} (Combat)</td>
+        </tr>
+        {% if item.proclevel2 > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Procs at level {{item.proclevel2}}</td>
+        </tr>
+        {% endif %}
+        {% endif %}
+        {% if item.clickeffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Effect: {{item.click_name}} (Click)</td>
+        </tr>
+        {% if item.clicklevel2 > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Clickable at level {{item.clicklevel2}}</td>
+        </tr>
+        {% endif %}
+        {% endif %}
+        {% if item.focuseffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Effect: {{item.focus_name}} (Worn)</td>
+        </tr>
+        {% endif %}
+        {% if item.bardeffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Effect: {{item.inst_name}} (Worn)</td>
+        </tr>
+        {% endif %}
+        {% if "bane_body_name" in item %}
+        <tr>
+            <td nowrap="1" colspan='3'>Bane Dmg: {{item.bane_body_name}} +{{item.bane_body_amount}}</td>
+        </tr>
+        {% endif %}
+        {% if "bane_race_name" in item %}
+        <tr>
+            <td nowrap="1" colspan='3'>Bane Dmg: {{item.bane_race_name}} +{{item.bane_race_amount}}</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+<br><br>
+<h2>Select issue with item</h2>
+<form actions="{{ url_for('item_search') }}" method="post" class="add-entry" id="demoForm">
+    <table>
+        <tr>
+            <td>Report Expansion</td>
+            <td>
+                <select name="expansion" id="expansion">
+                    <option value="None" selected="selected">--Correct Expansion--</option>
+                    <option value="0">Classic</option>
+                    <option value="1">Ruins of Kunark</option>
+                    <option value="2">Scars of Velious</option>
+                    <option value="3">Shadows of Luclin</option>
+                    <option value="4">Planes of Power</option>
+                    <option value="5">Legacy of Ykesha</option>
+                    <option value="6">Lost Dungeons of Norrath</option>
+                    <option value="7">Gates of Discord</option>
+                    <option value="8">Omens of War</option>
+                    <option value="9">Dragons of Norrath</option>
+                    <option value="10">Depths of Darkhollow</option>
+                    <option value="11">Prophecy of Ro</option>
+                    <option value="12">The Serpent's Spine</option>
+                    <option value="13">The Buried Sea</option>
+                    <option value="14">Secrets of Faydwer</option>
+                    <option value="15">Seeds of Destruction</option>
+                    <option value="16">Underfoot</option>
+                    <option value="17">House of Thule</option>
+                    <option value="18">Veil of Alaris</option>
+                    <option value="19">Rain of Fear</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Report Source</td>
+            <td>
+                <select name="source" id="source">
+                    <option value="None" selected="selected">--Correct Source--</option>
+                    <option value="drop">Dropped by NPC</option>
+                    <option value="quest">Result of a Quest</option>
+                    <option value="tradeskill">Created through Tradeskills</option>
+                    <option value="merchant">Sold by a merchant</option>
+                    <option value="summoned">Created through using another item</option>
+                    <option value="other">Some other method</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+</form>
+{% endblock %}
