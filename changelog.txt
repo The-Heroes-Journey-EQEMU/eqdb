@@ -7,7 +7,6 @@ CHANGES:
 * Reworked "Include Temporary Items" into "Toggle Pet Search"
   ** This will do the following:
     *** Disable the requirement that slot, class, or focus must be searched for.
-    *** Calculates 2H ratio with a maximum delay of 40.
     *** Includes temporary items in the search.
 * Fixed output table to show click, worn, focus, and instrument mod simultaneously instead of just one.
   ** Instrument and Worn will only show the effect name, since you kind of know what you're getting with those.
