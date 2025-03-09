@@ -1,21 +1,7 @@
 ==1.6==
-* TODO: Added a 'report' option to all items.
-  ** This will allow users to report an item as incorrectly showing up, such as items that cannot possibly be obtained
-     by players, like guide items, or items that are out of era for the selection provided by the user.
-  ** This will use the user's Discord ID and store the data in a separate table that will help with analysis of these
-     items.
-* TODO: Added a 'identify this item!' minigame.
-  ** This finds an item that we know for sure isn't identified yet and presents it to the user, allowing them to select
-     what era the item should go in.
-  ** Same as above, Discord ID is used to record the report.
-* TODO: Added scripts to collect the data from reports and identification and add them to the appropriate eras.
-  ** This is done by consensus of people reporting.  If only one or two reports are received on an item, it may not be
-     added until more people evaluate it.
-  ** There is potential for rewards, including glamours, EoMs, or platinum in THJ for helping us make the data more
-     accurate!  Keep an eye on Discord for more information.
-* TODO: Added "Delay", "Weapon Efficency", and "Proc Rate" to required stats dropdown.
+* Added "Delay", "Weapon Efficency", and "Proc Rate" to required stats dropdown.
   ** Delay is inverted.  For example, providing a stat weight of 20 will give items with delay at 20 or less.
-* TODO: Added "Delay" and "Proc Rate" to stat weights.
+* Added "Delay" and "Proc Rate" to stat weights.
   ** Reminder that weights can be negative!
 * TODO: Reworked "Include Temporary Items" into "Toggle Pet Search"
   ** This will do the following:
@@ -25,6 +11,7 @@
 * Fixed output table to show click, worn, focus, and instrument mod simultaneously instead of just one.
   ** Instrument and Worn will only show the effect name, since you kind of know what you're getting with those.
 * Linked spell names on search result page to thjdi.cc
+* Added proc rate to tooltips.
 
 ==1.5.1==
 Deployed: 3/3/2025

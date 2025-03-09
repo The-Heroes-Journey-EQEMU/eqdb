@@ -178,7 +178,6 @@
     {% if show_proc %}
     <th>Proc Name</th>
     {% endif %}
-    <th>Report Item</th>
     </thead>
 {% for entry in data %}
     <tr>
@@ -372,7 +371,6 @@
         {% if show_proc %}
         <td><a href="https://thjdi.cc/spell/{{entry.proc_id}}">{{entry.proc_name}}</a></td>
         {% endif %}
-        <td><a href="/report/{{entry.id}}">Report</a></td>
     </tr>
 {% endfor %}
 </table>

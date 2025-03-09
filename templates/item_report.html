@@ -26,7 +26,97 @@
         border-collapse: collapse;
     }
 </style>
-<div class="" id="" style="width: 450px;">
+<script>
+//If parent option is changed
+function configureDropDownLists(ddl1, ddl2) {
+//let's create arrays
+	var Classic = [
+		{display: "--Correct Zone--", value: "None"},
+    	{display: "Preservation", value: "Preservation" },
+    	{display: "Range", value: "Range" },
+    	{display: "Haste", value: "Haste" },
+		{display: "Duration", value: "Duration" },
+    	{display: "Healing", value: "Healing" }];
+
+	var Detrimental = [
+		{display: "--All Items with Type--", value: "None"},
+    	{display: "Preservation", value: "Preservation" },
+    	{display: "Range", value: "Range" },
+    	{display: "Haste", value: "Haste" },
+		{display: "Duration", value: "Duration" },
+    	{display: "Direct Damage (All)", value: "Damage (All)" },
+		{display: "Direct Damage (Fire)", value: "Damage (Fire)" },
+		{display: "Direct Damage (Cold)", value: "Damage (Cold)" },
+		{display: "Direct Damage (Magic)", value: "Damage (Magic)" },
+		{display: "Direct Damage (Poison)", value: "Damage (Poison)" },
+		{display: "Direct Damage (Disease)", value: "Damage (Disease)" },
+		{display: "DoT Damage", value: "Damage (DoT)"}];
+
+	var Pet = [
+		{display: "--All Items with Type--", value: "None"},
+		{display: "Pet Power", value: "Pet Power" }];
+
+	var Worn = [
+	    {display: "--All Items with Type--", value: "None"},
+	    {display: "Ferocity", value: "Ferocity"},
+	    {display: "Cleave", value: "Cleave"},
+	    {display: "Improved Dodge", value: "Dodging"},
+	    {display: "Improved Parry/Block", value: "Parry"},
+	    {display: "Sharpshooting", value: "Sharpshooting"}]
+
+	var Bard = [
+	    {display: "--All Items with Type--", value: "None"},
+	    {display: "Singing", value: "Singing"},
+	    {display: "Stringed", value: "Stringed"},
+	    {display: "Brass", value: "Brass"},
+	    {display: "Percussion", value: "Percussion"},
+	    {display: "Wind", value: "Wind"}]
+
+  	switch (ddl1.value) {
+    case 'Beneficial':
+      ddl2.options.length = 0;
+      for (i = 0; i < Beneficial.length; i++) {
+        createOption(ddl2, Beneficial[i].display, Beneficial[i].value);
+      }
+      break;
+    case 'Detrimental':
+      ddl2.options.length = 0;
+      for (i = 0; i < Detrimental.length; i++) {
+        createOption(ddl2, Detrimental[i].display, Detrimental[i].value);
+      }
+      break;
+    case 'Pet':
+      ddl2.options.length = 0;
+      for (i = 0; i < Pet.length; i++) {
+        createOption(ddl2, Pet[i].display, Pet[i].value);
+      }
+      break;
+    case 'Melee':
+      ddl2.options.length = 0;
+      for (i = 0; i < Worn.length; i++) {
+        createOption(ddl2, Worn[i].display, Worn[i].value);
+      }
+      break;
+    case 'Bard':
+      ddl2.options.length = 0;
+      for (i = 0; i < Bard.length; i++) {
+        createOption(ddl2, Bard[i].display, Bard[i].value);
+      }
+      break;
+    default:
+      ddl2.options.length = 0;
+      break;
+  }
+};
+
+function createOption(ddl, text, value) {
+  var opt = document.createElement('option');
+  opt.value = value;
+  opt.text = text;
+  ddl.options.add(opt);
+};
+</script>
+<div class="" id="" style="width: 450px; center">
     <table class='item-card'>
         <tbody>
         <tr>
@@ -431,7 +521,7 @@
         <tr>
             <td>Report Expansion</td>
             <td>
-                <select name="expansion" id="expansion">
+                <select name="expansion" id="expansion" onchange="configureDropDownLists(this,document.getElementById('zone'))">
                     <option value="None" selected="selected">--Correct Expansion--</option>
                     <option value="0">Classic</option>
                     <option value="1">Ruins of Kunark</option>
@@ -466,9 +556,15 @@
                     <option value="tradeskill">Created through Tradeskills</option>
                     <option value="merchant">Sold by a merchant</option>
                     <option value="summoned">Created through using another item</option>
-                    <option value="other">Some other method</option>
+                    <option value="vendor">Sold by a vendor</option>
+                    <option value="ground">Spawns on the ground</option>
+                    <option value="forage">Found via foraging</option>
                 </select>
             </td>
+        </tr>
+        <tr>
+            <td>Report Zone</td>
+            <td><select name="zone" id="zone"></select></td>
         </tr>
     </table>
 </form>

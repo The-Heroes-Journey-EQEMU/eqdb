@@ -79,7 +79,7 @@ $(document).ready(function() {
 		  <option value=\"stunresist\">Stun Resist</option> \
 		</select> \
 	  </td> \
-	  <td> >= <input name=\"stat_val_" + filterId + "\" size=\"3\" value=\"0\"></td> \
+	  <td><input name=\"stat_val_" + filterId + "\" size=\"3\" value=\"0\"></td> \
 	  <td> \
 	    <input type=\"button\" class=\"removerow\" value=\"-\"> \
 	  </td> \
@@ -306,7 +306,7 @@ function createOption(ddl, text, value) {
                         </tr>
                         <tr>
                             <td colspan="3">
-                                <abbr title="Only items with the provided stats will be searched for.  Heroic resists are included when resists are selected.">
+                                <abbr title="Only items with the provided stats will be searched for.  Heroic resists are included when resists are selected.  Delay is inverted (e.g. delay 20 will get delay 20 and lower.)">
                                 <b>Restrict to Stats:</b>
                                 </abbr>
                             </td>

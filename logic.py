@@ -89,7 +89,7 @@ def _get_arg_list(tooltip=False):
                 Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
-                Item.backstabdmg, Item.bardeffect, Item.worneffect]
+                Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -363,7 +363,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     focus_or_filters = []
 
     skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
-                    'sympathetic', 'eras']
+                    'sympathetic', 'eras', 'w_eff']
     bane_body = False
     for entry in kwargs:
         if entry in skip_filters:
@@ -394,6 +394,10 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             if kwargs['focus_type'] == 'Bard':
                 for bard_id in ids:
                     focus_or_filters.append(Item.bardeffect == bard_id)
+        elif 'delay' in entry:
+            filters.append(Item.delay <= kwargs['delay'])
+        elif 'procrate' in entry:
+            filters.append(Item.procrate >= int(kwargs[entry]))
         else:
             filters.append(getattr(Item, entry) >= kwargs[entry])
 

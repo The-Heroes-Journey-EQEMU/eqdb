@@ -419,6 +419,11 @@
             <td nowrap="1" colspan='3'>Bane Dmg: {{item.bane_race_name}} +{{item.bane_race_amount}}</td>
         </tr>
         {% endif %}
+        {% if item.procrate and item.proceffect > 0 %}
+        <tr>
+            <td nowrap="1" colspan='3'>Proc Rate: {{item.procrate}}</td>
+        </tr>
+        {% endif %}
         </tbody>
     </table>
 </div>

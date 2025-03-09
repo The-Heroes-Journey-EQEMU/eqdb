@@ -384,17 +384,17 @@ def get_stat_weights(weights, item, bane_body):
     for weight in weights:
         # Fix the resist weights by adding their heroic counterpart
 
-        if 'pr' in weight:
+        if weight == 'pr':
             value += (item.pr + item.heroic_pr) * weights[weight]
-        elif 'mr' in weight:
+        elif weight == 'mr':
             value += (item.mr + item.heroic_mr) * weights[weight]
-        elif 'cr' in weight:
+        elif weight == 'cr':
             value += (item.cr + item.heroic_cr) * weights[weight]
-        elif 'dr' in weight:
+        elif weight == 'dr':
             value += (item.dr + item.heroic_dr) * weights[weight]
-        elif 'fr' in weight:
+        elif weight == 'fr':
             value += (item.fr + item.heroic_fr) * weights[weight]
-        elif 'w_eff' in weight:
+        elif weight == 'w_eff':
             if not item.delay or item.delay == 0:
                 continue
             value += round((item.damage / item.delay), 2) * weights[weight]
