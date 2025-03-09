@@ -90,12 +90,13 @@ def item_search():
 
     # Make sure _something_ was provided
     if (request.form['g_class_1'] == 'None' and
-            request.form['g_class_2'] == 'None' and
-            request.form['g_class_3'] == 'None' and
-            request.form['g_slot'] == 'None' and
-            request.form['i_type'] == 'None' and
-            request.form['spell_type'] == ''):
-        flash('Must request a slot, class, item type other than all, or focus effect')
+        request.form['g_class_2'] == 'None' and
+        request.form['g_class_3'] == 'None' and
+        request.form['g_slot'] == 'None' and
+        request.form['i_type'] == 'None' and
+        request.form['spell_type'] == '' and
+        'pet_search' not in data):
+        flash('Must request a slot, class, item type other than all, or focus effect, or select Search for Pet Items')
         return redirect(url_for('error'))
 
     if 'g_class_1' in request.form:
@@ -292,8 +293,8 @@ def item_search():
         ignore_zero = True
 
     # Handle no rent
-    if 'add_no_rent' in request.form:
-        filters.update({'no_rent': True})
+    if 'pet_search' in request.form:
+        filters.update({'pet_search': True})
 
     # Handle focus effects
     if 'spell_type' in request.form:

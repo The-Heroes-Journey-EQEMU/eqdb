@@ -272,7 +272,7 @@ def get_era_items(kwargs):
             filters.append(Item.itemtype != utils.lookup_weapon_types('Two Hand Piercing'))
         else:
             filters.append(Item.itemtype == utils.lookup_weapon_types(kwargs['i_type']))
-    if 'no_rent' in kwargs:
+    if 'pet_search' in kwargs:
         no_rent = True
 
     # Apply universal filters
@@ -363,7 +363,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     focus_or_filters = []
 
     skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
-                    'sympathetic', 'eras', 'w_eff']
+                    'sympathetic', 'eras', 'w_eff', 'pet_search']
     bane_body = False
     for entry in kwargs:
         if entry in skip_filters:
@@ -441,6 +441,11 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             show_worn = True
         if entry.bardeffect > 0:
             show_inst = True
+
+        if 'pet_search' in kwargs:
+            pet_search = True
+        else:
+            pet_search = False
 
         if weights:
             entry.weight = utils.get_stat_weights(weights, entry, bane_body=bane_body)
