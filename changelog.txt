@@ -1,9 +1,10 @@
 ==1.6==
+CHANGES:
 * Added "Delay", "Weapon Efficency", and "Proc Rate" to required stats dropdown.
   ** Delay is inverted.  For example, providing a stat weight of 20 will give items with delay at 20 or less.
 * Added "Delay" and "Proc Rate" to stat weights.
   ** Reminder that weights can be negative!
-* TODO: Reworked "Include Temporary Items" into "Toggle Pet Search"
+* Reworked "Include Temporary Items" into "Toggle Pet Search"
   ** This will do the following:
     *** Disable the requirement that slot, class, or focus must be searched for.
     *** Calculates 2H ratio with a maximum delay of 40.
@@ -12,6 +13,26 @@
   ** Instrument and Worn will only show the effect name, since you kind of know what you're getting with those.
 * Linked spell names on search result page to thjdi.cc
 * Added proc rate to tooltips.
+* Added "Planned Enhancements" to changelog.
+
+PLANNED ENHANCEMENTS:
+(NOTE: There is no order or timeframe on any of these.  They're simply 'in the works' and will be made available
+when they're ready!)
+* Allow users to report an item that appears to be in the incorrect expansion.
+  ** This will use Discord oauth to record reports.  Why?  See the next note.
+* Add """minigame""" called 'Identify Items' that will allow users to support both THJ and EQDB by supplying expansion,
+  zone, and source data on items that aren't already identified.
+  ** This will use a "confidence" system that will be based on what users provide to attribute an item to it's correct
+     source, zone, or era.  As items are acccepted, an individual user's contributor score will increase, which will
+     give more weight to their subsequent corrections.
+  ** It is possible that this could result in rewards on the THJ server itself, but said rewards are under discussion!
+* Add spell tooltips to the output page when searching for focuses, procs, worn items, or bard instrument mods.
+  ** These are somewhat more complicated to handle than item tooltips.
+* Add "Create Target Gear List" functionality
+  ** This will allow you to provide item weights as normal, as well as "gearing strategies" that will determine how the
+     list is made.
+  ** These lists can be made public, with upvote capability to allow the community to see what other users and their
+     trio specs might be using as a basis for their own searches.
 
 ==1.5.1==
 Deployed: 3/3/2025
