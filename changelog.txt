@@ -1,4 +1,24 @@
+==1.7==
+CHANGES:
+* Added 'Item Identify' "minigame"
+  ** To start, select 'Item Identify' from either the landing page or the navigation bar.
+  ** An item that has not yet been associated with an expansion, source, and/or zone will be shown.
+  ** Use the selectors to identify where this item comes from.
+  ** Once an item has reached a specific 'confidence' threshold, it will be moved from unidentified to identified
+  ** Every contributor who helped get an item to identified will be credited with doing so, which will increase their
+     subsequent identifications.
+  ** This data is used by both EQDB and THJ to allow items to be as accurate as possible.
+  ** Items that are not gear will show up, this still helps both EQDB and THJ.
+     *** THJ can use this to make sure drops are 100% accurate for whatever expansion is opened.
+     *** EQDB can ignore or include items that otherwise might be filtered in / filtered out by algorithms.
+  ** This will use Discord's login system to attribute identification data.
+  ** You do not have to use Discord login, however an anonymous identification will be substantially reduced on the
+     amount of confidence it will provide and there will be no credit applied to anonymous.
+  ** There is a potential for rewards for the most contributors over a period of time.
+  ** The goal of this is that users will occasionally identify a couple of items in between doing other stuff.
+
 ==1.6==
+Deployed: 3/8/2025
 CHANGES:
 * Added "Delay", "Weapon Efficency", and "Proc Rate" to required stats dropdown.
   ** Delay is inverted.  For example, providing a stat weight of 20 will give items with delay at 20 or less.

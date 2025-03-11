@@ -2,6 +2,8 @@ import configparser
 import logging
 import os
 
+from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
+
 import logic
 
 from flask import Flask, render_template, request, flash, redirect, url_for
@@ -14,6 +16,8 @@ site_config.read_file(open(ini_path))
 
 SITE_TYPE = site_config.get('DEFAULT', 'site_type')
 SITE_VERSION = site_config.get('DEFAULT', 'site_version')
+if SITE_VERSION == 'Development':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
 
 app = Flask(__name__)
 fh = logging.FileHandler(site_config.get('path', 'flask_log'))
@@ -22,6 +26,12 @@ app.secret_key = ('\x1esN\x15X\xd8\xcc\xb1\x9a\xd2\xb4\x17\xa0`\x15?\x9b\x12'
                   '\x89\xeb\x88\x84\xe6\x00')
 app.config['SITE_TYPE'] = SITE_TYPE
 app.config['SITE_VERSION'] = SITE_VERSION
+app.config['DISCORD_CLIENT_ID'] = site_config.get('DISCORD', 'client_id')
+app.config['DISCORD_CLIENT_SECRET'] = ""
+app.config['DISCORD_REDIRECT_URI'] = ""
+app.config['DISCORD_BOT_TOKEN'] = ""
+
+discord = DiscordOAuth2Session(app)
 
 app_path = site_config.get('path', 'app_log')
 formatter = logging.Formatter(
@@ -36,6 +46,34 @@ app_log.setLevel(logging.DEBUG)
 ALLOWED_EXTENSIONS = {'txt'}
 
 """ MAIN METHODS """
+
+
+@app.route("/login/")
+def login():
+    return discord.create_session()
+
+
+@app.route("/identify/")
+def identify():
+    return render_template('identify_landing.html')
+
+
+@app.errorhandler(Unauthorized)
+def redirect_unauthorized(e):
+    return redirect(url_for("login"))
+
+
+@app.route("/identify/attributed/", methods=['GET', 'POST'])
+@requires_authorization
+def identify_attributed():
+    if request.method == 'GET':
+        item = logic.get_unidentified_item()
+        user = discord.fetch_user()
+        return render_template('identify', user=user, item=item)
+    else:
+        data = request.form
+        result = logic.add_item_identification(data)
+        return render_template('identify_result.html', result=result)
 
 
 @app.route("/tooltip/<item_id>", methods=['GET', 'POST'])
