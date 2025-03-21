@@ -52,7 +52,7 @@ ALLOWED_EXTENSIONS = {'txt'}
 
 @app.route("/login/")
 def login():
-    return discord.create_session()
+    return discord.create_session(scope=['identify'])
 
 
 @app.route("/callback/")
@@ -76,7 +76,7 @@ def redirect_unauthorized(e):
 def identify_attributed():
     user = discord.fetch_user()
     if request.method == 'GET':
-        item = logic.get_unidentified_item()
+        item = logic.get_unidentified_item(user=user)
         return render_template('identify.html', item=item)
     else:
         data = request.form

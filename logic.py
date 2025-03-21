@@ -154,7 +154,7 @@ def add_item_identification(data, user=None):
                                       contributed=1)
             session.add(new_contrib)
             session.commit()
-            contrib = new_contrib.__dict__
+            contrib = {'name': user_name, 'id': user_id, 'contributed': 1}
     else:
         contrib = result[0].__dict__
 
@@ -170,6 +170,7 @@ def add_item_identification(data, user=None):
     idents = [{'expansion': expansion, 'source': source, 'zone': zone_id}]
     ident_amt = [contrib.get('contributed')]
     for entry in result:
+        entry = entry._mapping
         test_key = {'expansion': entry.get('expansion'), 'source': entry.get('source'), 'zone': entry.get('zone_id')}
         if test_key in idents:
             idx = idents.index(test_key)
@@ -232,8 +233,30 @@ def add_item_identification(data, user=None):
         return item_id, False, None, None
 
 
-def get_unidentified_item():
+def get_unidentified_item(user=None):
     """Returns an unidentified item."""
+    if user:
+        pick_new = False
+        chooser = random.randint(1, 10)
+        if chooser == 10:
+            pick_new = True
+        if not pick_new:
+            # Get a partially identified item that the user hasn't weighed in on
+            with Session(bind=local_engine) as session:
+                query = session.query(IDEntry.item_id).filter(IDEntry.cid == user.id)
+                result = query.all()
+            exclude_ids = []
+            for entry in result:
+                exclude_ids.append(IDEntry.item_id != entry[0])
+            exclude_params = and_(*exclude_ids)
+
+            with Session(bind=local_engine) as session:
+                query = session.query(IDEntry.item_id).filter(exclude_params)
+                result = query.all()
+            if result:
+                choice = random.choice(result)
+                return get_item_data(choice[0])
+
     # Get all the identified items IDs from the local db.
     with Session(bind=local_engine) as session:
         query = session.query(IdentifiedItems.item_id)
