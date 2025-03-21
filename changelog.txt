@@ -16,6 +16,7 @@ CHANGES:
      amount of confidence it will provide and there will be no credit applied to anonymous.
   ** There is a potential for rewards for the most contributors over a period of time.
   ** The goal of this is that users will occasionally identify a couple of items in between doing other stuff.
+  ** This feature is in a BETA TEST, your identifications may be reset if bugs are found.
 
 ==1.6.1==
 Deployed: 3/20/225
