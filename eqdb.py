@@ -24,7 +24,7 @@ app.secret_key = ('this_is_a_secret')
 app.config['SITE_TYPE'] = SITE_TYPE
 app.config['SITE_VERSION'] = SITE_VERSION
 app.config['DISCORD_CLIENT_ID'] = site_config.get('discord', 'client_id')
-app.config['DISCORD_CLIENT_SECRET'] = "5yz_jUWFbZke5DYWfsO6LBhJuDTKhR5w"
+app.config['DISCORD_CLIENT_SECRET'] = site_config.get('discord', 'client_secret')
 if SITE_TYPE == 'Development':
     app.config['DISCORD_REDIRECT_URI'] = "http://localhost:5001/callback"
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
@@ -96,8 +96,9 @@ def identify_unattributed():
         return render_template('identify.html', item=item)
     else:
         data = request.form
-        result = logic.add_item_identification(data)
-        return render_template('identify_result.html', result=result)
+        item_id, result, _, _ = logic.add_item_identification(data)
+        item = logic.get_item_data(item_id)
+        return render_template('identify_result.html', result=result, item=item)
 
 
 @app.route("/tooltip/<item_id>", methods=['GET', 'POST'])

@@ -226,7 +226,7 @@ def add_item_identification(data, user=None):
                                 cid=contrib.get('id'),
                                 expansion=expansion,
                                 source=source,
-                                zone=zone_id)
+                                zone_id=zone_id)
             session.add(new_entry)
             session.commit()
         return item_id, False, None, None
