@@ -998,5 +998,29 @@ def get_era_id(name):
         return 18
     elif name == 'RoF':
         return 19
+    elif name == 'CoTF':
+        return 20
+    elif name == 'TDS':
+        return 21
+    elif name == 'TBM':
+        return 22
+    elif name == 'EoK':
+        return 23
+    elif name == 'RoS':
+        return 24
+    elif name == 'TBL':
+        return 25
+    elif name == 'ToV':
+        return 26
+    elif name == 'CoV':
+        return 27
+    elif name == 'ToL':
+        return 28
+    elif name == 'NoS':
+        return 29
+    elif name == 'LS':
+        return 30
+    elif name == 'TOB':
+        return 31
     else:
         raise Exception(f'Unknown era name {name}')
