@@ -1,4 +1,11 @@
+==1.7.1==
+Deployed: 3/21/2025
+CHANGES:
+* Fixed a one time error on the first time a user submits an item identification
+* Added logic to make it so that item identifications prefer ones that have partial identifications already.
+
 ==1.7==
+Deployed: 3/21/2025
 CHANGES:
 * Added 'Item Identify' "minigame"
   ** To start, select 'Item Identify' from either the landing page or the navigation bar.
