@@ -17,6 +17,11 @@ CHANGES:
   ** There is a potential for rewards for the most contributors over a period of time.
   ** The goal of this is that users will occasionally identify a couple of items in between doing other stuff.
 
+==1.6.1==
+Deployed: 3/20/225
+CHANGES:
+* Updated weighting and stat restrictions to allow for decimal or 'float' numbers (eg: 1.5, 2.66, 9.9999998)
+
 ==1.6==
 Deployed: 3/8/2025
 CHANGES:
