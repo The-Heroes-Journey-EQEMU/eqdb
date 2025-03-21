@@ -1042,6 +1042,7 @@ function createOption(ddl, text, value) {
     </table>
 </div>
 <br><br>
+<b>Cannot identify item?  No problem!  Press f5 or reload the page to get a new item.</b><br>
 <h2>Select Source Information</h2>
 <form actions="{{ url_for('item_search') }}" method="post" class="add-entry" id="demoForm">
     <input type="hidden" id="item_id" name="item_id" value="{{item.id}}">
@@ -1049,7 +1050,7 @@ function createOption(ddl, text, value) {
         <tr>
             <td>Expansion</td>
             <td>
-                <select name="expansion" id="expansion" onchange="configureDropDownLists(this,document.getElementById('zone'))">
+                <select name="expansion" id="expansion" onchange="configureDropDownLists(this,document.getElementById('zone_id'))">
                     <option value="None" selected="selected">--Select Expansion--</option>
                     <option value="Classic">Classic</option>
                     <option value="Kunark">Ruins of Kunark</option>
@@ -1071,6 +1072,19 @@ function createOption(ddl, text, value) {
                     <option value="HoT">House of Thule</option>
                     <option value="VoA">Veil of Alaris</option>
                     <option value="RoF">Rain of Fear</option>
+                    <option value="CoTF">Call of the Forsaken</option>
+                    <option value="TDS">The Darkened Sea</option>
+                    <option value="TBM">The Broken Mirror</option>
+                    <option value="EoK">Empires of Kunark</option>
+                    <option value="RoS">Ring of Scale</option>
+                    <option value="TBL">The Burning Lands</option>
+                    <option value="ToV">Torment of Velious</option>
+                    <option value="CoV">Claws of Veeshan</option>
+                    <option value="ToL">Terror of Luclin</option>
+                    <option value="NoS">Night of Shadows</option>
+                    <option value="LS">Laurion's Song</option>
+                    <option value="TOB">The Outer Brood</option>
+                    <option value="Unknown">Unknown Expansion</option>
                 </select>
             </td>
         </tr>
@@ -1082,6 +1096,7 @@ function createOption(ddl, text, value) {
                     <option value="drop">Dropped by NPC</option>
                     <option value="quest">Result of a Quest</option>
                     <option value="tradeskill">Created through Tradeskills</option>
+                    <option value="combined">Created through a non-tradeskill combination</option>
                     <option value="merchant">Sold by a merchant</option>
                     <option value="summoned">Created through using a spell or another item</option>
                     <option value="vendor">Sold by a vendor</option>
@@ -1091,8 +1106,12 @@ function createOption(ddl, text, value) {
             </td>
         </tr>
         <tr>
-            <td><abbr title="Zone is only required for drop, ground, or merchant">Zone</abbr></td>
-            <td><select name="zone" id="zone"></select></td>
+            <td>Zone</td>
+            <td>
+                <select name="zone_id" id="zone_id">
+
+                </select>
+            </td>
         </tr>
     </table>
     <input type="submit" value="Submit Item Identification">

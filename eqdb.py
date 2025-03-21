@@ -84,8 +84,9 @@ def identify_attributed():
         if data['expansion'] == 'None' and data['source'] == 'None':
             flash('You must at least specify the expansion and source for an item identification.')
             return redirect(url_for('identify_attributed'))
-        result = logic.add_item_identification(data, user=user)
-        return render_template('identify_result.html', result=result)
+        item_id, result, expansion, source = logic.add_item_identification(data, user=user)
+        item = logic.get_item_data(item_id)
+        return render_template('identify_result.html', item=item, result=result, expansion=expansion, source=source)
 
 
 @app.route("/identify/unattributed/", methods=['GET', 'POST'])

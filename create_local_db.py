@@ -198,6 +198,13 @@ def main():
             session.add(new_item)
             session.commit()
 
+    # Create the anonymous contributor
+    with Session(bind=local_engine) as session:
+        anon_contrib = Contributor(name='Anonymous',
+                                   id=-1,
+                                   contributed=1)
+        session.add(anon_contrib)
+        session.commit()
     print('Job done!')
 
 

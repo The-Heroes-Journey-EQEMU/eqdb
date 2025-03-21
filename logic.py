@@ -129,106 +129,107 @@ def _get_arg_list(tooltip=False):
 
 def add_item_identification(data, user=None):
     """Adds an item identification to the database, and does the necessary followup."""
-    # Set some variables
-    expansion = data['expansion']
-    source = data['source']
-    zone = int(data['zone'])
-    item_id = data['item_id']
-    identified = False
-    create_new_contrib = True
-
-    era_id = utils.get_era_id(expansion)
+    item_id = data.get('item_id')
+    expansion = data.get('expansion')
+    source = data.get('source')
+    zone_id = data.get('zone_id')
 
     if user:
-        uid = user.id
-        u_name = user.name
+        user_id = user.id
+        user_name = user.name
     else:
-        uid = 0
-        u_name = 'Anonymous'
+        user_id = -1
+        user_name = 'Anonymous'
 
-    # 1st, see if this item has any identifications in the id_entry table.
+    # Does this user already exist in the local db
     with Session(bind=local_engine) as session:
-        query = session.query(IDEntry).filter(IDEntry.item_id == item_id)
+        query = session.query(Contributor).filter(Contributor.id == user_id)
         result = query.all()
-    idents = []
-    if result:
-        for entry in result:
-            idents.append(entry._mapping)
 
-    # 2nd, see if this contributor, if not Anonymous, has contributed before and what their contributed status is.
-    contrib_count = 1
-    create_new_contrib = True
-    if uid > 0:
+    if not result:
+        # Add the contributor
         with Session(bind=local_engine) as session:
-            query = session.query(Contributor).filter(Contributor.id == uid)
-            result = query.all()
-        if result:
-            contrib_count = result[0]._mapping['contributed']
-            create_new_contrib = False
-
-    # 3rd, calculate if this addition puts the confidence level over 100
-    # Get all the other contributors on the items.
-    ident_cid_list = []
-    cid_filter = []
-    for entry in idents:
-        if entry['cid'] not in ident_cid_list:
-            ident_cid_list.append(ident_cid_list)
-            cid_filter.append(IDEntry.cid == entry['cid'])
-    cid_params = or_(*cid_filter)
-    with Session(bind=local_engine) as session:
-        query = session.query(Contributor).filter(cid_params)
-        result = query.all()
-    other_contrib = []
-    for entry in result:
-        other_contrib.append(entry._mapping)
-
-    # Format the data into buckets
-    combos = {{'expansion': expansion, 'source': source, 'zone': zone}: 1}
-
-    for entry in other_contrib:
-        other_combo = {'expansion': entry['expansion'],
-                       'source': entry['source'],
-                       'zone': entry['zone_id']}
-        breaker = False
-        for key in combos:
-            if key == other_combo:
-                combos[key] += entry['contributed']
-                breaker = True
-        if breaker:
-            continue
-        combos.update({other_combo: 1})
-    print(combos)
-
-    # Check all the combos
-    for combo in combos:
-        if combos[combo] >= 100:
-            identified = True
-
-    if identified:
-        # 3rd, A, 1 Congratulations, it did!
-        # 3rd, A, 2 Add this item to the identified with the expansion and source to the Identified Items table
-        with Session(bind=local_engine) as session:
-            new_item = IdentifiedItems(item_id=item_id,
-                                       expansion=era_id,
-                                       source=source,
-                                       zone_id=zone)
-            session.add(new_item)
+            new_contrib = Contributor(name=user_name,
+                                      id=user_id,
+                                      contributed=1)
+            session.add(new_contrib)
             session.commit()
-        # 3rd, A, 3 All contributors get a +1 to their contributed field.
-        for entry in other_contrib:
-            new_contrib_count = entry['contributed'] + 1
-            with Session(bind=local_engine) as session:
-                session.query(Contributor).filter(Contributor.cid == entry.cid).\
-                       update({'contributed': new_contrib_count})
+            contrib = new_contrib.__dict__
+    else:
+        contrib = result[0].__dict__
+
+    # Does this item have existing identifications
+    with Session(bind=local_engine) as session:
+        args = [IDEntry.expansion, IDEntry.source, IDEntry.item_id, Contributor.contributed, Contributor.id]
+        query = session.query(*args).filter(IDEntry.item_id == item_id).filter(IDEntry.cid == Contributor.id)
+        result = query.all()
+
+    existing_entries = result
+
+    # Create the data matrix
+    idents = [{'expansion': expansion, 'source': source, 'zone': zone_id}]
+    ident_amt = [contrib.get('contributed')]
+    for entry in result:
+        test_key = {'expansion': entry.get('expansion'), 'source': entry.get('source'), 'zone': entry.get('zone_id')}
+        if test_key in idents:
+            idx = idents.index(test_key)
+            new_val = ident_amt[idx] + entry.get('contributed')
+            ident_amt[idx] = new_val
+        else:
+            idents.append(test_key)
+            ident_amt.append(entry.get('contributed'))
+
+    # Check if we now have an identification:
+    identification = None
+    for entry in ident_amt:
+        if entry >= 100:
+            idx = ident_amt.index(entry)
+            identification = idents[idx]
+            break
+
+    if identification is not None:
+        # Update all the contributors contributions
+        with Session(bind=local_engine) as session:
+            for entry in existing_entries:
+                if entry.id == -1:
+                    continue
+                obj = session.query(Contributor).filter(Contributor.id == entry.get('id'))
+                obj.update({'contributed': entry.get('contributed') + 1})
+                session.commit()
+            if user_id != -1:
+                obj = session.query(Contributor).filter(Contributor.id == user_id)
+                obj.update({'contributed': contrib.get('contributed') + 1})
                 session.commit()
 
-        # 3rd, A, 4 Remove this item from both unidentified items and identification tables.
+        # Add this item to identified items.
+        with Session(bind=local_engine) as session:
+            new_item = IdentifiedItems(item_id=item_id,
+                                       expansion=identification.get('expansion'),
+                                       source=identification.get('source'),
+                                       zone_id=identification.get('zone_id'))
+            session.add(new_item)
+            session.commit()
 
+        # Remove the item from existing identifications
+        with Session(bind=local_engine) as session:
+            for entry in existing_entries:
+                obj = IDEntry.query.filter_by(item_id == entry.get('item_id'))
+                session.delete(obj)
+                session.commit()
 
-    # 3rd, A, 5 Report back to the user the happy news
-    # 3rd, B, 1 It's just a regular contribution.  If the item doesn't exist in unidentified_items, add it to that table.
-    # 3rd, B, 2 Add the contribution to the identification table.
-    # 3rd, B, 3 Report back to the user the regular news.
+        # Report back
+        return item_id, True, expansion, source
+    else:
+        # Add this to Idents
+        with Session(bind=local_engine) as session:
+            new_entry = IDEntry(item_id=item_id,
+                                cid=contrib.get('id'),
+                                expansion=expansion,
+                                source=source,
+                                zone=zone_id)
+            session.add(new_entry)
+            session.commit()
+        return item_id, False, None, None
 
 
 def get_unidentified_item():
