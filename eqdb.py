@@ -246,7 +246,7 @@ def item_search():
                 continue
 
             filters.update({
-                request.form[thing]: int(request.form[thing_val])})
+                request.form[thing]: float(request.form[thing_val])})
             if 'reduce_restrict' in request.form:
                 reduce_changed = True
                 reduce_restrictions.update({request.form[thing]: True})
@@ -267,7 +267,7 @@ def item_search():
             if 'none' in request.form[thing]:
                 continue
             weights.update({
-                request.form[thing]: int(request.form[thing_val])})
+                request.form[thing]: float(request.form[thing_val])})
             if 'show_weight_detail' in request.form:
                 reduce_changed = True
                 reduce_restrictions.update({request.form[thing]: True})
