@@ -955,3 +955,48 @@ def check_sympathetic(name):
         return f'{split_name[0]}{split_name[1]}'
     else:
         return name
+
+
+def get_era_id(name):
+    if name == 'Classic':
+        return 0
+    elif name == 'Kunark':
+        return 1
+    elif name == 'Velious':
+        return 2
+    elif name == 'Luclin':
+        return 3
+    elif name == 'Planes':
+        return 4
+    elif name == 'Ykesha':
+        return 5
+    elif name == 'LDoN':
+        return 6
+    elif name == 'GoD':
+        return 7
+    elif name == 'OoW':
+        return 8
+    elif name == 'DoN':
+        return 9
+    elif name == 'DoDH':
+        return 10
+    elif name == 'PoR':
+        return 11
+    elif name == 'TSS':
+        return 12
+    elif name == 'TBS':
+        return 13
+    elif name == 'SoF':
+        return 14
+    elif name == 'SoD':
+        return 15
+    elif name == 'UF':
+        return 16
+    elif name == 'HoT':
+        return 17
+    elif name == 'VoA':
+        return 18
+    elif name == 'RoF':
+        return 19
+    else:
+        raise Exception(f'Unknown era name {name}')

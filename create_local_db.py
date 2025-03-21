@@ -50,7 +50,6 @@ class IdentifiedItems(LocalBase):
     expansion = Column(Integer)
     source = Column(String)
     zone_id = Column(Integer)
-    npc_id = Column(Integer)
 
 
 class Contributor(LocalBase):
@@ -61,12 +60,6 @@ class Contributor(LocalBase):
     contributed = Column(Integer)
 
 
-class UnidentifiedItems(LocalBase):
-    __tablename__ = 'unidentified_items'
-    uiid = Column(Integer, primary_key=True)
-    item_id = Column(Integer, unique=True)
-
-
 class IDEntry(LocalBase):
     __tablename__ = 'id_entry'
     ideid = Column(Integer, primary_key=True)
@@ -75,8 +68,6 @@ class IDEntry(LocalBase):
     expansion = Column(Integer)
     source = Column(String)
     zone_id = Column(Integer)
-    justification = Column(String)
-    justification_data = Column(String)
 
 
 def _get_link_filters():
@@ -151,8 +142,7 @@ def main():
                     new_item = IdentifiedItems(item_id=item_id,
                                                expansion=era_id,
                                                source=source,
-                                               zone_id=zone_id,
-                                               npc_id=npc_id)
+                                               zone_id=zone_id)
                     session.add(new_item)
                     session.commit()
 
@@ -186,10 +176,27 @@ def main():
                     new_item = IdentifiedItems(item_id=item_id,
                                                expansion=era_id,
                                                source=source,
-                                               zone_id=zone_id,
-                                               npc_id=npc_id)
+                                               zone_id=zone_id)
                     session.add(new_item)
                     session.commit()
+
+    # Add all the glamour stones as classic items
+    with Session(bind=engine) as session:
+        query = session.query(Item.id).filter(Item.Name.like("%%Glamour-stone%%"))
+        result = query.all()
+
+    with Session(bind=local_engine) as session:
+        for entry in result:
+            query = session.query(IdentifiedItems.item_id).filter(IdentifiedItems.item_id == entry[0])
+            result = query.all()
+            if result:
+                continue
+            new_item = IdentifiedItems(item_id=entry[0],
+                                       expansion=0,
+                                       source='Quest',
+                                       zone_id=151)
+            session.add(new_item)
+            session.commit()
 
     print('Job done!')
 

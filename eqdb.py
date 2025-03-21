@@ -16,20 +16,22 @@ site_config.read_file(open(ini_path))
 
 SITE_TYPE = site_config.get('DEFAULT', 'site_type')
 SITE_VERSION = site_config.get('DEFAULT', 'site_version')
-if SITE_VERSION == 'Development':
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
 
 app = Flask(__name__)
 fh = logging.FileHandler(site_config.get('path', 'flask_log'))
 app.logger.addHandler(fh)
-app.secret_key = ('\x1esN\x15X\xd8\xcc\xb1\x9a\xd2\xb4\x17\xa0`\x15?\x9b\x12'
-                  '\x89\xeb\x88\x84\xe6\x00')
+app.secret_key = ('this_is_a_secret')
 app.config['SITE_TYPE'] = SITE_TYPE
 app.config['SITE_VERSION'] = SITE_VERSION
-app.config['DISCORD_CLIENT_ID'] = site_config.get('DISCORD', 'client_id')
-app.config['DISCORD_CLIENT_SECRET'] = ""
-app.config['DISCORD_REDIRECT_URI'] = ""
+app.config['DISCORD_CLIENT_ID'] = site_config.get('discord', 'client_id')
+app.config['DISCORD_CLIENT_SECRET'] = "5yz_jUWFbZke5DYWfsO6LBhJuDTKhR5w"
+if SITE_TYPE == 'Development':
+    app.config['DISCORD_REDIRECT_URI'] = "http://localhost:5001/callback"
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = "true"
+else:
+    app.config['DISCORD_REDIRECT_URI'] = "https://eqdb.net/callback"
 app.config['DISCORD_BOT_TOKEN'] = ""
+
 
 discord = DiscordOAuth2Session(app)
 
@@ -53,6 +55,12 @@ def login():
     return discord.create_session()
 
 
+@app.route("/callback/")
+def callback():
+    discord.callback()
+    return redirect(url_for("identify_attributed"))
+
+
 @app.route("/identify/")
 def identify():
     return render_template('identify_landing.html')
@@ -66,10 +74,25 @@ def redirect_unauthorized(e):
 @app.route("/identify/attributed/", methods=['GET', 'POST'])
 @requires_authorization
 def identify_attributed():
+    user = discord.fetch_user()
     if request.method == 'GET':
         item = logic.get_unidentified_item()
-        user = discord.fetch_user()
-        return render_template('identify', user=user, item=item)
+        return render_template('identify.html', item=item)
+    else:
+        data = request.form
+        # Do some validation
+        if data['expansion'] == 'None' and data['source'] == 'None':
+            flash('You must at least specify the expansion and source for an item identification.')
+            return redirect(url_for('identify_attributed'))
+        result = logic.add_item_identification(data, user=user)
+        return render_template('identify_result.html', result=result)
+
+
+@app.route("/identify/unattributed/", methods=['GET', 'POST'])
+def identify_unattributed():
+    if request.method == 'GET':
+        item = logic.get_unidentified_item()
+        return render_template('identify.html', item=item)
     else:
         data = request.form
         result = logic.add_item_identification(data)
