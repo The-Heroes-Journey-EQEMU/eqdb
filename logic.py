@@ -45,11 +45,17 @@ NPCTypes = Base.classes.npc_types
 LootTableEntries = Base.classes.loottable_entries
 LootDropEntries = Base.classes.lootdrop_entries
 SpellsNewReference = Base.classes.spells_new_reference
+SpellsNew = Base.classes.spells_new
 FocusSpell = aliased(SpellsNewReference)
+FocusSpellNew = aliased(SpellsNew)
 ClickSpell = aliased(SpellsNewReference)
+ClickSpellNew = aliased(SpellsNew)
 ProcSpell = aliased(SpellsNewReference)
+ProcSpellNew = aliased(SpellsNew)
 WornSpell = aliased(SpellsNewReference)
+WornSpellNew = aliased(SpellsNew)
 BardSpell = aliased(SpellsNewReference)
+BardSpellNew = aliased(SpellsNew)
 
 IdentifiedItems = LocalBase.classes.identified_items
 IDEntry = LocalBase.classes.id_entry
@@ -127,6 +133,26 @@ def _get_arg_list(tooltip=False):
     return arg_list
 
 
+def get_leaderboard():
+    """Gets the data identification leaderboard"""
+    # Get all contributors
+    with Session(bind=local_engine) as session:
+        query = session.query(Contributor)
+        result = query.all()
+
+    contributors = []
+    for entry in result:
+        entry = entry.__dict__
+        contributor = {'contributor': entry['name'], 'contributed': entry['contributed']}
+        with Session(bind=local_engine) as session:
+            query = session.query(IDEntry).filter(IDEntry.cid == entry['id'])
+            result = query.all()
+        contributor.update({'identifications': len(result)})
+        contributors.append(contributor)
+
+    return contributors
+
+
 def add_item_identification(data, user=None):
     """Adds an item identification to the database, and does the necessary followup."""
     item_id = data.get('item_id')
@@ -201,6 +227,7 @@ def add_item_identification(data, user=None):
                 obj = session.query(Contributor).filter(Contributor.id == user_id)
                 obj.update({'contributed': contrib.get('contributed') + 1})
                 session.commit()
+                contrib['contributed'] += 1
 
         # Add this item to identified items.
         with Session(bind=local_engine) as session:
@@ -219,7 +246,10 @@ def add_item_identification(data, user=None):
                 session.commit()
 
         # Report back
-        return item_id, True, expansion, source
+        ret_dict = {'item_id': item_id,
+                    'result': True,
+                    'expansion': expansion,
+                    'source': source}
     else:
         # Add this to Idents
         with Session(bind=local_engine) as session:
@@ -230,7 +260,19 @@ def add_item_identification(data, user=None):
                                 zone_id=zone_id)
             session.add(new_entry)
             session.commit()
-        return item_id, False, None, None
+        ret_dict = {'item_id': item_id,
+                    'result': False,
+                    'expansion': None,
+                    'source': None}
+    if user:
+        # Get the number of identifications the user has submitted
+        with Session(bind=local_engine) as session:
+            query = session.query(IDEntry.item_id).filter(IDEntry.cid == user.id)
+            result = query.all()
+
+        ret_dict.update({'user_contrib': contrib.get('contributed'),
+                         'user_identify': len(result)})
+    return ret_dict
 
 
 def get_unidentified_item(user=None):
@@ -307,22 +349,37 @@ def get_item_data(item_id):
         if worn > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
             result = query.all()
+            if not result:
+                query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
+                result = query.all()
             ret_dict['worn_name'] = result[0][0]
         if proc > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
             result = query.all()
+            if not result:
+                query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
+                result = query.all()
             ret_dict['proc_name'] = result[0][0]
         if click > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
             result = query.all()
+            if not result:
+                query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
+                result = query.all()
             ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
         if focus > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
+            if not result:
+                query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
+                result = query.all()
             ret_dict['focus_name'] = result[0][0]
         if inst > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
             result = query.all()
+            if not result:
+                query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
+                result = query.all()
             ret_dict['inst_name'] = result[0][0]
         if banebody > 0:
             ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)

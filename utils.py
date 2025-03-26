@@ -1022,5 +1022,7 @@ def get_era_id(name):
         return 30
     elif name == 'TOB':
         return 31
+    elif name == 'Unknown':
+        return 999
     else:
         raise Exception(f'Unknown era name {name}')

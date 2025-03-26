@@ -84,9 +84,9 @@ def identify_attributed():
         if data['expansion'] == 'None' and data['source'] == 'None':
             flash('You must at least specify the expansion and source for an item identification.')
             return redirect(url_for('identify_attributed'))
-        item_id, result, expansion, source = logic.add_item_identification(data, user=user)
-        item = logic.get_item_data(item_id)
-        return render_template('identify_result.html', item=item, result=result, expansion=expansion, source=source)
+        data = logic.add_item_identification(data, user=user)
+        item = logic.get_item_data(data.get('item_id'))
+        return render_template('identify_result.html', item=item, data=data)
 
 
 @app.route("/identify/unattributed/", methods=['GET', 'POST'])
@@ -96,9 +96,15 @@ def identify_unattributed():
         return render_template('identify.html', item=item)
     else:
         data = request.form
-        item_id, result, _, _ = logic.add_item_identification(data)
-        item = logic.get_item_data(item_id)
-        return render_template('identify_result.html', result=result, item=item)
+        data = logic.add_item_identification(data)
+        item = logic.get_item_data(data.get('item_id'))
+        return render_template('identify_result.html', item=item, data=data)
+
+
+@app.route("/identify/leaderboard/", methods=['GET'])
+def identify_leaderboard():
+    data = logic.get_leaderboard()
+    return render_template('identify_leaderboard.html', data=data)
 
 
 @app.route("/tooltip/<item_id>", methods=['GET', 'POST'])
