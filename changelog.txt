@@ -1,3 +1,10 @@
+==1.7.2==
+Deployed: 3/26/2025
+CHANGES:
+* Added personal item identification statistics when you complete a submission.
+* Added an item identification leaderboard for both contributions and identifications.
+* Fixed a bug with tooltips referencing the wrong spell table.
+
 ==1.7.1==
 Deployed: 3/21/2025
 CHANGES:
