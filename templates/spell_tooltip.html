@@ -30,7 +30,7 @@
     {% if entry %}
     <tr>
         <td>{{entry.replace('_', '')}}</td>
-        <td>{{slots[entry]}}</td>
+        <td>{{slots[entry]|safe}}</td>
     </tr>
     {% endif %}
     {% endfor %}
