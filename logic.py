@@ -138,6 +138,16 @@ def get_leaderboard():
     return contributors
 
 
+def get_spell_raw_data(spell_id):
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+        result = query.one()
+
+    ret_dict = result.__dict__
+    ret_dict.pop('_sa_instance_state')
+    return ret_dict
+
+
 def get_spells(spell_name):
     with Session(bind=engine) as session:
         partial = "%%%s%%" % (spell_name)

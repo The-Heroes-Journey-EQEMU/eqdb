@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+<center><h2>"{{data['name']}}" Raw Data</h2></center>
+{% set rower = namespace(value=0) %}
+<table style="width: 100%;">
+    {% for key, value in data.items()|sort(attribute='0') %}
+        {% if rower.value == 0 %}
+        <tr>
+            <td><b>{{key}}</b></td>
+            <td>{{value}}</td>
+            {% set rower.value = 1 %}
+        {% elif rower.value == 1 %}
+            <td><b>{{key}}</b></td>
+            <td>{{value}}</td>
+            {% set rower.value = 2 %}
+        {% elif rower.value == 2 %}
+            <td><b>{{key}}</b></td>
+            <td>{{value}}</td>
+            {% set rower.value = 3 %}
+        {% elif rower.value == 3 %}
+            <td><b>{{key}}</b></td>
+            <td>{{value}}</td>
+        </tr>
+        {% set rower.value = 0 %}
+        {% endif %}
+    {% endfor %}
+</table>
+{% endblock %}

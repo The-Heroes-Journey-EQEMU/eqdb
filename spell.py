@@ -35,7 +35,8 @@ def get_spell_data(spell_id, engine, basic_data=True):
                 'resist': parse_resist(result.resisttype, result.ResistDiff),
                 'skill': parse_skill(result.skill),
                 'classes': parse_classes(result),
-                'target_type': parse_target_type(int(result.targettype))}
+                'target_type': parse_target_type(int(result.targettype)),
+                'aoe_range': result.aoerange}
         if result.buffdurationformula > 0:
             base.update({'min_duration': parse_duration(result)}),
             base.update({'max_duration': parse_duration(result, min=False)})
@@ -139,7 +140,16 @@ def parse_slot_data(idx, data, engine):
     max_val = getattr(data, f'max{idx}')
     formula = getattr(data, f'formula{idx}')
     min_level = get_spell_min_level(data)
+    ret_data = {'spa': spa,
+                'base_value': min_val,
+                'max': max_val,
+                'limit_value': limit_val,
+                'formula': formula}
+    ret_data.update({'desc': translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, data)})
+    return ret_data
 
+
+def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, data):
     if spa == 0:
         # HP
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)

@@ -4,11 +4,12 @@
 <br>
 <h3>Spell Effects</h3>
 <table>
-    {% for entry in slots %}
-    {% if slots[entry] is not none %}
+    {% for entry in slots.keys() %}
+    {% if slots[entry]['desc'] is not none %}
     <tr>
-        <td>{{entry.replace('_', '')}}</td>
-        <td>{{slots[entry]|safe}}</td>
+        <td>
+            <abbr title="spa={{slots[entry]['spa']}}, base_value={{slots[entry]['base_value']}}, max={{slots[entry]['max']}}, limit_value={{slots[entry]['limit_value']}}, formula={{slots[entry]['formula']}}">{{entry.replace('_', '')}}</abbr></td>
+        <td>{{slots[entry]['desc']|safe}}</td>
     </tr>
     {% endif %}
     {% endfor %}
@@ -35,9 +36,10 @@
     <tr>
         <td><b>Range</b></td>
         <td>{{data.range}}</td>
+        <td><b>AOE Range</b></td>
+        <td>{{data.aoe_range}}</td>
         <td><b>Type</b></td>
         <td>{{data.target_type}}</td>
-        <td></td><td></td>
     </tr>
     {% if data.min_duration %}
     <tr>
@@ -55,6 +57,10 @@
         <td>Soandso{{data.on_other}}</td>
         <td><b>Fades</b></td>
         <td>{{data.on_fade}}</td>
+    </tr>
+    <tr>
+        <td><b>Raw Data</b></td>
+        <td><a href="{{url_for('spell_raw', spell_id=data.id)}}">Raw Data</td>
     </tr>
 </table>
 {% if data.classes %}

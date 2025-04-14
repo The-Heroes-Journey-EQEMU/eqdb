@@ -168,6 +168,12 @@ def spell_detail(spell_id):
     return render_template('spell_detail.html', data=base_data, slots=slots)
 
 
+@app.route("/spell/raw/<int:spell_id>")
+def spell_raw(spell_id):
+    raw_data = logic.get_spell_raw_data(spell_id)
+    return render_template('spell_raw.html', data=raw_data)
+
+
 @app.route("/search/item", methods=['POST'])
 def item_search():
     # Do some validations
