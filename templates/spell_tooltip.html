@@ -25,12 +25,12 @@
     }
 </style>
 <div class="" id="" style="width: 450px;">
-    <table class="item-card">
-    {% for entry in slots %}
-    {% if entry %}
+<table class="item_card">
+    {% for entry in slots.keys() %}
+    {% if slots[entry]['desc'] is not none %}
     <tr>
         <td>{{entry.replace('_', '')}}</td>
-        <td>{{slots[entry]|safe}}</td>
+        <td>{{slots[entry]['desc']|safe}}</td>
     </tr>
     {% endif %}
     {% endfor %}
