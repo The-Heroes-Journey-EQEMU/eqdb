@@ -1,6 +1,10 @@
 {% extends "layout.html" %}
 {% block body %}
-<center><h2>"{{data['name']}}" Raw Data</h2></center>
+{% if 'name' in data %}
+    <center><h2>"{{data['name']}}" Raw Data</h2></center>
+{% elif 'Name' in data %}
+    <center><h2>"{{data['Name']}}" Raw Data</h2></center>
+{% endif %}
 {% set rower = namespace(value=0) %}
 <table style="width: 100%;">
     {% for key, value in data.items()|sort(attribute='0') %}

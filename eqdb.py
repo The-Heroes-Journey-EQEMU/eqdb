@@ -153,6 +153,18 @@ def tester():
     return render_template('debugger.html', data=data, slots=slots)
 
 
+@app.route("/item/detail/<int:item_id>")
+def item_detail(item_id):
+    data = logic.get_item_data(item_id)
+    return render_template('item_detail.html', item=data)
+
+
+@app.route("/item/raw/<int:item_id>")
+def item_raw(item_id):
+    raw_data = logic.get_item_raw_data(item_id)
+    return render_template('raw_data.html', data=raw_data)
+
+
 @app.route("/search/spell", methods=['GET', 'POST'])
 def spell_search():
     if request.method == 'GET':
@@ -171,7 +183,7 @@ def spell_detail(spell_id):
 @app.route("/spell/raw/<int:spell_id>")
 def spell_raw(spell_id):
     raw_data = logic.get_spell_raw_data(spell_id)
-    return render_template('spell_raw.html', data=raw_data)
+    return render_template('raw_data.html', data=raw_data)
 
 
 @app.route("/search/item", methods=['POST'])

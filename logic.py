@@ -89,7 +89,7 @@ def _get_arg_list(tooltip=False):
                 Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
-                Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate]
+                Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -137,6 +137,16 @@ def get_leaderboard():
         contributors.append(contributor)
 
     return contributors
+
+
+def get_item_raw_data(item_id):
+    with Session(bind=engine) as session:
+        query = session.query(Item).filter(Item.id == item_id)
+        result = query.one()
+
+    ret_dict = result.__dict__
+    ret_dict.pop('_sa_instance_state')
+    return ret_dict
 
 
 def get_spell_raw_data(spell_id):
@@ -341,7 +351,7 @@ def get_unidentified_item(user=None):
         return get_item_data(result[0][0])
 
 
-def get_item_data(item_id):
+def get_item_data(item_id, full=False):
     """Returns the basic data for an item, used for tooltips."""
 
     with Session(bind=engine) as session:
@@ -423,6 +433,18 @@ def get_item_data(item_id):
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
     ret_dict['type_str'] = utils.get_type_string(ret_dict['itemtype'])
+    ret_dict['thj_enabled'] = False
+    if item_id < 1000000:
+        # See if Enchanted and Legendary exist
+        with Session(bind=engine) as session:
+            ench = item_id + 1000000
+            lego = item_id + 2000000
+            query = session.query(Item.id).filter(or_(Item.id == ench, Item.id == lego))
+            result = query.all()
+            if len(result) == 2:
+                ret_dict['thj_enabled'] = True
+    elif item_id > 1000000:
+        ret_dict['thj_enabled'] = True
     return ret_dict
 
 
