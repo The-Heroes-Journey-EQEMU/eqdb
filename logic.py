@@ -24,7 +24,8 @@ host = site_config.get('database', 'host')
 port = site_config.get('database', 'port')
 
 engine = create_engine(f'{driver}{user}:{password}@{host}:{port}/{database}')
-local_engine = create_engine('sqlite:///local_db.db')
+local_database = site_config.get('local_database', 'connection')
+local_engine = create_engine(local_database)
 
 Base = automap_base()
 LocalBase = automap_base()
