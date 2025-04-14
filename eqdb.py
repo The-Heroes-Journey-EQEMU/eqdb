@@ -8,6 +8,8 @@ import logic
 
 from flask import Flask, render_template, request, flash, redirect, url_for
 
+import spell
+
 # Application Setup
 here = os.path.dirname(__file__)
 site_config = configparser.RawConfigParser()
@@ -112,6 +114,12 @@ def tooltip(item_id):
     return render_template('tooltip.html', item=logic.get_item_data(item_id))
 
 
+@app.route("/spell-tooltip/<spell_id>", methods=['GET', 'POST'])
+def spell_tooltip(spell_id):
+    _, slots = logic.get_spell_tooltip(spell_id)
+    return render_template('spell_tooltip.html', slots=slots)
+
+
 @app.route("/about", methods=['GET'])
 def about():
     with open(os.path.join(here, 'about.txt'), 'r') as fh:
@@ -141,8 +149,23 @@ def tester():
     if SITE_TYPE != 'Development':
         flash("Unauthorized")
         return redirect(url_for('error'))
-    data = logic._debugger()
-    return render_template('blank.html', data=data)
+    data, slots = logic._debugger()
+    return render_template('debugger.html', data=data, slots=slots)
+
+
+@app.route("/search/spell", methods=['GET', 'POST'])
+def spell_search():
+    if request.method == 'GET':
+        return render_template('spell_search.html')
+    else:
+        data = logic.get_spells(request.form['spell_name'])
+        return render_template('spell_search_result.html', data=data)
+
+
+@app.route("/spell/detail/<int:spell_id>")
+def spell_detail(spell_id):
+    base_data, slots = logic.get_spell_data(spell_id)
+    return render_template('spell_detail.html', data=base_data, slots=slots)
 
 
 @app.route("/search/item", methods=['POST'])

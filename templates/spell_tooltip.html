@@ -1,0 +1,38 @@
+<style>
+    .item-card {
+        border: 1px solid transparent;
+        border-collapse: collapse;
+    }
+
+    .item-card td, item-card th {
+        border: 1px solid transparent;
+        vertical-align: top;
+        padding-top: 1px;
+    }
+
+    td > table {
+        width: 100%;
+        height: 100%;
+        border-collapse: collapse;
+    }
+
+    td > table td {
+        vertical-align: top;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+</style>
+<div class="" id="" style="width: 450px;">
+    <table class="item-card">
+    {% for entry in slots %}
+    {% if entry %}
+    <tr>
+        <td>{{entry.replace('_', '')}}</td>
+        <td>{{slots[entry]}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+</div>

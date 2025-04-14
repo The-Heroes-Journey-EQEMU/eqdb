@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block body %}
+<center><h2>{{data.name}}</h2></center>
+<br>
+<h3>Spell Effects</h3>
+<table>
+    {% for entry in slots %}
+    {% if slots[entry] is not none %}
+    <tr>
+        <td>{{entry.replace('_', '')}}</td>
+        <td>{{slots[entry]|safe}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table><br>
+<h3>Spell Basic Data</h3>
+<br>
+<table style="width:50%">
+    <tr>
+        <td><b>Name</b></td>
+        <td>{{data.name}}</td>
+        <td><b>Mana</b></td>
+        <td>{{data.mana}}</td>
+        <td><b>Skill</b></td>
+        <td>{{data.skill}}</td>
+    </tr>
+    <tr>
+        <td><b>Cast Time</b></td>
+        <td>{{data.cast_time}} sec</td>
+        <td><b>Recast Time</b></td>
+        <td>{{data.recast_time}} sec</td>
+        <td><b>Resist</b></td>
+        <td>{{data.resist}}</td>
+    </tr>
+    <tr>
+        <td><b>Range</b></td>
+        <td>{{data.range}}</td>
+        <td><b>Type</b></td>
+        <td>{{data.target_type}}</td>
+        <td></td><td></td>
+    </tr>
+    {% if data.min_duration %}
+    <tr>
+        <td><b>Min. Duration</b></td>
+        <td>{{data.min_duration}}</td>
+        <td><b>Max. Duration</b></td>
+        <td>{{data.max_duration}}</td>
+        <td><td></td></td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="word-wrap: break-word; max-width: 150px;"><b>Cast On You</b></td>
+        <td>{{data.on_you}}</td>
+        <td><b>Cast on Other</b></td>
+        <td>Soandso{{data.on_other}}</td>
+        <td><b>Fades</b></td>
+        <td>{{data.on_fade}}</td>
+    </tr>
+</table>
+{% if data.classes %}
+<br>Classes<br>
+{% for entry in data.classes %}
+<li>{{entry}}</li>
+{% endfor %}
+{% endif %}
+{% endblock %}

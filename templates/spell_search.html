@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+<script>
+function checkSubmit(e) {
+	if(e && e.keyCode == 13) {
+		document.forms[0].submit();
+	}
+}
+</script>
+<script>
+$(document).ready(function() {
+
+    $('textarea').keypress(function(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
+    });
+});
+
+
+</script>
+<form actions="{{ url_for('spell_search') }}" method="post" class="add-entry" id="demoForm">
+    Item Name (partial allowed): <textarea rows="1" class="nameentry" name="spell_name"
+                                           onKeyPress="return checkSubmit(event)"></textarea><br>
+<input type="submit" value="Search">
+</form>
+{% endblock %}

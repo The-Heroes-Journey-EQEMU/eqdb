@@ -53,6 +53,28 @@
         });
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.spell-tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
 <table class="mediumfont table table-bordered" id="items">
     <thead>
     <th>Name</th>
@@ -341,7 +363,7 @@
         <td></td>
         <td></td>
         {% else %}
-        <td><a href="https://thjdi.cc/spell/{{entry.focus_id}}">{{entry.focus_spell_name}}</a></td>
+        <td><a href="/spell/detail/{{entry.focus_id}}" data-url="{{entry.focus_id}}" class="spell-tooltip-link">{{entry.focus_spell_name}}</a></td>
          <td>{{entry.focus_type}}</td>
          <td>{{entry.sub_focus}}</td>
         {% if entry.focus_max_val|int < entry.focus_min_val|int %}
@@ -353,23 +375,23 @@
         {% endif %}
          {% if show_worn and show_spells %}
           {% if entry.worn_name %}
-          <td><a href="https://thjdi.cc/spell/{{entry.worn_id}}">{{entry.worn_name}}</a></td>
+          <td><a href="/spell/detail/{{entry.worn_id}}" data-url="{{entry.worn_id}}" class="spell-tooltip-link">{{entry.worn_name}}</a></td>
           {% else %}
           <td></td>
           {% endif %}
         {% endif %}
         {% if show_inst and show_spells %}
         {% if entry.inst_name %}
-        <td><a href="https://thjdi.cc/spell/{{entry.inst_id}}">{{entry.inst_name}}</a></td>
+        <td><a href="/spell/detail/{{entry.inst_id}}" data-url="{{entry.inst_id}}" class="spell-tooltip-link">{{entry.inst_name}}</a></td>
         {% else %}
         <td></td>
         {% endif %}
         {% endif %}
         {% if show_click %}
-        <td><a href="https://thjdi.cc/spell/{{entry.click_id}}">{{entry.click_name}}</a></td>
+        <td><a href="/spell/detail/{{entry.click_id}}" data-url="{{entry.click_id}}" class="spell-tooltip-link">{{entry.click_name}}</a></td>
         {% endif %}
         {% if show_proc %}
-        <td><a href="https://thjdi.cc/spell/{{entry.proc_id}}">{{entry.proc_name}}</a></td>
+        <td><a href="/spell/detail/{{entry.proc_id}}" data-url="{{entry.proc_id}}" class="spell-tooltip-link">{{entry.proc_name}}</a></td>
         {% endif %}
     </tr>
 {% endfor %}

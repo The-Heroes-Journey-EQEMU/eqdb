@@ -1,3 +1,18 @@
+==0.2.0.0==
+* Removed changes/planned information separators, it's not needed.
+* Added new functionality: Spell Detail
+    ** This page will display details on a Spell pulled from the database.
+    ** Includes parsing of SPA data to make it human readible
+* Added new functionality: Spell Tooltip
+    ** All spell displays on the site have been updated to use spell tooltips that show a condensed version of spell detail
+* Added new functionality: Spell Search
+    ** Allows users to search for spells with the following filtering
+        *** Expansion
+        *** Level Min
+        *** Level Max
+        *** Source (Dropped/Sold/Quested)
+        *** Player Usable / NPC only
+        
 ==1.7.2==
 Deployed: 3/26/2025
 CHANGES:

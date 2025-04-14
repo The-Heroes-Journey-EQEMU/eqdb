@@ -1,8 +1,8 @@
 """Utilities for EQDB"""
 import os
 
-from sqlalchemy import create_engine, and_, or_, Column, Integer
-from sqlalchemy.orm import Session, aliased
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
 
 here = os.path.dirname(__file__)
 

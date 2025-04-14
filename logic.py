@@ -4,6 +4,7 @@ import datetime
 import operator
 import os
 import random
+
 import utils
 
 from sqlalchemy import create_engine, and_, or_, Column, Integer
@@ -61,28 +62,12 @@ IdentifiedItems = LocalBase.classes.identified_items
 IDEntry = LocalBase.classes.id_entry
 Contributor = LocalBase.classes.contributor
 
+# Important that this goes here
+import spell
+
 
 def _debugger():
-    data = []
-    args = [Item.id.label('item_id'), Item.Name.label('item_name'), Item.heroic_int.label('item_heroic_int'),
-            FocusSpell.id.label('focus_id'),
-            FocusSpell.name.label('focus_name'),
-            ClickSpell.id.label('click_id'),
-            ClickSpell.name.label('click_name'),
-            ProcSpell.id.label('proc_id'),
-            ProcSpell.id.label('proc_name')]
-    with Session(bind=engine) as session:
-        query = session.query(*args).\
-            join(FocusSpell, FocusSpell.id == Item.focuseffect, isouter=True).\
-            join(ClickSpell, ClickSpell.id == Item.clickeffect, isouter=True).\
-            join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True).\
-            filter(Item.id.in_(session.query(Item.id + 2000000).filter(or_((Item.id == 1001), (Item.id == 26778), (Item.id == 1154), (Item.id == 7825))))).\
-            group_by(Item.id)
-        result = query.all()
-
-    for entry in result:
-        data.append(entry._mapping)
-    return data
+    return spell.get_spell_data(6561, engine)
 
 
 def _get_link_filters():
@@ -151,6 +136,29 @@ def get_leaderboard():
         contributors.append(contributor)
 
     return contributors
+
+
+def get_spells(spell_name):
+    with Session(bind=engine) as session:
+        partial = "%%%s%%" % (spell_name)
+        query = session.query(SpellsNewReference.id, SpellsNewReference.name).filter(SpellsNewReference.name.like(partial))
+        result = query.all()
+
+    out_data = []
+    for entry in result:
+        spell_id = entry[0]
+        name = entry[1]
+        out_data.append({'spell_id': spell_id,
+                         'name': name})
+    return out_data
+
+
+def get_spell_data(spell_id):
+    return spell.get_spell_data(spell_id, engine)
+
+
+def get_spell_tooltip(spell_id):
+    return spell.get_spell_data(spell_id, engine, basic_data=False)
 
 
 def add_item_identification(data, user=None):
