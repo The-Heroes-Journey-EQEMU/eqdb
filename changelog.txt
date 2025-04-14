@@ -6,12 +6,7 @@
 * Added new functionality: Spell Tooltip
     ** All spell displays on the site have been updated to use spell tooltips that show a condensed version of spell detail
 * Added new functionality: Spell Search
-    ** Allows users to search for spells with the following filtering
-        *** Expansion
-        *** Level Min
-        *** Level Max
-        *** Source (Dropped/Sold/Quested)
-        *** Player Usable / NPC only
+    ** At this time, spell search is limited to the name.  As data becomes available, additional functionality may be added.
         
 ==1.7.2==
 Deployed: 3/26/2025
