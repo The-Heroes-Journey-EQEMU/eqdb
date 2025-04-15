@@ -1,3 +1,14 @@
+==0.2.0.1==
+* Added new functionality: Item Detail
+    ** This page will display details on an Item pulled from the database.
+    ** Additional data and links are forthcoming
+* Added new functionality: Item Search
+   ** At this time, item search is limited to the name.  As data becomes available, additional functionality may be added.
+* Updated the Spell Detail page
+    ** Put some pretty divs around everything which actually makes things look okay?
+    ** Added raw spell data, slot spa data, and items that use the spell in some way
+    ** Put classes and raw data into 'basic' data tab.  Additional tabs are added if there are click, focus, worn, proc, or instrument mods that use the spell.
+
 ==0.2.0.0==
 * Removed changes/planned information separators, it's not needed.
 * Added new functionality: Spell Detail
