@@ -2,6 +2,7 @@
 {% block body %}
 <center><h2>{{data.name}}</h2></center>
 <br>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell_slots">
 <h3>Spell Effects</h3>
 <table>
     {% for entry in slots.keys() %}
@@ -13,10 +14,104 @@
     </tr>
     {% endif %}
     {% endfor %}
-</table><br>
+</table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="float:right;" id="spell_extra">
+    <ul class="nav nav-tabs" id="myTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic Data</a>
+        </li>
+        {% if data.clicks %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="click-tab" data-bs-toggle="tab" href="#click" role="tab" aria-controls="click" aria-selected="false">Click Effect On</a>
+        </li>
+        {% endif %}
+        {% if data.procs %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="proc-tab" data-bs-toggle="tab" href="#proc" role="tab" aria-controls="proc" aria-selected="false">Proc Effect On</a>
+        </li>
+        {% endif %}
+        {% if data.focus %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="focus-tab" data-bs-toggle="tab" href="#focus" role="tab" aria-controls="focus" aria-selected="false">Focus Effect On</a>
+        </li>
+        {% endif %}
+        {% if data.worn %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="worn-tab" data-bs-toggle="tab" href="#worn" role="tab" aria-controls="worn" aria-selected="false">Worn Effect On</a>
+        </li>
+        {% endif %}
+        {% if data.bard %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="bard-tab" data-bs-toggle="tab" href="#bard" role="tab" aria-controls="bard" aria-selected="false">Instrument Effect On</a>
+        </li>
+        {% endif %}
+    </ul>
+    <div class="tab-content" id="myTabsContent">
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+            <ul>
+                {% if data.classes %}
+                Classes<br>
+                {% for entry in data.classes %}
+                <li>{{entry}}</li>
+                {% endfor %}
+                {% endif %}
+                <br><a href="{{url_for('spell_raw', spell_id=data.id)}}">Raw Data
+            </ul>
+        </div>
+        {% if data.clicks %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="click" role="tabpanel" aria-labelledby="click-tab">
+            <ul>
+                {% for entry in data.clicks %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if data.procs %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="proc" role="tabpanel" aria-labelledby="proc-tab">
+            <ul>
+                {% for entry in data.procs %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if data.focus %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="focus" role="tabpanel" aria-labelledby="focus-tab">
+            <ul>
+                {% for entry in data.focus %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if data.worn %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="worn" role="tabpanel" aria-labelledby="worn-tab">
+                <ul>
+                {% for entry in data.worn %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                {% endfor %}
+                </ul>
+        </div>
+        {% endif %}
+        {% if data.bard %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="bard" role="tabpanel" aria-labelledby="bard-tab">
+            <dl>
+                {% for entry in data.bard %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                {% endfor %}
+            </dl>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<br>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell_detail">
 <h3>Spell Basic Data</h3>
 <br>
-<table style="width:50%">
+<table style="width: 100%">
     <tr>
         <td><b>Name</b></td>
         <td>{{data.name}}</td>
@@ -58,15 +153,6 @@
         <td><b>Fades</b></td>
         <td>{{data.on_fade}}</td>
     </tr>
-    <tr>
-        <td><b>Raw Data</b></td>
-        <td><a href="{{url_for('spell_raw', spell_id=data.id)}}">Raw Data</td>
-    </tr>
 </table>
-{% if data.classes %}
-<br>Classes<br>
-{% for entry in data.classes %}
-<li>{{entry}}</li>
-{% endfor %}
-{% endif %}
+</div>
 {% endblock %}

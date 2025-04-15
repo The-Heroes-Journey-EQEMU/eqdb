@@ -165,6 +165,15 @@ def item_raw(item_id):
     return render_template('raw_data.html', data=raw_data)
 
 
+@app.route("/item/search", methods=['GET', 'POST'])
+def item_fast_search():
+    if request.method == 'GET':
+        return render_template('item_fast_search.html')
+    else:
+        data = logic.get_fast_item(request.form['item_name'])
+        return render_template('item_fast_search_result.html', data=data)
+
+
 @app.route("/search/spell", methods=['GET', 'POST'])
 def spell_search():
     if request.method == 'GET':

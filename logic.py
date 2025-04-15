@@ -174,8 +174,83 @@ def get_spells(spell_name):
     return out_data
 
 
+def get_fast_item(item_name):
+    with Session(bind=engine) as session:
+        partial = "%%%s%%" % (item_name)
+        query = session.query(Item.id, Item.Name).filter(Item.Name.like(partial))
+        result = query.all()
+
+    out_data = []
+    for entry in result:
+        item_id = entry[0]
+        name = entry[1]
+        out_data.append({'item_id': item_id,
+                         'name': name})
+    return out_data
+
+
 def get_spell_data(spell_id):
-    return spell.get_spell_data(spell_id, engine)
+    spell_data, slots = spell.get_spell_data(spell_id, engine)
+
+    procs = []
+    clicks = []
+    focus = []
+    worn = []
+    bard = []
+
+    with Session(bind=engine) as session:
+        # Find all the items that have this as a proc
+        query = session.query(Item.id, Item.Name).filter(Item.proceffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            procs.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a click effect
+        query = session.query(Item.id, Item.Name).filter(Item.clickeffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            clicks.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a focus effect
+        query = session.query(Item.id, Item.Name).filter(Item.focuseffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            focus.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a worn effect
+        query = session.query(Item.id, Item.Name).filter(Item.worneffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            worn.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a bard effect
+        query = session.query(Item.id, Item.Name).filter(Item.bardeffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            bard.append({'item_id': item_id,
+                          'item_name': item_name})
+
+    spell_data.update({'procs': procs,
+                       'clicks': clicks,
+                       'focus': focus,
+                       'worn': worn,
+                       'bard': bard})
+
+    return spell_data, slots
 
 
 def get_spell_tooltip(spell_id):
@@ -434,6 +509,7 @@ def get_item_data(item_id, full=False):
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
     ret_dict['type_str'] = utils.get_type_string(ret_dict['itemtype'])
     ret_dict['thj_enabled'] = False
+    item_id = int(item_id)
     if item_id < 1000000:
         # See if Enchanted and Legendary exist
         with Session(bind=engine) as session:

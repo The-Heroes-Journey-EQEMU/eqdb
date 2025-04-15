@@ -1,6 +1,7 @@
 """Utility file to convert SPA data into human readible information."""
 from sqlalchemy.orm import Session
 
+import logic
 import utils
 from logic import SpellsNewReference, SpellsNew
 
@@ -402,8 +403,9 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Mesmerize up to level {max_val}'
     elif spa == 32:
         # Create Item
-        # TODO: Get the item link in here
-        return f'Summon item: item id {min_val}'
+        item_data = logic.get_item_data(min_val)
+        item_name = item_data['Name']
+        return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
         # Spawn NPC
         # TODO: Get the pet link in here
@@ -842,20 +844,20 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         # Focus: Which SPA?
         # Get the short name for the SPA
         spa_name = fast_spa_lookup(abs(min_val))
-        if min_val > 0:
+        if min_val >= 0:
             return f"Limit: Only Effect '{spa_name}'"
         else:
             return f"Limit: Exclude Effect '{spa_name}'"
     elif spa == 138:
         # Focus: Beneficial or Detrimental (w/o this, its all spells)
-        if min_val:
+        if not min_val:
             return 'Limit: Beneficial Spells Only'
         else:
             return 'Limit: Detrimental Spells Only'
     elif spa == 139:
         # Focus: Which Spell ID?
         spell_name = get_spell_name(abs(min_val), engine)
-        if min_val > 0:
+        if min_val >= 0:
             return f"Limit: Only Spell <a href='/spell/detail/{abs(min_val)}'>{spell_name}</a>"
         else:
             return f"Limit: Exclude Spell <a href='/spell/detail/{abs(min_val)}'>{spell_name}</a>"
