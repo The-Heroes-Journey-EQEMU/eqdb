@@ -1,3 +1,23 @@
+==0.2.0.2==
+* Fast search (spell, item, zone) is now limited to 50 characters maximum and 3 characters minimum
+* Unicode characters are disablled for fast search
+* Item Identification is disabled on beta (it's not the current focus of testing and isn't set up properly)
+* Added new functionality: Zone Detail
+   ** This page will display details on a Zone pulled from the database and using brewall's maps
+   ** Additional data and links are forthcoming for tradeskills and NPCs.
+* Added new functionality: Zone Listing
+   ** This page will show a list of zones per expansion, their long name, their short name, and their current ZEM
+* Hooked Zone Detail into Spell Detail
+* Fast Item Search has been updated:
+   ** Toggle to search for only tradeskill items.
+   ** Toggle to search for only equippable items.
+   ** Toggle to search for only non-equippable items.
+   ** Toggle to search for only base items.
+   ** Toggle to search for only enchanted items.
+   ** Toggle to search for only legendary items.
+   ** Toggle to exclude Glamours.
+* Bug fixing on the spell parser around SPA 0 (HP)
+
 ==0.2.0.1==
 * Added new functionality: Item Detail
     ** This page will display details on an Item pulled from the database.

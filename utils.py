@@ -957,6 +957,51 @@ def check_sympathetic(name):
         return name
 
 
+def get_era_name(era_id):
+    if era_id == 0:
+        return 'Classic'
+    elif era_id == 1:
+        return "Ruins of Kunark"
+    elif era_id == 2:
+        return "Scars of Velious"
+    elif era_id == 3:
+        return "Shadows of Luclin"
+    elif era_id == 4:
+        return "Planes of Power"
+    elif era_id == 5:
+        return "Legacy of Ykesha"
+    elif era_id == 6:
+        return "Lost Dungeons of Norrath"
+    elif era_id == 7:
+        return "Gates of Discord"
+    elif era_id == 8:
+        return "Omens of War"
+    elif era_id == 9:
+        return "Dragons of Norrath"
+    elif era_id == 10:
+        return "Depths of Darkhollow"
+    elif era_id == 11:
+        return "Prophecy of Ro"
+    elif era_id == 12:
+        return "The Serpents Spine"
+    elif era_id == 13:
+        return "The Buried Sea"
+    elif era_id == 14:
+        return "Secrets of Faydwer"
+    elif era_id == 15:
+        return "Seeds of Destruction"
+    elif era_id == 16:
+        return "Underfoot"
+    elif era_id == 17:
+        return "House of Thule"
+    elif era_id == 18:
+        return "Veil of Alaris"
+    elif era_id == 19:
+        return "Rain of Fear"
+    else:
+        return "Unknown Era"
+
+
 def get_era_id(name):
     if name == 'Classic':
         return 0

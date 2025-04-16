@@ -153,7 +153,11 @@ def parse_slot_data(idx, data, engine):
 def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, data):
     if spa == 0:
         # HP
-        minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_val == 0:
+            minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level, ignore_max=True)
+            max_val, _ = do_formula(abs(min_val), formula, max_val, level=LEVEL_CAP, ignore_max=True)
+        else:
+            minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level, ignore_max=False)
         if min_val < 0:
             if min_level == max_level:
                 return f'Decrease Hitpoints by {minimum}'
@@ -608,8 +612,8 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return 'Summon PC'
     elif spa == 83:
         # Portal
-        # TODO: Hook this into zone detail
-        return f'Teleport Group to {data.teleport_zone}'
+        zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+        return f'Teleport Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 84:
         # HP-NPC-ONLY (but really, its gravity flux)
         return f'Toss up by {abs(min_val)}'
@@ -625,8 +629,8 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Increase Magnification by {min_val}%'
     elif spa == 88:
         # Evacuate
-        # TODO: Hook this into zone detail
-        return f'Evacuate Group to {data.teleport_zone}'
+        zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+        return f'Evacuate Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 89:
         # Change Size
         if min_val > 100:
@@ -708,11 +712,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return 'Call Pet'
     elif spa == 104:
         # Translocate
-        # TODO: Update this with zone link
         if not data.teleport_zone:
-            return 'Translocate'
+            return 'Translocate to Bind'
         else:
-            return f'Translocate to {data.teleport_zone}'
+            zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+            return f'Translocate to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 105:
         # Anti-Gate (NPC Only)
         return 'Prevent Gate Spell'
@@ -727,8 +731,9 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Summon Familiar {data.teleport_zone}'
     elif spa == 109:
         # CreateItemInBag
-        # TODO: UPdate this with item Link
-        return f'Summon Item (In Bag): Item ID {min_val}'
+        item_data = logic.get_item_data(min_val)
+        item_name = item_data['Name']
+        return f'Summon item (In Bag): <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 110:
         # Ranger Archery Accuracy %
         return f'SPA 110: Unused (tell the EQDB dev to fix me)'
@@ -2161,20 +2166,20 @@ def fast_spa_lookup(spa):
         return f'Unknown SPA {spa}, tell the EQDB dev'
 
 
-def calculate_values(base_value, level, max_val, test_value_func):
+def calculate_values(base_value, level, max_val, test_value_func, ignore_max=False):
     ret_val = test_value_func(base_value, level)
     # Find the max_level
     new_level = level
     while new_level < LEVEL_CAP:
         new_level += 1
         test_val = test_value_func(base_value, new_level)
-        if test_val >= max_val:
+        if test_val >= max_val and not ignore_max:
             break
     max_level = new_level
     return ret_val, max_level
 
 
-def do_formula(base_value, formula_id, max_val, level=1):
+def do_formula(base_value, formula_id, max_val, level=1, ignore_max=False):
     """Helper to do formula stuff."""
     max_level = level
     if formula_id == 1:
@@ -2385,7 +2390,7 @@ def do_formula(base_value, formula_id, max_val, level=1):
     elif formula_id < 100:
         def test_value_func(base, level):
             return base + (level * formula_id)
-        ret_val, max_level = calculate_values(base_value, level, max_val, test_value_func)
+        ret_val, max_level = calculate_values(base_value, level, max_val, test_value_func, ignore_max=ignore_max)
     elif 1999 > formula_id > 1000:
         raise Exception('Not supported')
     elif 2650 >= formula_id >= 2000:

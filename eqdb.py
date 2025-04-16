@@ -65,6 +65,9 @@ def callback():
 
 @app.route("/identify/")
 def identify():
+    if SITE_TYPE == 'Beta':
+        flash('Item Identification is not supported on Beta site')
+        return redirect(url_for('error'))
     return render_template('identify_landing.html')
 
 
@@ -76,6 +79,9 @@ def redirect_unauthorized(e):
 @app.route("/identify/attributed/", methods=['GET', 'POST'])
 @requires_authorization
 def identify_attributed():
+    if SITE_TYPE == 'Beta':
+        flash('Item Identification is not supported on Beta site')
+        return redirect(url_for('error'))
     user = discord.fetch_user()
     if request.method == 'GET':
         item = logic.get_unidentified_item(user=user)
@@ -93,6 +99,9 @@ def identify_attributed():
 
 @app.route("/identify/unattributed/", methods=['GET', 'POST'])
 def identify_unattributed():
+    if SITE_TYPE == 'Beta':
+        flash('Item Identification is not supported on Beta site')
+        return redirect(url_for('error'))
     if request.method == 'GET':
         item = logic.get_unidentified_item()
         return render_template('identify.html', item=item)
@@ -103,8 +112,21 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
+@app.route("/zone/detail/<int:zone_id>")
+def zone_detail(zone_id):
+    return render_template('zone_detail.html', data=logic.get_zone_detail(zone_id))
+
+
+@app.route("/zone/listing")
+def zone_listing():
+    return render_template('zone_listing.html', data=logic.get_zone_listing())
+
+
 @app.route("/identify/leaderboard/", methods=['GET'])
 def identify_leaderboard():
+    if SITE_TYPE == 'Beta':
+        flash('Item Identification is not supported on Beta site')
+        return redirect(url_for('error'))
     data = logic.get_leaderboard()
     return render_template('identify_leaderboard.html', data=data)
 
@@ -149,8 +171,8 @@ def tester():
     if SITE_TYPE != 'Development':
         flash("Unauthorized")
         return redirect(url_for('error'))
-    data, slots = logic._debugger()
-    return render_template('debugger.html', data=data, slots=slots)
+    # data, slots = logic._debugger()
+    return render_template('blank.html')
 
 
 @app.route("/item/detail/<int:item_id>")
@@ -170,7 +192,28 @@ def item_fast_search():
     if request.method == 'GET':
         return render_template('item_fast_search.html')
     else:
-        data = logic.get_fast_item(request.form['item_name'])
+        # Do some validation
+        item_name = request.form.get('item_name')
+        tradeskill = request.form.get('tradeskill')
+        if tradeskill == 'none':
+            tradeskill = None
+        equippable = request.form.get('equippable')
+        if equippable == 'none':
+            equippable = None
+        itype = request.form.get('itype')
+        no_glamour = request.form.get('no_glamour')
+
+        if len(item_name) > 50:
+            flash('Search by name limited to 50 characters.')
+            return redirect(url_for('item_fast_search'))
+        if len(item_name) < 3:
+            flash('Search by name requires at least 3 characters')
+            return redirect(url_for('item_fast_search'))
+        if not item_name.isascii():
+            flash('Only ASCII characters are allowed.')
+            return redirect(url_for('item_fast_search'))
+        data = logic.get_fast_item(item_name, tradeskill=tradeskill, equippable=equippable,
+                                   itype=itype, no_glamours=no_glamour)
         return render_template('item_fast_search_result.html', data=data)
 
 
@@ -179,7 +222,17 @@ def spell_search():
     if request.method == 'GET':
         return render_template('spell_search.html')
     else:
-        data = logic.get_spells(request.form['spell_name'])
+        spell_name = request.form['spell_name']
+        if len(spell_name) > 50:
+            flash('Search by name limited to 50 characters.')
+            return redirect(url_for('spell_search'))
+        elif len(spell_name) < 3:
+            flash('Search by name requires at least 3 characters')
+            return redirect(url_for('spell_search'))
+        if not spell_name.isascii():
+            flash('Only ASCII characters are allowed.')
+            return redirect(url_for('item_fast_search'))
+        data = logic.get_spells(spell_name)
         return render_template('spell_search_result.html', data=data)
 
 

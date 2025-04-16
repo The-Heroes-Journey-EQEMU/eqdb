@@ -40,6 +40,7 @@ Base.prepare(autoload_with=engine)
 LocalBase.prepare(autoload_with=local_engine)
 
 Zone = Base.classes.zone
+ZonePoints = Base.classes.zone_points
 Item = ItemRedirection
 Spawn2 = Base.classes.spawn2
 SpawnEntry = Base.classes.spawnentry
@@ -139,6 +140,104 @@ def get_leaderboard():
     return contributors
 
 
+def get_zone_detail(zone_id):
+    # Get some zone details
+    with Session(bind=engine) as session:
+        args = [Zone.expansion, Zone.short_name, Zone.long_name, Zone.safe_x, Zone.safe_y, Zone.canbind, Zone.canlevitate,
+                Zone.castoutdoor]
+        query = session.query(*args).filter(Zone.zoneidnumber == zone_id)
+        result = query.one()
+
+    base_data = {'expansion': utils.get_era_name(result[0]),
+                 'short_name': result[1],
+                 'long_name': result[2],
+                 'safe_x': int(result[3]),
+                 'safe_y': int(result[4]),
+                 'can_bind': result[5],
+                 'can_lev': result[6],
+                 'outdoor': result[7]}
+
+    # Get all the zones this zone connects to
+    with Session(bind=engine) as session:
+        query = session.query(ZonePoints.target_zone_id).distinct().filter(ZonePoints.zone == base_data['short_name'])
+        result = query.all()
+
+        target_zone_ids = []
+        for entry in result:
+            target_zone_ids.append(Zone.zoneidnumber == entry[0])
+
+        target_zone_params = or_(*target_zone_ids)
+        query = session.query(Zone.zoneidnumber, Zone.long_name).filter(target_zone_params)
+        result = query.all()
+
+    linked_zone_data = {}
+    for entry in result:
+        linked_zone_data.update({entry[0]: entry[1]})
+    base_data.update({'linked_zones': linked_zone_data})
+
+    # Get all the items that drop in this zone.
+    known_ids = []
+    link_filters = _get_link_filters()
+    link_params = and_(*link_filters)
+    with Session(bind=engine) as session:
+        query = session.query(Item.id, Item.Name).filter(NPCTypes.id.like(f'{zone_id}___')).filter(link_params)
+        result = query.all()
+    out_items = []
+    for entry in result:
+        if entry[0] not in known_ids:
+            known_ids.append(entry[0])
+            out_items.append({'item_id': entry[0],
+                              'item_name': entry[1]})
+    base_data.update({'dropped_items': out_items})
+
+    # Parse the map files and add them to the returned data.
+    short_name = base_data['short_name']
+    lines = []
+    with open(os.path.join(here, 'maps', f'{short_name}.txt'), 'r') as fh:
+        data = fh.read()
+        for line in data.split('\n'):
+            if line.startswith('L'):
+                split_line = line.split()
+                lines.append({'x1': float(split_line[1].strip(',')),
+                              'y1': float(split_line[2].strip(',')),
+                              'z1': float(split_line[3].strip(',')),
+                              'x2': float(split_line[4].strip(',')),
+                              'y2': float(split_line[5].strip(',')),
+                              'z2': float(split_line[6].strip(',')),
+                              'rgb': f'{split_line[7].strip(",")}, {split_line[8].strip(",")}, {split_line[9].strip(",")}'})
+    base_data.update({'mapping': lines})
+    return base_data
+
+
+def get_zone_listing():
+    era_list = {'Classic': 0, 'Ruins of Kunark': 1, 'Scars of Velious': 2, 'Shadows of Luclin': 3,
+                 'Planes of Power': 4, 'Legacy of Ykesha': 5, 'Lost Dungeons of Norrath': 6, 'Gates of Discord': 7}
+    out_list = {}
+    for era in era_list:
+        with Session(bind=engine) as session:
+            query = session.query(Zone.zoneidnumber, Zone.short_name, Zone.long_name, Zone.zone_exp_multiplier). \
+                filter(Zone.expansion == era_list[era])
+            result = query.all()
+        era_zones = {}
+        for entry in result:
+            id_num = entry[0]
+            short_name = entry[1]
+            long_name = entry[2]
+            zem = entry[3]
+            era_zones.update({long_name: {'id': id_num,
+                                          'short_name': short_name,
+                                          'zem': zem}})
+        out_list.update({era: era_zones})
+    return out_list
+
+
+def get_zone_long_name(zone_short_name):
+    with Session(bind=engine) as session:
+        query = session.query(Zone.zoneidnumber, Zone.long_name).filter(Zone.short_name == zone_short_name)
+        result = query.one()
+    return result[0], result[1]
+
+
 def get_item_raw_data(item_id):
     with Session(bind=engine) as session:
         query = session.query(Item).filter(Item.id == item_id)
@@ -161,8 +260,8 @@ def get_spell_raw_data(spell_id):
 
 def get_spells(spell_name):
     with Session(bind=engine) as session:
-        partial = "%%%s%%" % (spell_name)
-        query = session.query(SpellsNewReference.id, SpellsNewReference.name).filter(SpellsNewReference.name.like(partial))
+        partial = "%%%s%%" % spell_name
+        query = session.query(SpellsNewReference.id, SpellsNewReference.name).filter(SpellsNewReference.name.like(partial)).limit(50)
         result = query.all()
 
     out_data = []
@@ -174,16 +273,46 @@ def get_spells(spell_name):
     return out_data
 
 
-def get_fast_item(item_name):
+def get_fast_item(item_name, tradeskill=None, equippable=None, itype='Base', no_glamours=False):
+    filters = []
+    or_filters = []
+    if len(item_name) > 0:
+        partial = "%%%s%%" % item_name
+        filters.append(Item.Name.like(partial))
+    if tradeskill:
+        filters.append(Item.tradeskills == 1)
+        equippable = None
+        itype = 'Base'
+        no_glamours = True
+    if equippable:
+        or_filters = [Item.itemtype == 0, Item.itemtype == 1, Item.itemtype == 2, Item.itemtype == 3,
+                      Item.itemtype == 4, Item.itemtype == 5, Item.itemtype == 7, Item.itemtype == 8,
+                      Item.itemtype == 10, Item.itemtype == 19, Item.itemtype == 23, Item.itemtype == 24,
+                      Item.itemtype == 25, Item.itemtype == 26, Item.itemtype == 27, Item.itemtype == 29,
+                      Item.itemtype == 35, Item.itemtype == 54, Item.itemtype == 52]
+    if itype == 'Base':
+        filters.append(Item.id < 1000000)
+    if itype == 'Enchanted':
+        filters.append(Item.id > 1000000)
+        filters.append(Item.id < 2000000)
+    if itype == 'Legendary':
+        filters.append(Item.id > 2000000)
+
+    params = and_(*filters)
     with Session(bind=engine) as session:
-        partial = "%%%s%%" % (item_name)
-        query = session.query(Item.id, Item.Name).filter(Item.Name.like(partial))
+        if or_filters:
+            or_params = or_(*or_filters)
+            query = session.query(Item.id, Item.Name).filter(params).filter(or_params).limit(50)
+        else:
+            query = session.query(Item.id, Item.Name).filter(params).limit(50)
         result = query.all()
 
     out_data = []
     for entry in result:
         item_id = entry[0]
         name = entry[1]
+        if no_glamours and 'glamour' in name.lower():
+            continue
         out_data.append({'item_id': item_id,
                          'name': name})
     return out_data

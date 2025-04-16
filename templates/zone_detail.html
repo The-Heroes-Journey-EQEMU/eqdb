@@ -1,0 +1,158 @@
+{% extends "layout.html" %}
+{% block body %}
+<center><h3>{{data.long_name}}</h3></center>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="float:right;" id="extra_details">
+    <h3>Zone Information</h3>
+    <ul>
+        <li>Expansion: {{data.expansion}}</li>
+        <li>Short Name: {{data.short_name}}</li>
+        <li>Succor: {{data.safe_x}}, {{data.safe_y}}</li>
+        {% if data.can_bind %}
+            <li>Players can bind here</li>
+        {% else %}
+            <li>Players cannot bind here</li>
+        {% endif %}
+        {% if data.can_lev %}
+            <li>Levitation allowed here</li>
+        {% else %}
+            <li>Levitation NOT allowed here</li>
+        {% endif %}
+        {% if data.outdoor %}
+            <li>Outdoor Zone</li>
+        {% else %}
+            <li>Indoor Zone</li>
+        {% endif %}
+    </ul>
+</div>
+<div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
+<main class="flex-shrink-0 pt-4">
+    <div class="container py-4">
+        <div class="grid">
+            <div class="col-12"><h2 class="text-center mb-4">{{data.longname}}</h2></div>
+
+            <div class="row align-items-md-stretch">
+                <div class="col-12 col-md-10">
+                    <style>
+    .map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* background: url('/static/cart.png');
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    background-position: center; */
+    /* background-color: #c4bc9c; */
+    background-color: #dcdcdc;
+}
+
+    #mouse-position-box {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px;
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: black;
+    }
+
+
+                    </style>
+                    <div id="map" class="border" style="min-width: 400px; height: 600px;position:relative;">
+                        <div class="map-container">
+                            <svg class="svg" id="zone-map" width="100%" height="100%"
+                                 viewBox="-945.0 -1470.0 1640.0 1679.0" xmlns="http://www.w3.org/2000/svg"
+                                 style="border: 1px solid black;">
+                                <defs>
+                                    <!-- A marker to be used as an arrowhead -->
+                                    <marker
+                                            id="arrow"
+                                            viewBox="0 0 10 10"
+                                            refX="5"
+                                            refY="5"
+                                            markerWidth="6"
+                                            markerHeight="6"
+                                            orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z"/>
+                                    </marker>
+                                </defs>
+                                {% for entry in data['mapping'] %}
+                                <line x1="{{entry.x1}}" y1="{{entry.y1}}" x2="{{entry.x2}}" y2="{{entry.y2}}"
+                                      z1="{{entry.z1}}" z2="{{entry.z2}}" stroke="rgb({{entry.rgb}})"
+                                      stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+                                {% endfor %}
+                            </svg>
+                            <div id="mouse-position-box">X: 0, Y: 0</div>
+                        </div>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+                    <script src="/static/svg.panzoom.min.js"></script>
+                    <script type="module">
+    const draw = SVG('#zone-map');
+    draw.panZoom({ zoomMin: 0.1, zoomMax: 10, zoomFactor: 1 });
+
+
+                    </script>
+                    <script>
+    // Get references to the SVG element and the mouse position box
+    const svg = document.getElementById('zone-map');
+    const mousePositionBox = document.getElementById('mouse-position-box');
+
+    // Create an SVGPoint object for calculations
+    const pt = svg.createSVGPoint();
+
+    // Get point in global SVG space
+    function cursorPoint(evt) {
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    // Event listener to display coordinates
+    svg.addEventListener('mousemove', function(evt) {
+      // Calculate the SVG coordinates
+      const loc = cursorPoint(evt);
+
+      // Update the mouse position box
+      const flippedY = -Math.round(loc.y); // Flip the Y coordinate
+      const flippedX = -Math.round(loc.x); // Flip the X coordinate
+      mousePositionBox.textContent = `Y: ${flippedY}, X: ${flippedX}`;
+    });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="zone_links">
+    <ul class="nav nav-tabs" id="myTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Connected Zones</a>
+        </li>
+        {% if data.dropped_items %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="items-tab" data-bs-toggle="tab" href="#items" role="tab" aria-controls="items" aria-selected="false">Items</a>
+        </li>
+        {% endif %}
+    </ul>
+    <div class="tab-content" id="myTabsContent">
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+            <ul>
+                {% for entry in data.linked_zones %}
+                <li><a href="{{url_for('zone_detail', zone_id=entry)}}">{{data['linked_zones'][entry]}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% if data.items %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="items" role="tabpanel" aria-labelledby="items-tab">
+            <ul>
+                {% for entry in data.dropped_items|sort(attribute='item_name') %}
+                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
