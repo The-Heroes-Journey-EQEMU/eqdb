@@ -15,6 +15,7 @@ here = os.path.dirname(__file__)
 site_config = configparser.RawConfigParser()
 ini_path = os.path.join(here, 'configuration.ini')
 site_config.read_file(open(ini_path))
+expansion = site_config.getint('thj', 'expansion')
 
 driver = site_config.get('database', 'driver')
 user = site_config.get('database', 'user')
@@ -146,7 +147,7 @@ def get_zone_detail(zone_id):
         args = [Zone.expansion, Zone.short_name, Zone.long_name, Zone.safe_x, Zone.safe_y, Zone.canbind, Zone.canlevitate,
                 Zone.castoutdoor]
         query = session.query(*args).filter(Zone.zoneidnumber == zone_id)
-        result = query.one()
+        result = query.first()
 
     base_data = {'expansion': utils.get_era_name(result[0]),
                  'short_name': result[1],
@@ -162,16 +163,21 @@ def get_zone_detail(zone_id):
         query = session.query(ZonePoints.target_zone_id).distinct().filter(ZonePoints.zone == base_data['short_name'])
         result = query.all()
 
-        target_zone_ids = []
-        for entry in result:
-            target_zone_ids.append(Zone.zoneidnumber == entry[0])
+        if result:
+            target_zone_ids = []
+            for entry in result:
+                target_zone_ids.append(Zone.zoneidnumber == entry[0])
 
-        target_zone_params = or_(*target_zone_ids)
-        query = session.query(Zone.zoneidnumber, Zone.long_name).filter(target_zone_params)
-        result = query.all()
+            target_zone_params = or_(*target_zone_ids)
+            query = session.query(Zone.zoneidnumber, Zone.long_name, Zone.expansion).filter(target_zone_params)
+            result = query.all()
+        else:
+            result = []
 
     linked_zone_data = {}
     for entry in result:
+        if int(entry[2]) > expansion:
+            continue
         linked_zone_data.update({entry[0]: entry[1]})
     base_data.update({'linked_zones': linked_zone_data})
 
@@ -213,6 +219,10 @@ def get_zone_listing():
     era_list = {'Classic': 0, 'Ruins of Kunark': 1, 'Scars of Velious': 2, 'Shadows of Luclin': 3,
                  'Planes of Power': 4, 'Legacy of Ykesha': 5, 'Lost Dungeons of Norrath': 6, 'Gates of Discord': 7}
     out_list = {}
+    exclusion_list = ['cshome', 'hateplane', 'powar', 'soldungc', 'qvicb']
+    # Massaging
+    massage_list = {'nedaria': 7, 'bazaar': 3}
+    add_to_later = {0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}}
     for era in era_list:
         with Session(bind=engine) as session:
             query = session.query(Zone.zoneidnumber, Zone.short_name, Zone.long_name, Zone.zone_exp_multiplier). \
@@ -224,9 +234,19 @@ def get_zone_listing():
             short_name = entry[1]
             long_name = entry[2]
             zem = entry[3]
+            if short_name in exclusion_list:
+                continue
+            if short_name in massage_list.keys() and massage_list[short_name] != era_list[era]:
+                add_to_later.update({massage_list[short_name]: {long_name: {'id': id_num,
+                                                                            'short_name': short_name,
+                                                                            'zem': zem}}})
+                continue
+
             era_zones.update({long_name: {'id': id_num,
                                           'short_name': short_name,
                                           'zem': zem}})
+        for entry in add_to_later[era_list[era]]:
+            era_zones.update({entry: add_to_later[era_list[era]][entry]})
         out_list.update({era: era_zones})
     return out_list
 

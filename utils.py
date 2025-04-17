@@ -161,7 +161,7 @@ def get_aug_type(num):
 def get_class_string(num):
     """Returns the classes that can use this item."""
     out_str = ''
-    if num == 65536:
+    if num == 65535:
         return 'ALL'
     elif num == 0:
         return 'NONE'
@@ -224,8 +224,8 @@ def get_slot_string(num):
     if num == 0:
         return 'NONE'
     while num > 0:
-        if num >= 2097152:
-            num -= 2097152
+        if num >= 4194304:
+            num -= 4194304
             out_str += 'Ammo '
         if num >= 1048576:
             num -= 1048576

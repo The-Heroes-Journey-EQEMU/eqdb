@@ -5,7 +5,7 @@
     <center><h3>{{entry}}</h3></center>
   {% set rower = namespace(value=0) %}
   <table style="width: 100%;">
-    {% for sub_entry in data[entry] %}
+    {% for sub_entry in data[entry]|sort %}
         {% if rower.value == 0 %}
         <tr>
             <td><a href="{{url_for('zone_detail', zone_id=data[entry][sub_entry]['id'])}}">{{sub_entry}}</a><br>({{data[entry][sub_entry]['short_name']}})<br>ZEM: {{data[entry][sub_entry]['zem']}}</td>
