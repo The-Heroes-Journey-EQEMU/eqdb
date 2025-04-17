@@ -875,6 +875,123 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             raise Exception(f'Unknown focus type: {focus_type}')
 
 
+def parse_skill(skill_num):
+    if skill_num == 0:
+        return '1H Blunt'
+    elif skill_num == 1:
+        return '1H Slashing'
+    elif skill_num == 2:
+        return '2H Blunt'
+    elif skill_num == 3:
+        return '2H Slashing'
+    elif skill_num == 4:
+        return 'Abjuration'
+    elif skill_num == 5:
+        return 'Alteration'
+    elif skill_num == 6:
+        return 'Apply Poison'
+    elif skill_num == 7:
+        return 'Archery'
+    elif skill_num == 8:
+        return 'Backstab'
+    elif skill_num == 9:
+        return 'Bind Wounds'
+    elif skill_num == 10:
+        return 'Bash'
+    elif skill_num == 11:
+        return 'Block'
+    elif skill_num == 13:
+        return 'Channeling'
+    elif skill_num == 14:
+        return 'Conjuration'
+    elif skill_num == 15:
+        return 'Defense'
+    elif skill_num == 17:
+        return 'Disarm Traps'
+    elif skill_num == 18:
+        return 'Divination'
+    elif skill_num == 19:
+        return 'Dodge'
+    elif skill_num == 22:
+        return 'Dual Wield'
+    elif skill_num == 24:
+        return 'Evocation'
+    elif skill_num == 27:
+        return 'Forage'
+    elif skill_num == 28:
+        return 'Hand to Hand'
+    elif skill_num == 29:
+        return 'Hide'
+    elif skill_num == 30:
+        return 'Kick'
+    elif skill_num == 31:
+        return 'Meditate'
+    elif skill_num == 32:
+        return 'Mend'
+    elif skill_num == 35:
+        return 'Pick Locks'
+    elif skill_num == 36:
+        return 'Piercing'
+    elif skill_num == 37:
+        return 'Riposte'
+    elif skill_num == 39:
+        return 'Safe Fall'
+    elif skill_num == 40:
+        return 'Sense Heading'
+    elif skill_num == 42:
+        return 'Sneak'
+    elif skill_num == 43:
+        return 'Specialize Abjuration'
+    elif skill_num == 44:
+        return 'Specialize Alteration'
+    elif skill_num == 45:
+        return 'Specialize Conjuration'
+    elif skill_num == 46:
+        return 'Specialize Divination'
+    elif skill_num == 47:
+        return 'Specialize Evocation'
+    elif skill_num == 50:
+        return 'Swimming'
+    elif skill_num == 51:
+        return 'Throwing'
+    elif skill_num == 53:
+        return 'Tracking'
+    elif skill_num == 55:
+        return 'Fishing'
+    elif skill_num == 56:
+        return 'Poison Making'
+    elif skill_num == 57:
+        return 'Tinkering'
+    elif skill_num == 58:
+        return 'Research'
+    elif skill_num == 59:
+        return 'Alchemy'
+    elif skill_num == 60:
+        return 'Baking'
+    elif skill_num == 61:
+        return 'Tailoring'
+    elif skill_num == 63:
+        return 'Blacksmithing'
+    elif skill_num == 64:
+        return 'Fletching'
+    elif skill_num == 65:
+        return 'Brewing'
+    elif skill_num == 66:
+        return 'Alcohol Tolerance'
+    elif skill_num == 68:
+        return 'Jewel Crafting'
+    elif skill_num == 69:
+        return 'Pottery'
+    elif skill_num == 71:
+        return 'Intimidate'
+    elif skill_num == 73:
+        return 'Taunt'
+    elif skill_num == 255:
+        return 'none'
+    else:
+        return 'Unknown skill'
+
+
 def get_era_zones(era_name):
     if era_name == 'Classic':
         return [48, 55, 36, 17, 68, 58, 70, 22, 10, 15, 98, 24, 30, 16, 52, 29, 6, 5, 46, 64, 74, 20, 51, 33, 32,

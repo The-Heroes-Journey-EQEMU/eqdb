@@ -7,8 +7,8 @@
 * Removed duplicate zones for different versions that aren't supported by THJ
   ** Items from the removed zones _may_ still show up the item list from the correct zone, due to how items are found to be in a zone.
 * Fixed ammo slot causing issues with other slots on an item
-* [TODO] Added slot count and weight reduction for bags on item detail
-* [TODO] Added skillmod %s to both item detail and item tooltips
+* Added slot count and weight reduction for bags on item detail
+* Added skillmod %s to both item detail and item tooltips
 * Fixed an off-by-one error that caused all classes to be listed on items that all classes can use, instead of ALL
 * [TODO] Added new functionality: NPC Detail
     ** This page will display details on an NPC

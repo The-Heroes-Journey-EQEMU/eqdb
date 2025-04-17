@@ -94,6 +94,30 @@
                     {% else %}
                     <tr></tr>
                     {% endif %}
+                    {% if item.bagtype > 0 %}
+                    <tr>
+                        <td><b>Weight Red:</b></td>
+                        <td>{{item.bagwr}}%</td>
+                    </tr>
+                    <tr>
+                        <td><b>Capacity:</b></td>
+                        <td>{{item.bagslots}}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Size Cap:</b></td>
+                        {% if item.bagsize >= 4 %}
+                         <td>GIANT</td>
+                        {% elif item.bagsize == 3 %}
+                         <td>LARGE</td>
+                        {% elif item.bagsize == 2 %}
+                         <td>MEDIUM</td>
+                        {% elif item.bagsize == 1 %}
+                         <td>SMALL</td>
+                        {% elif item.bagsize == 0 %}
+                         <td>TINY</td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
                 </table>
             </td>
             <td>
@@ -440,6 +464,11 @@
         {% if item.aug_slot_5 %}
         <tr>
             <td nowrap="1" colspan='3'><b>Slot</b> 5, <b>Type</b> {{item.aug_slot_5}}</td>
+        </tr>
+        {% endif %}
+        {% if item.skillmodtype > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3"><b>Skill Mod:</b> {{item.skillmodname}} {{item.skillmodvalue}}% ({{item.skillmodmax}} max)</td>
         </tr>
         {% endif %}
         {% if item.worneffect > 0 %}

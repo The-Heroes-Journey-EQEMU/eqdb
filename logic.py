@@ -91,7 +91,8 @@ def _get_arg_list(tooltip=False):
                 Item.shielding, Item.spellshield, Item.strikethrough, Item.stunresist, Item.delay, Item.proceffect,
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
-                Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore]
+                Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore, Item.bagtype,
+                Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -598,6 +599,7 @@ def get_item_data(item_id, full=False):
         aug_slot_3 = ret_dict['augslot3type']
         aug_slot_4 = ret_dict['augslot4type']
         aug_slot_5 = ret_dict['augslot5type']
+        skill_mod = ret_dict['skillmodtype']
 
         if worn > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
@@ -653,6 +655,8 @@ def get_item_data(item_id, full=False):
             ret_dict['aug_slot_4'] = utils.get_aug_type(aug_slot_4)
         if aug_slot_5 > 0:
             ret_dict['aug_slot_5'] = utils.get_aug_type(aug_slot_5)
+        if skill_mod > 0:
+            ret_dict['skillmodname'] = utils.parse_skill(int(skill_mod))
 
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
