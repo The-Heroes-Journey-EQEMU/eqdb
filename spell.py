@@ -14,11 +14,11 @@ def get_spell_data(spell_id, engine, basic_data=True):
     # Get the spell data
     with Session(bind=engine) as session:
         query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
-        result = query.one()
+        result = query.first()
 
         if not result:
             query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
-            result = query.one()
+            result = query.first()
 
             if not result:
                 raise Exception(f'Spell with id {spell_id} was not found.')
@@ -316,10 +316,16 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
     elif spa == 11:
         # Melee Speed
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
-        if min_val < 0:
-            return f'Decrease Attack Speed by {minimum - 100}% (L{min_level}) to {max_val - 100}% (L{max_level})'
+        if min_val < 0 or (min_level == 255 and max_val - 100 < 0):
+            if min_level == 255:
+                return f'Decrease Attack Speed by {abs(max_val - 100)}%'
+            else:
+                return f'Decrease Attack Speed by {abs(minimum - 100)}% (L{min_level}) to {abs(max_val - 100)}% (L{max_level})'
         else:
-            return f'Increase Attack Speed by {minimum - 100}% (L{min_level}) to {max_val - 100}% (L{max_level})'
+            if min_level == 255:
+                return f'Increase Attack Speed by {max_val - 100}%'
+            else:
+                return f'Increase Attack Speed by {minimum - 100}% (L{min_level}) to {max_val - 100}% (L{max_level})'
     elif spa == 12:
         # Invisiblity
         return 'Invisibility'
@@ -460,37 +466,67 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         # Resist Fire
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Decrease Fire Resist by {max_val}'
+            else:
+                return f'Decrease Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Increase Fire Resist by {max_val}'
+            else:
+                return f'Increase Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 47:
         # Resist Cold
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Decrease Cold Resist by {max_val}'
+            else:
+                return f'Decrease Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Increase Cold Resist by {max_val}'
+            else:
+                return f'Increase Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 48:
         # Resist Poison
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Decrease Poison Resist by {max_val}'
+            else:
+                return f'Decrease Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Increase Poison Resist by {max_val}'
+            else:
+                return f'Increase Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 49:
         # Resist Disease
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Decrease Disease Resist by {max_val}'
+            else:
+                return f'Decrease Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Increase Disease Resist by {max_val}'
+            else:
+                return f'Increase Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 50:
         # Resist Magic
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Decrease Magic Resist by {max_val}'
+            else:
+                return f'Decrease Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if min_level == 255:
+                return f'Increase Magic Resist by {max_val}'
+            else:
+                return f'Increase Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 51:
         # Detect (Switch) Traps
         return f'SPA 51: Unused (tell the EQDB dev to fix me)'
@@ -2025,7 +2061,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
 def get_spell_name(spell_id, engine):
     with Session(bind=engine) as session:
         query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == spell_id)
-        result = query.one()
+        result = query.first()
+
+    if not result:
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
+        result = query.first()
     return result[0]
 
 

@@ -112,6 +112,17 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
+@app.route("/npc/raw/<int:npc_id>")
+def npc_raw(npc_id):
+    raw_data = logic.get_npc_raw_data(npc_id)
+    return render_template('raw_data.html', data=raw_data)
+
+
+@app.route("/npc/detail/<int:npc_id>")
+def npc_detail(npc_id):
+    return render_template('npc_detail.html', data=logic.get_npc_detail(npc_id))
+
+
 @app.route("/zone/detail/<int:zone_id>")
 def zone_detail(zone_id):
     return render_template('zone_detail.html', data=logic.get_zone_detail(zone_id))
@@ -177,7 +188,7 @@ def tester():
 
 @app.route("/item/detail/<int:item_id>")
 def item_detail(item_id):
-    data = logic.get_item_data(item_id)
+    data = logic.get_item_data(item_id, full=True)
     return render_template('item_detail.html', item=data)
 
 
@@ -185,6 +196,25 @@ def item_detail(item_id):
 def item_raw(item_id):
     raw_data = logic.get_item_raw_data(item_id)
     return render_template('raw_data.html', data=raw_data)
+
+
+@app.route("/search/npc", methods=['GET', 'POST'])
+def npc_search():
+    if request.method == 'GET':
+        return render_template('npc_search.html')
+    else:
+        npc_name = request.form['npc_name']
+        if len(npc_name) > 50:
+            flash('Search by name limited to 50 characters.')
+            return redirect(url_for('spell_search'))
+        elif len(npc_name) < 3:
+            flash('Search by name requires at least 3 characters')
+            return redirect(url_for('spell_search'))
+        if not npc_name.isascii():
+            flash('Only ASCII characters are allowed.')
+            return redirect(url_for('item_fast_search'))
+        data = logic.get_npcs(npc_name)
+        return render_template('npc_search_result.html', data=data)
 
 
 @app.route("/item/search", methods=['GET', 'POST'])
@@ -202,6 +232,7 @@ def item_fast_search():
             equippable = None
         itype = request.form.get('itype')
         no_glamour = request.form.get('no_glamour')
+        only_aug = request.form.get('only_aug')
 
         if len(item_name) > 50:
             flash('Search by name limited to 50 characters.')
@@ -213,7 +244,7 @@ def item_fast_search():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('item_fast_search'))
         data = logic.get_fast_item(item_name, tradeskill=tradeskill, equippable=equippable,
-                                   itype=itype, no_glamours=no_glamour)
+                                   itype=itype, no_glamours=no_glamour, only_aug=only_aug)
         return render_template('item_fast_search_result.html', data=data)
 
 

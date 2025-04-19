@@ -10,11 +10,18 @@
 * Added slot count and weight reduction for bags on item detail
 * Added skillmod %s to both item detail and item tooltips
 * Fixed an off-by-one error that caused all classes to be listed on items that all classes can use, instead of ALL
-* [TODO] Added new functionality: NPC Detail
+* Fixed certain spells causing an error on spell detail or spell tooltips.
+* Fixed Spell Parser for certain SPA showing confusing data.
+* Moved Legacy of Ykesha to right after Kunark and before Velious on the Zone Listing page.
+* Added new functionality: NPC Detail
     ** This page will display details on an NPC
-* [TODO] Added new functionality: NPC Search
+* Added new functionality: NPC Search
     ** Lets users search for an NPC by name
     ** Additional filters forthcoming
+* Added additional search filtering for item search:
+    ** Limit to Augments
+* Hooked NPC Data into Zone Detail to show spawn groups and spawn information
+* Hooked NPC Data into Item Detail to show where things come from
 
 ==0.2.0.2==
 * Fast search (spell, item, zone) is now limited to 50 characters maximum and 3 characters minimum

@@ -527,17 +527,84 @@
         </tbody>
     </table>
 </div><br>
-{% if item.thj_enabled %}
- {% if item.id < 1000000 %}
-  <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
-  <a href="{{url_for('item_detail', item_id=item.id+2000000)}}">Legendary Version</a><br>
- {% elif 1000000 < item.id < 2000000 %}
-  <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Base Version</a><br>
-  <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Legendary Version</a><br>
- {% else %}
-  <a href="{{url_for('item_detail', item_id=item.id-2000000)}}">Base Version</a><br>
-  <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Enchanted Version</a><br>
- {% endif %}
-{% endif %}
-<a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="item_links">
+    <ul class="nav nav-tabs" id="myTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic Info</a>
+        </li>
+        {% if item.droppers %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="dropper-tab" data-bs-toggle="tab" href="#dropper" role="tab" aria-controls="dropper" aria-selected="false">Drops From</a>
+        </li>
+        {% endif %}
+        {% if item.vendors %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="vendors-tab" data-bs-toggle="tab" href="#vendors" role="tab" aria-controls="vendors" aria-selected="false">Purchased From</a>
+        </li>
+        {% endif %}
+        {% if item.foraged %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="foraged-tab" data-bs-toggle="tab" href="#foraged" role="tab" aria-controls="foraged" aria-selected="false">Foraged From</a>
+        </li>
+        {% endif %}
+        {% if item.ground %}
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="ground-tab" data-bs-toggle="tab" href="#ground" role="tab" aria-controls="ground" aria-selected="false">Ground Spawn</a>
+        </li>
+        {% endif %}
+    </ul>
+    <div class="tab-content" id="myTabsContent">
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
+        {% if item.thj_enabled %}
+         {% if item.id < 1000000 %}
+          <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
+          <a href="{{url_for('item_detail', item_id=item.id+2000000)}}">Legendary Version</a><br>
+         {% elif 1000000 < item.id < 2000000 %}
+          <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Base Version</a><br>
+          <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Legendary Version</a><br>
+         {% else %}
+          <a href="{{url_for('item_detail', item_id=item.id-2000000)}}">Base Version</a><br>
+          <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Enchanted Version</a><br>
+         {% endif %}
+        {% endif %}
+        <a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
+        </div>
+        {% if item.droppers %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="dropper" role="tabpanel" aria-labelledby="dropper-tab">
+            <ul>
+            {% for entry in item.droppers %}
+              <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a> :: {{entry.zone_name}}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if item.vendors %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+            <ul>
+            {% for entry in item.vendors %}
+              <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if item.foraged %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="foraged" role="tabpanel" aria-labelledby="foraged-tab">
+            <ul>
+            {% for entry in item.foraged %}
+              <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a> ({{entry.chance}}% Chance)</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if item.ground %}
+        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="ground" role="tabpanel" aria-labelledby="ground-tab">
+            <ul>
+            {% for entry in item.ground %}
+              <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a> ({{entry.y}}, {{entry.x}})</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

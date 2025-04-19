@@ -44,7 +44,7 @@ def get_bane_dmg_body(num):
     elif num == 257:
         return 'Terris Thule'
     else:
-        raise Exception(f'Unknown body num: {num}')
+        return f'Unknown body num {num}'
 
 
 def get_bane_dmg_race(num):
@@ -118,7 +118,7 @@ def get_bane_dmg_race(num):
     elif num == 581:
         return 'Wyvern'
     else:
-        raise Exception(f'Unknown race num: {num}')
+        return 'Unknown Race'
 
 
 def get_elem_dmg_type(num):
@@ -873,6 +873,25 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 raise Exception(f'Unknown sub_type: {sub_type}')
         else:
             raise Exception(f'Unknown focus type: {focus_type}')
+
+
+def get_map_data(short_name):
+    lines = []
+    if short_name == 'Unknown':
+        return lines
+    with open(os.path.join(here, 'maps', f'{short_name}.txt'), 'r') as fh:
+        data = fh.read()
+        for line in data.split('\n'):
+            if line.startswith('L'):
+                split_line = line.split()
+                lines.append({'x1': float(split_line[1].strip(',')),
+                              'y1': float(split_line[2].strip(',')),
+                              'z1': float(split_line[3].strip(',')),
+                              'x2': float(split_line[4].strip(',')),
+                              'y2': float(split_line[5].strip(',')),
+                              'z2': float(split_line[6].strip(',')),
+                              'rgb': f'{split_line[7].strip(",")}, {split_line[8].strip(",")}, {split_line[9].strip(",")}'})
+    return lines
 
 
 def parse_skill(skill_num):
