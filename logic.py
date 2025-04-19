@@ -980,6 +980,10 @@ def get_item_data(item_id, full=False):
     if full:
         # Get mobs that drop this as loot
         droppers = []
+        if item_id > 2000000:
+            item_id = item_id - 2000000
+        elif 2000000 > item_id > 1000000:
+            item_id = item_id - 1000000
         with Session(bind=engine) as session:
             query = session.query(NPCTypes.id, NPCTypes.name).filter(LootDropEntries.item_id == item_id).\
                 filter(LootDropEntries.lootdrop_id == LootTableEntries.lootdrop_id).\
@@ -991,9 +995,9 @@ def get_item_data(item_id, full=False):
 
                 if {'npc_id': entry[0], 'npc_name': utils.fix_npc_name(entry[1]), 'zone_name': sub_result[0]} in droppers:
                     continue
-            droppers.append({'npc_id': entry[0],
-                             'npc_name': utils.fix_npc_name(entry[1]),
-                             'zone_name': sub_result[0]})
+                droppers.append({'npc_id': entry[0],
+                                 'npc_name': utils.fix_npc_name(entry[1]),
+                                 'zone_name': sub_result[0]})
         ret_dict['droppers'] = droppers
 
         # Get vendors that sell this
