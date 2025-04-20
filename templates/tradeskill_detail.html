@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="basicstats">
+    <center><h5>Tradeskill Information</h5></center>
+    <table>
+        <tr>
+            <td><b>Name</b></td>
+            <td>{{data.name}}</td>
+        </tr>
+        <tr>
+            <td><b>Tradeskill</b></td>
+            <td>{{data.skill}}</td>
+        </tr>
+        <tr>
+            <td><b>Skill Required To Attempt</b></td>
+            <td>{{data.required}}</td>
+        </tr>
+        <tr>
+            <td><b>Skill Trivial At</b></td>
+            <td>{{data.trivial}}</td>
+        </tr>
+        {% if data.no_fail %}
+         <tr>
+            <td colspan="2"><b>This Combine Cannot Fail</b></td>
+         </tr>
+        {% endif %}
+        {% if data.must_learn %}
+         <tr>
+             <td colspan="2"><b>You must learn this recipe</b></td>
+         </tr>
+        {% endif %}
+        {% if not data.enabled or data.min_expansion > data.expansion %}
+        <tr>
+            <td colspan="2"><b>This recipe is not currently available</b></td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="components">
+    <center><h5>Required Components</h5></center>
+    <table>
+        <thead>
+          <th>Item</th>
+          <th>Amount</th>
+        </thead>
+        {% for entry in data.components %}
+        <tr>
+            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td>{{entry.count}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="containers">
+    <center><h5>Combined In</h5></center>
+    <table>
+        {% for entry in data.containers %}
+        <tr>
+            <td>{{entry.container_type}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="results">
+    <center><h5>Results In</h5></center>
+    <table>
+        <thead>
+          <th>Item</th>
+          <th>Amount</th>
+        </thead>
+        {% for entry in data.success %}
+        <tr>
+            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td>{{entry.count}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="failure">
+    <center><h5>Returned on Failure</h5></center>
+    <table>
+        <thead>
+          <th>Item</th>
+          <th>Amount</th>
+        </thead>
+        {% for entry in data.fail %}
+        <tr>
+            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td>{{entry.count}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

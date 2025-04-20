@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block body %}
+<h3>Search Results:</h3>
+<table>
+    <thead>
+    <th>Recipe Name</th>
+    <th>Recipe Trivial</th>
+    </thead>
+    {% for entry in data|sort(attribute='trivial') %}
+     <tr>
+         <td><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></td>
+         <td>{{entry.trivial}}</td>
+     </tr>
+    {% endfor %}
+</table>
+{% endblock %}

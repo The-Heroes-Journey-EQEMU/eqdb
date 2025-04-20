@@ -1005,10 +1005,95 @@ def parse_skill(skill_num):
         return 'Intimidate'
     elif skill_num == 73:
         return 'Taunt'
+    elif skill_num == 75:
+        return 'Non-Tradeskill'
     elif skill_num == 255:
         return 'none'
     else:
         return 'Unknown skill'
+
+
+def get_object_type(obj_id):
+    if obj_id == 10:
+        return 'Tool Box'
+    elif obj_id == 11:
+        return 'Research'
+    elif obj_id == 12:
+        return 'Mortar'
+    elif obj_id == 13:
+        return 'Self Dusting'
+    elif obj_id == 14:
+        return 'Baking'
+    elif obj_id == 15:
+        return 'Baking'
+    elif obj_id == 16:
+        return 'Tailoring'
+    elif obj_id == 17:
+        return 'Forge'
+    elif obj_id == 18:
+        return 'Fletching'
+    elif obj_id == 19:
+        return 'Brew Barrel'
+    elif obj_id == 20:
+        return 'Jewelcraft'
+    elif obj_id == 21:
+        return 'Pottery Wheel'
+    elif obj_id == 22:
+        return 'Pottery Kiln'
+    elif obj_id == 24:
+        return 'Wizard Only Research'
+    elif obj_id == 25:
+        return 'Mage Only Research'
+    elif obj_id == 26:
+        return 'Necromancer Only Research'
+    elif obj_id == 27:
+        return 'Enchanter Only Research'
+    elif obj_id == 28:
+        return 'Class/Race Limited'
+    elif obj_id == 29:
+        return 'Class/Race Limited'
+    elif obj_id == 30:
+        return 'Always Works'
+    elif obj_id == 31:
+        return 'High Elf Forge'
+    elif obj_id == 32:
+        return 'Dark Elf Forge'
+    elif obj_id == 33:
+        return 'Ogre Forge'
+    elif obj_id == 34:
+        return 'Dwarven Forge'
+    elif obj_id == 35:
+        return 'Gnome Forge'
+    elif obj_id == 36:
+        return 'Barbarian Forge'
+    elif obj_id == 38:
+        return 'Iksar Forge'
+    elif obj_id == 39:
+        return 'Human Forge'
+    elif obj_id == 40:
+        return 'Human Forge'
+    elif obj_id == 41:
+        return 'Halfling Tailoring Kit'
+    elif obj_id == 42:
+        return 'Erudite Tailoring Kit'
+    elif obj_id == 43:
+        return 'Wood Elf Tailoring Kit'
+    elif obj_id == 44:
+        return 'Wood Elf Fletching Kit'
+    elif obj_id == 45:
+        return 'Iksar Pottery Wheel'
+    elif obj_id == 47:
+        return 'Troll Forge'
+    elif obj_id == 48:
+        return 'Wood Elf Forge'
+    elif obj_id == 49:
+        return 'Halfling Forge'
+    elif obj_id == 50:
+        return 'Erudite Forge'
+    elif obj_id == 53:
+        return 'Augment'
+    else:
+        raise NotImplementedError(f'Unknown object id: {obj_id}')
 
 
 def get_era_zones(era_name):

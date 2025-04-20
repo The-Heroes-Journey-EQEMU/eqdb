@@ -112,6 +112,35 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
+@app.route("/search/tradeskill", methods=['GET', 'POST'])
+def tradeskill_search():
+    if request.method == 'GET':
+        return render_template('tradeskill_search.html')
+    else:
+        tradeskill_name = request.form['tradeskill_name']
+        trivial = request.form.get('trivial')
+        tradeskill = request.form.get('tradeskill')
+        if tradeskill == 'None':
+            tradeskill = None
+        if len(tradeskill_name) > 50:
+            flash('Search by name limited to 50 characters.')
+            return redirect(url_for('tradeskill_search'))
+        elif 0 < len(tradeskill_name) < 3:
+            flash('Search by name requires at least 3 characters.')
+            return redirect(url_for('tradeskill_search'))
+        if not tradeskill_name.isascii():
+            flash('Only ASCII characters are allowed.')
+            return redirect(url_for('tradeskill_search'))
+        data = logic.get_tradeskills(name=tradeskill_name, trivial=trivial, tradeskill=tradeskill)
+        return render_template('tradeskill_search_result.html', data=data)
+
+
+@app.route("/tradeskill/detail/<int:ts_id>")
+def tradeskill_detail(ts_id):
+    data = logic.get_tradeskill_detail(ts_id)
+    return render_template('tradeskill_detail.html', data=data)
+
+
 @app.route("/npc/raw/<int:npc_id>")
 def npc_raw(npc_id):
     raw_data = logic.get_npc_raw_data(npc_id)
@@ -206,13 +235,13 @@ def npc_search():
         npc_name = request.form['npc_name']
         if len(npc_name) > 50:
             flash('Search by name limited to 50 characters.')
-            return redirect(url_for('spell_search'))
+            return redirect(url_for('npc_search'))
         elif len(npc_name) < 3:
             flash('Search by name requires at least 3 characters')
-            return redirect(url_for('spell_search'))
+            return redirect(url_for('npc_search'))
         if not npc_name.isascii():
             flash('Only ASCII characters are allowed.')
-            return redirect(url_for('item_fast_search'))
+            return redirect(url_for('npc_search'))
         data = logic.get_npcs(npc_name)
         return render_template('npc_search_result.html', data=data)
 
@@ -262,7 +291,7 @@ def spell_search():
             return redirect(url_for('spell_search'))
         if not spell_name.isascii():
             flash('Only ASCII characters are allowed.')
-            return redirect(url_for('item_fast_search'))
+            return redirect(url_for('spell_search'))
         data = logic.get_spells(spell_name)
         return render_template('spell_search_result.html', data=data)
 

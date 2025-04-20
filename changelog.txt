@@ -1,3 +1,15 @@
+==0.2.0.4==
+* Added new functionality: Tradeskill Detail
+    ** This page will display details on a Tradeskill combine
+* Added new functionality: Tradeskill Search
+    ** Lets users search for Tradeskills:
+        *** By Name
+        *** By Trivial
+        *** By Tradeskill
+* Hooked Tradeskill into Item Details
+* Fixed certain bazaar vendors NPC details
+    ** Bazaar is chaos with THJ specific NPCs.  Some parts of them are simply not going to work.
+
 ==0.2.0.3==
 * Removed zone links to out of era zones (e.g. The Hole -> Brell's Rest).  This will be defined by the current expansion setting in configuration.
 * Changed armor/weapon search results to link to EQDB internally instead of thjdi.cc
