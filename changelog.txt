@@ -1,3 +1,23 @@
+==0.2.0.5==
+* New Functionality: Tools
+    ** Moved Armor Search to Tools dropdown
+    ** Moved Weapon Search to Tools dropdown
+    ** Added Spell Listing by Class
+    ** Added a Waypoint Listing page
+    ** Added a pet detail page
+    ** Hooked pet detail page into Spell Detail
+* New Functionality: Factions
+    ** Added Faction Detail page to show faction details
+    ** Hooked Faction Details into NPC page
+    ** Added Faction Search
+* Added Fast Search on the toolbar
+    ** Limited to 50 results
+* Added Waypoint details to Zone Detail page
+* Fixed body types to include all possibilities
+* Clarified what the name search is searching for in Tradeskill Search
+* Reworded the main page since it's no longer accurate
+
+
 ==0.2.0.4==
 * Added new functionality: Tradeskill Detail
     ** This page will display details on a Tradeskill combine

@@ -36,16 +36,21 @@ $(document).ready(function() {
         <li class="nav-item">
         </b><a class="nav-link" href="{{ url_for('main_page') }}"><b>EQDB</b></a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('armor_search') }}">Armor Search</a>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Tools
+        </a>
+        <div class="dropdown-menu">
+            <ul>
+          <a class="nav-link" href="{{ url_for('armor_search') }}">Armor Search</a>
+          <a class="nav-link" href="{{ url_for('weapon_search') }}">Weapon Search</a>
+          <a class="nav-link" href="{{ url_for('waypoint_listing') }}">Waypoint List</a>
+          <a class="nav-link" href="{{ url_for('spell_listing') }}">Class Spell Listing</a>
+          <a class="nav-link" href="{{ url_for('pet_listing') }}">Pet Listing</a>
+            </ul>
+        </div>
       </li>
         <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('weapon_search') }}">Weapon Search</a>
-      </li>
-        <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('identify') }}">Identify Items</a>
-      </li>
-                <li class="nav-item">
         <a class="nav-link" href="{{ url_for('spell_search') }}">Spells</a>
       </li>
                 <li class="nav-item">
@@ -60,9 +65,18 @@ $(document).ready(function() {
         <li class="nav-item">
         <a class="nav-link" href="{{ url_for('tradeskill_search') }}">Tradeskills</a>
       </li>
+        <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('faction_search') }}">Factions</a>
+      </li>
+      <form class="d-flex input-group w-auto" role="search" id="searchForm" action="{{ url_for('all_search') }}" method="post" novalidate>
+        <input class="form-control" id="search" name="all_names" required type="text" value="">
+        <input class="btn btn-sm btn-outline-secondary" id="submit" name="submit" type="submit" value="Search">
+      </form>
      </ul>
    <ul class="navbar-nav my-2 my-lg-0 mr-sm-2">
-
+        <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('identify') }}">Identify Items</a>
+      </li>
        <li class="nav-item">
         <a class="nav-link" href="{{ url_for('about') }}">About</a>
       </li>
@@ -102,7 +116,9 @@ $(document).ready(function() {
     Site Version: {{config.SITE_VERSION}}<br>
 Site created by Convection.  &nbsp;&nbsp;&nbsp;&nbsp;EQDB is not affiliated with Daybreak Games, Darkpaw Studios, TheHeroesJourney EMU, or other EverQuest Fan Sites.&nbsp;&nbsp;&nbsp;&nbsp;<br>
 Special thanks to Talodar from www.thjdi.cc for assitance, tooltips, and item links.&nbsp;&nbsp;&nbsp;&nbsp;
-Special thanks to Aporia and Catapultam for providing data and the TheHeroesJourney EMU server.&nbsp;&nbsp;&nbsp;&nbsp;       </font>
+Special thanks to Aporia and Catapultam for providing data and the TheHeroesJourney EMU server.&nbsp;&nbsp;&nbsp;&nbsp;<br>
+        Credit to <a href="https://www.eqmaps.info/">Brewall Maps</a> for all maps shown
+</font>
 </center>
 {% endblock %}
 </html>

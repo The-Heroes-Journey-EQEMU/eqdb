@@ -69,6 +69,9 @@ Forage = Base.classes.forage
 GroundSpawns = Base.classes.ground_spawns
 TradeskillRecipe = Base.classes.tradeskill_recipe
 TradeskillRecipeEntries = Base.classes.tradeskill_recipe_entries
+NPCFactionEntries = Base.classes.npc_faction_entries
+FactionList = Base.classes.faction_list
+Pets = Base.classes.pets
 
 
 IdentifiedItems = LocalBase.classes.identified_items
@@ -150,6 +153,441 @@ def get_leaderboard():
         contributors.append(contributor)
 
     return contributors
+
+
+def get_all_class_pets(class_id):
+    spas = [SpellsNewReference.effectid1 == 33, SpellsNewReference.effectid1 == 71, SpellsNewReference.effectid1 == 106]
+    spa_param = or_(*spas)
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference.id, SpellsNewReference.name, SpellsNewReference.teleport_zone).\
+            filter(spa_param).\
+            filter(getattr(SpellsNewReference, f'classes{class_id}') != 255)
+        result = query.all()
+    data = []
+    for entry in result:
+        data.append({'spell_id': entry[0],
+                     'spell_name': entry[1],
+                     'pet_name': entry[2]})
+    return data
+
+
+def get_pet_data(pet_spell_name):
+    # Get basic data
+    with Session(bind=engine) as session:
+        query = session.query(Pets.id, Pets.type, Pets.petpower, Pets.npcID, Pets.temp).filter(Pets.type == pet_spell_name)
+        result = query.first()
+
+    if not result:
+        return None
+
+    base_data = {'pet_id': result[0],
+                 'pet_name': result[1],
+                 'pet_power': result[2],
+                 'swarm_pet': bool(result[4])}
+    npc_id = result[3]
+
+    # Get the NPC data we care about
+    with Session(bind=engine) as session:
+        query = session.query(NPCTypes).filter(NPCTypes.id == npc_id)
+        result = query.first()
+    if not result:
+        return None
+    npc_data = result.__dict__
+    npc_data.pop('_sa_instance_state')
+
+    # Update certain things
+    npc_data['bodytype'] = utils.get_bane_dmg_body(npc_data['bodytype'])
+    npc_data['class'] = utils.get_class_string(npc_data['class'])
+    npc_data['race'] = utils.get_bane_dmg_race(npc_data['race'])
+
+    # Convert special abilities to make sense
+    specials = []
+    spc = result.npcspecialattks
+    if 'E' in spc:
+        specials.append('Enrages')
+    if 'F' in spc:
+        specials.append('Flurries')
+    if 'R' in spc:
+        specials.append('Rampages')
+    if 'r' in spc:
+        specials.append('Wild Rampages')
+    if 'S' in spc:
+        specials.append('Summons')
+    if 'T' in spc:
+        specials.append('Triple Attacks')
+    if 'Q' in spc:
+        specials.append('Quad Attacks')
+    if 'b' in spc:
+        specials.append('Bane Attacks')
+    if 'm' in spc:
+        specials.append('Magical Attacks')
+    if 'U' in spc:
+        specials.append('Immune to Slow')
+    if 'C' in spc:
+        specials.append('Immune to Charm')
+    if 'N' in spc:
+        specials.append('Immune to Stuns')
+    if 'I' in spc:
+        specials.append('Immune to Snare')
+    if 'D' in spc:
+        specials.append('Immune to Slow')
+    if 'K' in spc:
+        specials.append('Immune to Dispel Magic')
+    if 'A' in spc:
+        specials.append('Immune to Melee')
+    if 'B' in spc:
+        specials.append('Immune to Magic')
+    if 'f' in spc:
+        specials.append('Will not flee')
+    if 'O' in spc:
+        specials.append('Immune to non-bane Melee')
+    if 'W' in spc:
+        specials.append('Immune to non-magical Melee')
+    if 'G' in spc:
+        specials.append('Cannot be agroed')
+    if 'g' in spc:
+        specials.append('Belly Caster')
+    if 'd' in spc:
+        specials.append('Ignores Feign Death')
+    if 'Y' in spc:
+        specials.append('Has a Ranged Attack')
+    if 'L' in spc:
+        specials.append('Dual Wields')
+    if 't' in spc:
+        specials.append('Focused Hate')
+    if 'n' in spc:
+        specials.append('Does not buff/heal friends')
+    if 'p' in spc:
+        specials.append('Immune to Pacify')
+    if 'J' in spc:
+        specials.append('Leashed to combat area')
+    if 'j' in spc:
+        specials.append('Thetered to combat area')
+    if 'o' in spc:
+        specials.append('Destructible Object')
+    if 'Z' in spc:
+        specials.append('Immune to player damage')
+    if 'i' in spc:
+        specials.append('Immune to Taunt')
+    if 'e' in spc:
+        specials.append('Will always flee')
+    if 'h' in spc:
+        specials.append('Flee at low percent health')
+    npc_data.update({'special_attacks': specials})
+    base_data.update({'npc': npc_data})
+
+    return base_data
+
+
+def get_spells_by_class(class_id, min_level=1, max_level=65):
+    filters = [getattr(SpellsNewReference, f'classes{class_id}') >= min_level,
+               getattr(SpellsNewReference, f'classes{class_id}') <= max_level]
+    params = and_(*filters)
+
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference.id, getattr(SpellsNewReference, f'classes{class_id}'), SpellsNewReference.name).filter(params)
+        result = query.all()
+
+    data = {}
+    for entry in result:
+        spell_id = entry[0]
+        level = entry[1]
+        spell_name = entry[2]
+        if level in data:
+            level_list = data.get(level)
+        else:
+            level_list = []
+        level_list.append({'spell_id': spell_id, 'spell_name': spell_name})
+        data.update({level: level_list})
+
+    return data
+
+
+def waypoint_listing():
+    antonica = {}
+    faydwer = {}
+    odus = {}
+    kunark = {}
+    velious = {}
+    luclin = {}
+    planes = {}
+    taelosia = {}
+    kuua = {}
+    entries = [Zone.short_name == 'blackburrow',
+               Zone.short_name == 'commons',
+               Zone.short_name == 'ecommons',
+               Zone.short_name == 'feerrott',
+               Zone.short_name == 'freportw',
+               Zone.short_name == 'grobb',
+               Zone.short_name == 'everfrost',
+               Zone.short_name == 'halas',
+               Zone.short_name == 'highkeep',
+               Zone.short_name == 'lavastorm',
+               Zone.short_name == 'neriakb',
+               Zone.short_name == 'northkarana',
+               Zone.short_name == 'eastkarana',
+               Zone.short_name == 'oasis',
+               Zone.short_name == 'oggok',
+               Zone.short_name == 'oot',
+               Zone.short_name == 'qey2hh1',
+               Zone.short_name == 'qeynos2',
+               Zone.short_name == 'qrg',
+               Zone.short_name == 'rivervale',
+               Zone.short_name == 'gukbottom',
+               Zone.short_name == 'lakerathe',
+               Zone.short_name == 'southkarana']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        antonica.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'akanon',
+               Zone.short_name == 'cauldron',
+               Zone.short_name == 'felwithea',
+               Zone.short_name == 'gfaydark',
+               Zone.short_name == 'kaladmina',
+               Zone.short_name == 'mistmoore']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        faydwer.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'erudnext',
+               Zone.short_name == 'hole',
+               Zone.short_name == 'paineel',
+               Zone.short_name == 'tox',
+               Zone.short_name == 'stonebrunt',
+               Zone.short_name == 'dulak',
+               Zone.short_name == 'gunthak']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        odus.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'burningwood',
+               Zone.short_name == 'cabeast',
+               Zone.short_name == 'citymist',
+               Zone.short_name == 'dreadlands',
+               Zone.short_name == 'fieldofbone',
+               Zone.short_name == 'firiona',
+               Zone.short_name == 'frontiermtns',
+               Zone.short_name == 'karnor',
+               Zone.short_name == 'lakeofillomen',
+               Zone.short_name == 'overthere',
+               Zone.short_name == 'skyfire',
+               Zone.short_name == 'timorous',
+               Zone.short_name == 'trakanon',
+               Zone.short_name == 'chardokb']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        kunark.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'cobaltscar',
+               Zone.short_name == 'eastwastes',
+               Zone.short_name == 'greatdivide',
+               Zone.short_name == 'iceclad',
+               Zone.short_name == 'wakening',
+               Zone.short_name == 'westwastes',
+               Zone.short_name == 'cobaltscar',
+               Zone.short_name == 'sirens']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        velious.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'dawnshroud',
+               Zone.short_name == 'fungusgrove',
+               Zone.short_name == 'sharvahl',
+               Zone.short_name == 'ssratemple',
+               Zone.short_name == 'tenebrous',
+               Zone.short_name == 'umbral',
+               Zone.short_name == 'twilight',
+               Zone.short_name == 'scarlet',
+               Zone.short_name == 'paludal',
+               Zone.short_name == 'bazaar']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        luclin.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'airplane',
+               Zone.short_name == 'fearplane',
+               Zone.short_name == 'hateplaneb',
+               Zone.short_name == 'poknowledge',
+               Zone.short_name == 'potranquility',
+               Zone.short_name == 'potimea']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        planes.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'barindu',
+               Zone.short_name == 'kodtaz',
+               Zone.short_name == 'natimbi',
+               Zone.short_name == 'qvic',
+               Zone.short_name == 'txevu']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        taelosia.update({entry[2]: sub_data})
+
+    entries = [Zone.short_name == 'wallofslaughter']
+    entry_params = or_(*entries)
+    with Session(bind=engine) as session:
+        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+        result = query.all()
+
+    for entry in result:
+        sub_data = utils.get_zone_waypoint(entry[0])
+        sub_data.update({'zone_id': entry[1]})
+        kuua.update({entry[2]: sub_data})
+
+    return {'Antonica': antonica,
+            'Faydwer': faydwer,
+            'Odus': odus,
+            'Kunark': kunark,
+            'Velious': velious,
+            'Luclin': luclin,
+            'Planes': planes,
+            'Taelosia': taelosia,
+            'Kuua': kuua}
+
+
+def all_search(name=None):
+    return {'tradeskill': get_tradeskills(name=name),
+            'game_items': get_fast_item(name),
+            'spells': get_spells(name),
+            'npcs': get_npcs(name),
+            'zones': get_zone(name),
+            'factions': get_factions(name)}
+
+
+def get_factions(name):
+    partial = "%%%s%%" % name
+    with Session(bind=engine) as session:
+        query = session.query(FactionList.name, FactionList.id).filter(FactionList.name.like(partial))
+        result = query.all()
+
+    out_factions = []
+    for entry in result:
+        out_factions.append({'faction_name': entry[0],
+                             'faction_id': entry[1]})
+    return out_factions
+
+
+def get_zone(name):
+    partial = "%%%s%%" % name
+    with Session(bind=engine) as session:
+        query = session.query(Zone.zoneidnumber, Zone.long_name).filter(Zone.long_name.like(partial))
+        result = query.all()
+
+    out_zones = []
+    for entry in result:
+        out_zones.append({'zone_id': entry[0],
+                          'zone_name': entry[1]})
+    return out_zones
+
+
+def get_faction(faction_id):
+    # Get name
+    if faction_id == 5013:
+        return None
+    base_data = {}
+    with Session(bind=engine) as session:
+        query = session.query(FactionList.name).filter(FactionList.id == faction_id)
+        result = query.one()
+
+    base_data.update({'name': result[0]})
+
+    # Get all the NPCs associated with this faction
+    pos_zones = {}
+    neg_zones = {}
+    zone_lookup = {}
+    with Session(bind=engine) as session:
+        query = session.query(NPCFactionEntries.value, NPCTypes.id, NPCTypes.name).\
+            filter(NPCFactionEntries.faction_id == faction_id).\
+            filter(NPCFactionEntries.npc_faction_id == NPCTypes.npc_faction_id)
+        result = query.all()
+
+    for entry in result:
+        value = entry[0]
+        npc_id = entry[1]
+        npc_name = entry[2]
+        zone = int(npc_id / 1000)
+        npc = {'npc_id': npc_id,
+               'npc_name': npc_name,
+               'value': value}
+        if zone not in zone_lookup:
+            with Session(bind=engine) as session:
+                query = session.query(Zone.long_name).filter(Zone.zoneidnumber == zone)
+                result = query.first()
+                if not result:
+                    zone_name = "Unknown"
+                else:
+                    zone_name = result[0]
+                zone_lookup.update({zone: zone_name})
+        else:
+            zone_name = zone_lookup[zone]
+
+        if value < 0:
+            if zone_name in neg_zones:
+                zone_list = neg_zones[zone_name]
+            else:
+                zone_list = []
+            zone_list.append(npc)
+            neg_zones.update({zone_name: zone_list})
+        else:
+            if zone_name in pos_zones:
+                zone_list = pos_zones[zone_name]
+            else:
+                zone_list = []
+            zone_list.append(npc)
+            pos_zones.update({zone_name: zone_list})
+    base_data.update({'positive': pos_zones})
+    base_data.update({'negative': neg_zones})
+
+    return base_data
 
 
 def get_tradeskills(name=None, trivial=None, tradeskill=None):
@@ -275,6 +713,14 @@ def get_npc_detail(npc_id):
     base_data['name'] = utils.fix_npc_name(base_data['name'])
     base_data['class'] = utils.get_class_string(base_data['class'])
     base_data['race'] = utils.get_bane_dmg_race(base_data['race'])
+
+    # Update the faction to the name
+    with Session(bind=engine) as session:
+        query = session.query(FactionList.name, FactionList.id).\
+            filter(NPCFactionEntries.npc_faction_id == base_data['npc_faction_id']).\
+            filter(FactionList.id == NPCFactionEntries.faction_id)
+        sub_result = query.one()
+    base_data['faction'] = {'faction_name': sub_result[0], 'faction_id': sub_result[1]}
 
     # Convert special abilities to make sense
     specials = []
@@ -576,6 +1022,9 @@ def get_zone_detail(zone_id):
                                         'respawn': respawn,
                                         'npcs': npc_list}})
     base_data['spawn_groups'] = spawn_groups
+
+    # Get waypoint, assuming there is one
+    base_data['waypoint'] = utils.get_zone_waypoint(short_name)
 
     return base_data
 

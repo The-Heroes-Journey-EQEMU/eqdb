@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+{% for entry in data %}
+ <h3>{{entry}}</h3>
+ <ul>
+     {% for sub_entry in data[entry] %}
+      <li><a href="{{url_for('zone_detail', zone_id=data[entry][sub_entry]['zone_id'])}}">{{sub_entry}}</a> - ({{data[entry][sub_entry]['x']}}, {{data[entry][sub_entry]['y']}}, {{data[entry][sub_entry]['z']}})</li>
+     {% endfor %}
+ </ul>
+<br>
+{% endfor %}
+{% endblock %}

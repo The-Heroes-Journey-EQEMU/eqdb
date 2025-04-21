@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block body %}
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.spell-tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
+<div id="top"></div>
+{% for level in data|sort %}
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="{{level}}">
+    <center><h3>Level {{level}}</h3></center>
+    <ul>
+    {% for entry in data[level]|sort(attribute="spell_name") %}
+        <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></li>
+    {% endfor %}
+    </ul>
+</div><br>
+{% endfor %}
+{% endblock %}

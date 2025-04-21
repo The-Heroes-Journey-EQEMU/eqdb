@@ -112,6 +112,86 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
+@app.route("/pet/listing", methods=['GET', 'POST'])
+def pet_listing():
+    if request.method == 'GET':
+        return render_template('pet_listing.html')
+    else:
+        class_id = request.form.get('class_id')
+        if class_id == 'None':
+            flash("You must select a class")
+            return redirect(url_for('pet_listing'))
+        data = logic.get_all_class_pets(class_id)
+        return render_template('pet_listing_result.html', data=data)
+
+
+@app.route("/pet/detail/<pet_sum_name>")
+def pet_detail(pet_sum_name):
+    data = logic.get_pet_data(pet_sum_name)
+    return render_template('pet_detail.html', data=data)
+
+
+@app.route("/spell/listing", methods=['GET', 'POST'])
+def spell_listing():
+    if request.method == 'GET':
+        return render_template('spell_listing.html')
+    else:
+        class_id = request.form.get('class_id')
+        if class_id == 'None':
+            flash("You must select a class")
+            return redirect(url_for('spell_listing'))
+        min_level = request.form.get('min_level')
+        max_level = request.form.get('max_level')
+
+        data = logic.get_spells_by_class(class_id, min_level=min_level, max_level=max_level)
+        return render_template('spell_listing_result.html', data=data)
+
+
+@app.route("/zone/waypoint/listing")
+def waypoint_listing():
+    return render_template('waypoint_listing.html', data=logic.waypoint_listing())
+
+
+@app.route("/faction/detail/<int:faction_id>")
+def faction_detail(faction_id):
+    return render_template('faction_detail.html', data=logic.get_faction(faction_id))
+
+
+@app.route("/search/all", methods=['POST'])
+def all_search():
+    name = request.form['all_names']
+    if len(name) > 50:
+        flash('Search by name limited to 50 characters.')
+        return redirect(url_for('tradeskill_search'))
+    elif 0 < len(name) < 3:
+        flash('Search by name requires at least 3 characters.')
+        return redirect(url_for('tradeskill_search'))
+    if not name.isascii():
+        flash('Only ASCII characters are allowed.')
+        return redirect(url_for('tradeskill_search'))
+    data = logic.all_search(name=name)
+    return render_template('all_search_result.html', data=data)
+
+
+@app.route("/search/faction", methods=['GET', 'POST'])
+def faction_search():
+    if request.method == 'GET':
+        return render_template('faction_search.html')
+    else:
+        faction_name = request.form['faction_name']
+        if len(faction_name) > 50:
+            flash('Search by name limited to 50 characters.')
+            return redirect(url_for('npc_search'))
+        elif len(faction_name) < 3:
+            flash('Search by name requires at least 3 characters')
+            return redirect(url_for('npc_search'))
+        if not faction_name.isascii():
+            flash('Only ASCII characters are allowed.')
+            return redirect(url_for('npc_search'))
+        data = logic.get_factions(faction_name)
+        return render_template('faction_search_result.html', data=data)
+
+
 @app.route("/search/tradeskill", methods=['GET', 'POST'])
 def tradeskill_search():
     if request.method == 'GET':

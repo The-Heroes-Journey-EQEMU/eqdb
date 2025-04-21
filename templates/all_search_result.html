@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block body %}
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.spell-tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
+<h3>Search Results:</h3><br>
+{% if data.game_items %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="game_items">
+        <center><h3>Items</h3></center>
+        <ul>
+    {% for entry in data.game_items %}
+        <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.name}}</a></li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if data.spells %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="spells">
+        <center><h3>Spells</h3></center>
+        <ul>
+    {% for entry in data.spells %}
+        <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.name}}</a></li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if data.npcs %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="npcs">
+        <center><h3>NPCs</h3></center>
+        <ul>
+    {% for entry in data.npcs %}
+        <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.name}}</a> - {{entry.zone}}</li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if data.zones %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="zones">
+        <center><h3>Zones</h3></center>
+        <ul>
+    {% for entry in data.zones %}
+        <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a></li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if data.tradeskill %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="tradeskill">
+        <center><h3>Tradeskills</h3></center>
+        <ul>
+    {% for entry in data.tradeskill %}
+        <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% if data.factions %}
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="factions">
+        <center><h3>Factions</h3></center>
+        <ul>
+    {% for entry in data.factions %}
+        <li><a href="{{url_for('faction_detail', faction_id=entry.faction_id)}}">{{entry.faction_name}}</a></li>
+    {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+{% endblock %}

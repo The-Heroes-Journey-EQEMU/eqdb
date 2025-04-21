@@ -31,6 +31,9 @@
         <li>Expansion: {{data.expansion}}</li>
         <li>Short Name: {{data.short_name}}</li>
         <li>Succor: {{data.safe_x}}, {{data.safe_y}}</li>
+        {% if data.waypoint %}
+           <li><font color="green">Waypoint: {{data.waypoint.x}}, {{data.waypoint.y}}, {{data.waypoint.z}}</font></li>
+        {% endif %}
         {% if data.can_bind %}
             <li>Players can bind here</li>
         {% else %}
@@ -106,6 +109,9 @@
                                       z1="{{entry.z1}}" z2="{{entry.z2}}" stroke="rgb({{entry.rgb}})"
                                       stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
                                 {% endfor %}
+                                {% if data['waypoint'] %}
+                                <circle r="25" cx="{{data['waypoint']['x'] * -1}}" cy="{{data['waypoint']['y'] * -1}}" fill="green"/>
+                                {% endif %}
                             </svg>
                             <div id="mouse-position-box">X: 0, Y: 0</div>
                         </div>

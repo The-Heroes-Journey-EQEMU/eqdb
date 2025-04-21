@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block body %}
+<ul>
+{% for entry in data %}
+    <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}">{{entry.spell_name}}</a> - <a href="{{url_for('pet_detail', pet_sum_name=entry.pet_name)}}">{{entry.pet_name}}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

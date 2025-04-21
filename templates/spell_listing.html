@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block body %}
+<script>
+function checkSubmit(e) {
+	if(e && e.keyCode == 13) {
+		document.forms[0].submit();
+	}
+}
+</script>
+<script>
+$(document).ready(function() {
+
+    $('textarea').keypress(function(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
+    });
+});
+
+
+</script>
+<form actions="{{ url_for('spell_listing') }}" method="post" class="add-entry" id="demoForm">
+    Class:
+    <select name="class_id" id="class_id">
+        <option value="None" selected="selected">--Select Class--</option>
+        <option value="8">Bard</option>
+        <option value="15">Beastlord</option>
+        <option value="16">Berserker</option>
+        <option value="2">Cleric</option>
+        <option value="6">Druid</option>
+        <option value="14">Enchanter</option>
+        <option value="13">Magician</option>
+        <option value="7">Monk</option>
+        <option value="11">Necromancer</option>
+        <option value="3">Paladin</option>
+        <option value="4">Ranger</option>
+        <option value="9">Rogue</option>
+        <option value="5">Shadow Knight</option>
+        <option value="10">Shaman</option>
+        <option value="12">Wizard</option>
+        <option value="1">Warrior</option>
+</select><br>
+    Minimum Level: <input type="number" id="min_level" name="min_level" min="1" max="65"><br>
+    Maximum Level: <input type="number" id="max_level" name="max_level" min="1" max="65"><br>
+<input type="submit" value="Search">
+</form>
+{% endblock %}

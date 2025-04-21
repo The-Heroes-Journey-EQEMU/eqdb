@@ -21,7 +21,7 @@ $(document).ready(function() {
 
 </script>
 <form actions="{{ url_for('tradeskill_search') }}" method="post" class="add-entry" id="demoForm">
-    Item Name (partial allowed): <textarea rows="1" class="nameentry" name="tradeskill_name"
+    Recipe/Item Name (partial allowed): <textarea rows="1" class="nameentry" name="tradeskill_name"
                                            onKeyPress="return checkSubmit(event)"></textarea><br>
     Trivial (number and below): <input type="number" id="trivial" name="quantity" min="0" max="500"><br>
     Tradeskill: <select name="tradeskill" id="tradeskill">

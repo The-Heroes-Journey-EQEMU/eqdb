@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block body %}
+{% if data is not none %}
+<center><h1>{{data.name}}</h1></center>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="positive">
+    <center><h3>Raises Faction</h3></center>
+    <table>
+        <thead>
+        <td>NPC</td>
+        <td>Zone</td>
+        <td>Amount</td>
+        </thead>
+    {% for zone_name in data.positive %}
+          {% for entry in data.positive[zone_name] %}
+          <tr>
+          <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+            <td>{{zone_name}}</td>
+            <td>+{{entry.value}}</td>
+          </tr>
+          {% endfor %}
+    {% endfor %}
+    </table>
+</div>
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="negative">
+    <center><h3>Lowers Faction</h3></center>
+    <table>
+        <thead>
+        <td>NPC</td>
+        <td>Zone</td>
+        <td>Amount</td>
+        </thead>
+    {% for zone_name in data.positive %}
+          {% for entry in data.negative[zone_name] %}
+          <tr>
+          <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+            <td>{{zone_name}}</td>
+            <td>{{entry.value}}</td>
+          </tr>
+          {% endfor %}
+    {% endfor %}
+    </table>
+</div>
+{% else %}
+<center><h2>KOS</h2></center>
+There are too many entires in the KOS faction to make any sense showing.  There are no NPCs you can kill to raise this Faction.
+{% endif %}
+{% endblock %}

@@ -120,7 +120,7 @@ def parse_target_type(type_id):
     elif type_id == 44:
         return "Beam"
     else:
-        raise Exception(f'Unknown target type: {type_id}')
+        return f'Unknown target type: {type_id}'
 
 
 def get_spell_min_level(data):
@@ -418,8 +418,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
         # Spawn NPC
-        # TODO: Get the pet link in here
-        return f'Summon pet: {data.teleport_zone}'
+        return f'Summon pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 34:
         # Confuse
         return f'SPA 34: Unused (tell the EQDB dev to fix me)'
@@ -602,7 +601,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'SPA 70: Unused (tell the EQDB dev to fix me)'
     elif spa == 71:
         # Create Undead
-        return f'Summon undead pet: {data.teleport_zone}'
+        return f'Summon undead pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 72:
         # PreserveCorpse
         return f'SPA 72: Unused (tell the EQDB dev to fix me)'
@@ -758,13 +757,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return 'Prevent Gate Spell'
     elif spa == 106:
         # BeastLordPet
-        return f'Summon Warder {data.teleport_zone}'
+        return f'Summon Warder: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 107:
         # Alter Pet Level
         return f'SPA 107: Unused (tell the EQDB dev to fix me)'
     elif spa == 108:
         # Familiar
-        return f'Summon Familiar {data.teleport_zone}'
+        return f'Summon Familiar: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 109:
         # CreateItemInBag
         item_data = logic.get_item_data(min_val)
@@ -781,7 +780,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Increase Effective Casting Level by {min_val}'
     elif spa == 113:
         # Summon Horse
-        return f'Summon Horse: {data.teleport_name}'
+        return f'Summon Horse: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 114:
         # Modify Hate
         if min_val < 0:
@@ -951,7 +950,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return "Suspend Pet"
     elif spa == 152:
         # PetSwarm
-        return f'Summon Swarm Pets: {data.teleport_zone}'
+        return f'Summon Swarm Pet(s): <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 153:
         # Damage Balance
         return f'Balance group health with {min_val} penalty'
@@ -1502,10 +1501,10 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Shrink Pet'
     elif spa == 299:
         # Wake the Dead 1 (Corpse Class)
-        return f'Summon Swarm Pet {data.teleport_zone}'
+        return f'Summon Swarm Pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 300:
         # Doppelganger
-        return f'Summon Swarm Pet {data.teleport_zone}'
+        return f'Summon Swarm Pets: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 301:
         # Increase Range Damage
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
@@ -1523,7 +1522,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Reduce damage shield damage taken by {min_val}'
     elif spa == 306:
         # Wake the Dead 2 (File Class)
-        return f'Summon Swarm Pet {data.teleport_zone}'
+        return f'Summon Swarm Pets: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 307:
         # Appraisal
         return 'Show Sell Price of Item on Cursor'
@@ -1680,7 +1679,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Convert {min_val} mana to damage'
     elif spa == 351:
         # Spawn Interactive Object
-        return f'Summon Aura: {data.teleport_zone}'
+        return f'Summon Aura: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 352:
         # Increase Trap Count
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
@@ -1738,8 +1737,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Set body type to {body_type}'
     elif spa == 368:
         # Modify Faction
-        # TODO: Hook into Factions
-        return f'Set faction {min_val} to {limit_val}'
+        return f'Set faction <a href="/faction/detail/{min_val}">{min_val}</a> to {limit_val}'
     elif spa == 369:
         # Corruption
         if min_val < 0:
@@ -2249,7 +2247,7 @@ def do_formula(base_value, formula_id, max_val, level=1, ignore_max=False):
             return base + (level * 4)
         ret_val, max_level = calculate_values(base_value, level, max_val, test_value_func)
     elif formula_id == 107 or formula_id == 108:
-        raise Exception('Currently Unsupported')
+        return -1, -1
     elif formula_id == 109:
         def test_value_func(base, level):
             return base + (level / 4)

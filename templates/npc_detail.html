@@ -59,7 +59,7 @@
         <li>Class: {{data.class}}</li>
         <li>Race: {{data.race}}</li>
         <li>Body Type: {{data.bodytype}}</li>
-        <li>Faction: {{data.npc_faction_id}}</li>
+        <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
         <li>Min Hit: {{data.mindmg}}</li>
         <li>Max Hit: {{data.maxdmg}}</li>
         <li>HP: {{data.hp}}</li>

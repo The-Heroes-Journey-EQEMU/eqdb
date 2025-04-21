@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block body %}
+{% if data is none %}
+<h3>Pet Data Not Found</h3>
+{% else %}
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="pet">
+    <center><h3>{{data.pet_name}}</h3></center>
+<ul>
+    <li>Pet Power: {{data.pet_power}}</li>
+    <li>Swarm Pet? {{data.swarm_pet}}</li>
+    <li>Level: {{data.npc.level}}</li>
+    <li>Class: {{data.npc.class}}</li>
+    <li>Race: {{data.npc.race}}</li>
+    <li>Body: {{data.npc.bodytype}}</li>
+    <li>Special Attack:</li>
+    <ul>
+        {% for entry in data.npc.special_attacks %}
+        <li>{{entry}}</li>
+        {% endfor%}
+    </ul>
+</ul>
+</div>
+{% endif %}
+{% endblock %}
