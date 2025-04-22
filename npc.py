@@ -23,6 +23,9 @@ def get_npcs(npc_name):
             query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
             sub_result = query.first()
 
+        if not sub_result:
+            continue
+
         if int(sub_result[1]) > expansion:
             continue
 

@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
+<div style="display: flex; justify-content: center;">
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="basicstats">
     <center><h5>Tradeskill Information</h5></center>
     <table>
@@ -40,12 +41,14 @@
     <center><h5>Required Components</h5></center>
     <table>
         <thead>
+        <th></th>
           <th>Item</th>
           <th>Amount</th>
         </thead>
         {% for entry in data.components %}
         <tr>
-            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
+            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
         {% endfor %}
@@ -53,23 +56,23 @@
 </div>
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="containers">
     <center><h5>Combined In</h5></center>
-    <table>
+    <ul>
         {% for entry in data.containers %}
-        <tr>
-            <td>{{entry.container_type}}</td>
-        </tr>
+            <li>{{entry.container_type}}</li>
         {% endfor %}
-    </table>
+    </ul>
 </div>
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="results">
     <center><h5>Results In</h5></center>
     <table>
         <thead>
+          <th></th>
           <th>Item</th>
           <th>Amount</th>
         </thead>
         {% for entry in data.success %}
         <tr>
+            <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
             <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
@@ -80,15 +83,18 @@
     <center><h5>Returned on Failure</h5></center>
     <table>
         <thead>
+          <th></th>
           <th>Item</th>
           <th>Amount</th>
         </thead>
         {% for entry in data.fail %}
         <tr>
+            <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
             <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
         {% endfor %}
     </table>
+</div>
 </div>
 {% endblock %}

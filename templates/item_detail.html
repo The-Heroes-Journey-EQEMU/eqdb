@@ -1,35 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.spell-tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
-<center><h3>{{item.Name}}</h3></center>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="itemstats">
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width=750px;" id="itemstats">
 <style>
     .item-card {
         border: 1px solid transparent;
         border-collapse: collapse;
+        width: 716px;
     }
 
     .item-card td, item-card th {
@@ -60,6 +37,9 @@
                 <colgroup>
                     <col style="width: 45px;"/>
                 </colgroup>
+                <tr>
+                    <td rowspan="5"><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{item.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{item.icon}}'></span></div></td>
+                </tr>
                 <tr>
                     <td rowspan="5"></td>
                     <td>{{item.Name}}</td>
@@ -526,8 +506,9 @@
         </tr>
         </tbody>
     </table>
-</div><br>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="item_links">
+</div></div>
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 750px;" id="item_links">
     <ul class="nav nav-tabs" id="myTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic Info</a>
@@ -636,5 +617,5 @@
         </div>
         {% endif %}
     </div>
-</div>
+</div></div>
 {% endblock %}

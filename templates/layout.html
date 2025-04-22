@@ -1,5 +1,53 @@
 <html data-bs-theme="dark">
-<title>EQDB - Item and Focus Search</title>
+<title>EQDB - The Heroes Journey Database Search</title>
+
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        tippy('.spell-tooltip-link', {
+            placement: 'right',
+            flipDuration: 0,
+            content: 'Loading...',
+            allowHTML: true,
+            maxWidth: 'none',
+            onShow(instance) {
+                const url = instance.reference.dataset.url;
+                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        instance.setContent(content);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tooltip content:', error);
+                    });
+            },
+        });
+    });
+</script>
+
 
 <!-- JQuery -->
 <script src="https://code.jquery.com/jquery-1.9.1.js"></script>

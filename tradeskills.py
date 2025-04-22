@@ -29,7 +29,7 @@ def get_tradeskill_detail(ts_id):
     # Get the items involved in making the recipe
     with Session(bind=engine) as session:
         args = [TradeskillRecipeEntries.item_id, Item.Name, TradeskillRecipeEntries.successcount,
-                TradeskillRecipeEntries.failcount, TradeskillRecipeEntries.componentcount]
+                TradeskillRecipeEntries.failcount, TradeskillRecipeEntries.componentcount, Item.icon]
         query = session.query(*args).filter(TradeskillRecipeEntries.recipe_id == ts_id).\
             filter(TradeskillRecipeEntries.iscontainer <= 0).\
             filter(TradeskillRecipeEntries.item_id == Item.id)
@@ -44,19 +44,23 @@ def get_tradeskill_detail(ts_id):
         successcount = entry[2]
         failcount = entry[3]
         componentcount = entry[4]
+        icon = entry[5]
 
         if successcount > 0:
             success.append({'item_id': item_id,
                             'item_name': item_name,
-                            'count': successcount})
+                            'count': successcount,
+                            'icon': icon})
         if failcount > 0:
             fail.append({'item_id': item_id,
                          'item_name': item_name,
-                         'count': failcount})
+                         'count': failcount,
+                         'icon': icon})
         if componentcount > 0:
             components.append({'item_id': item_id,
                                'item_name': item_name,
-                               'count': componentcount})
+                               'count': componentcount,
+                               'icon': icon})
     base_data.update({'components': components,
                       'success': success,
                       'fail': fail})

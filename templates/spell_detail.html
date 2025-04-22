@@ -2,7 +2,8 @@
 {% block body %}
 <center><h2>{{data.name}}</h2></center>
 <br>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell_slots">
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="margin-right: 25px;" id="spell_slots">
 <h3>Spell Effects</h3>
 <table>
     {% for entry in slots.keys() %}
@@ -16,7 +17,7 @@
     {% endfor %}
 </table>
 </div>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="float:right;" id="spell_extra">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="margin-left: 25px;" id="spell_extra">
     <ul class="nav nav-tabs" id="myTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic Data</a>
@@ -106,8 +107,9 @@
         </div>
         {% endif %}
     </div>
-</div>
+</div></div>
 <br>
+<div style="display: flex; justify-content: center;">
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell_detail">
 <h3>Spell Basic Data</h3>
 <br>
@@ -154,5 +156,6 @@
         <td>{{data.on_fade}}</td>
     </tr>
 </table>
+</div>
 </div>
 {% endblock %}

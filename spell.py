@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 
 import logic
 import utils
+import zones
 from logic import SpellsNewReference, SpellsNew, engine, Item
 
 LEVEL_CAP = 65
 
 
-def get_spell_data(spell_id):
+def get_full_spell_data(spell_id):
     spell_data, slots = get_spell_data(spell_id, engine)
 
     procs = []
@@ -74,7 +75,7 @@ def get_spell_data(spell_id):
 
 
 def get_spell_tooltip(spell_id):
-    return get_spell_data(spell_id, engine, basic_data=False)
+    return get_spell_data(spell_id, basic_data=False)
 
 
 def get_spells(spell_name):
@@ -137,7 +138,7 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
     return data
 
 
-def get_spell_data(spell_id, engine, basic_data=True):
+def get_spell_data(spell_id, basic_data=True):
     """Returns human readible spell data."""
 
     # Get the spell data
@@ -169,14 +170,14 @@ def get_spell_data(spell_id, engine, basic_data=True):
                 'aoe_range': result.aoerange}
         if result.buffdurationformula > 0:
             base.update({'min_duration': parse_duration(result)}),
-            base.update({'max_duration': parse_duration(result, min=False)})
+            base.update({'max_duration': parse_duration(result, min_val=False)})
     else:
         base = None
 
     slots = {}
     for idx in range(1, 13):
         if getattr(result, f'effectid{idx}') != 254:
-            slots.update({f'slot_{idx}': parse_slot_data(idx, result, engine)})
+            slots.update({f'slot_{idx}': parse_slot_data(idx, result)})
 
     return base, slots
 
@@ -263,7 +264,7 @@ def get_spell_min_level(data):
     return min_level
 
 
-def parse_slot_data(idx, data, engine):
+def parse_slot_data(idx, data):
     spa = getattr(data, f'effectid{idx}')
     min_val = getattr(data, f'effect_base_value{idx}')
     limit_val = getattr(data, f'effect_limit_value{idx}')
@@ -275,11 +276,11 @@ def parse_slot_data(idx, data, engine):
                 'max': max_val,
                 'limit_value': limit_val,
                 'formula': formula}
-    ret_data.update({'desc': translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, data)})
+    ret_data.update({'desc': translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data)})
     return ret_data
 
 
-def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, data):
+def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
     if spa == 0:
         # HP
         if max_val == 0:
@@ -311,7 +312,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
                 return (f'Decrease AC for cloth casters by {int_min} (L{min_level}) to {int_max} (L{max_level}), '
                         f'everyone else by {reg_min} (L{min_level}) to {reg_max} (L{max_level})')
         else:
-            #TODO: Fix this
+            # TODO: Fix this
             int_min = int(round(minimum / 3))
             int_max = int(round(max_val / 3))  # This is correct
             reg_min = int(round(minimum / 4))
@@ -449,7 +450,8 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
             if min_level == 255:
                 return f'Decrease Attack Speed by {abs(max_val - 100)}%'
             else:
-                return f'Decrease Attack Speed by {abs(minimum - 100)}% (L{min_level}) to {abs(max_val - 100)}% (L{max_level})'
+                return (f'Decrease Attack Speed by {abs(minimum - 100)}% (L{min_level}) to '
+                        f'{abs(max_val - 100)}% (L{max_level})')
         else:
             if min_level == 255:
                 return f'Increase Attack Speed by {max_val - 100}%'
@@ -776,7 +778,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return 'Summon PC'
     elif spa == 83:
         # Portal
-        zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+        zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
         return f'Teleport Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 84:
         # HP-NPC-ONLY (but really, its gravity flux)
@@ -793,7 +795,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Increase Magnification by {min_val}%'
     elif spa == 88:
         # Evacuate
-        zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+        zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
         return f'Evacuate Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 89:
         # Change Size
@@ -879,7 +881,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         if not data.teleport_zone:
             return 'Translocate to Bind'
         else:
-            zone_id, zone_name = logic.get_zone_long_name(data.teleport_zone)
+            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
             return f'Translocate to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 105:
         # Anti-Gate (NPC Only)
@@ -1836,7 +1838,8 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
     elif spa == 360:
         # Proc on Kill Shot
         spell_name = get_spell_name(abs(limit_val), engine)
-        return f'{min_val}% Chance to Proc Effect on Kill Shot: <a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>'
+        return (f'{min_val}% Chance to Proc Effect on Kill Shot: '
+                f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 361:
         # Proc on Death
         spell_name = get_spell_name(abs(limit_val), engine)
@@ -1856,7 +1859,8 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
     elif spa == 365:
         # Proc On Spell Kill Shot
         spell_name = get_spell_name(abs(limit_val), engine)
-        return f'{min_val}% chance to proc effect on spell kill shot: <a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>'
+        return (f'{min_val}% chance to proc effect on spell kill shot: '
+                f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 366:
         # Group Shielding
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
@@ -1919,12 +1923,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
         return f'Slow Pull Target to Caster'
     elif spa == 382:
         # Suppression
-        spa_name = fast_spa_lookup()
+        spa_name = fast_spa_lookup(min_val)
         return f'Negate {spa_name} effects'
     elif spa == 383:
         # Focus: Cast Proc Normalized
         spell_name = get_spell_name(abs(limit_val), engine)
-        return f'{min_val}% chance to proc on successful cast: <a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>'
+        return (f'{min_val}% chance to proc on successful cast: '
+                f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 384:
         # Fling Caster to Target
         return f'Fling Caster to Target'
@@ -2162,11 +2167,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, engine, 
     elif spa == 453:
         # Doom Melee Threshold
         spell_name = get_spell_name(abs(min_val), engine)
-        return f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on {limit_val} melee damage taken'
+        return (f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> '
+                f'on {limit_val} melee damage taken')
     elif spa == 454:
         # Doom Spell Threshold
         spell_name = get_spell_name(abs(min_val), engine)
-        return f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on {limit_val} spell damage taken'
+        return (f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> '
+                f'on {limit_val} spell damage taken')
     elif spa == 455:
         # Add Hate %
         return f'Increase Hate by {min_val}%'
@@ -2635,10 +2642,10 @@ def parse_resist(resist_num, resist_diff):
         raise Exception(f'Unknown resist number: {resist_num}')
 
 
-def parse_duration(data, min=True):
+def parse_duration(data, min_val=True):
     """Helper to parse the duration of the spell"""
     seconds = 0
-    if not min:
+    if not min_val:
         if data.buffdurationformula == 50 or data.buffdurationformula == 51:
             return 'Permanent'
         seconds = data.buffduration * 6

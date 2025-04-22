@@ -1,6 +1,21 @@
 ==0.2.0 RC 1==
-* TODO Refactored logic code into appropriate separate files.
-
+* Refactored logic code into appropriate separate files.
+* Item Tooltip Modifications:
+    ** Now shows the icon associated with the item
+* All Search Modifications:
+    ** All divs now have the same height
+* Item Details Page Modified:
+    ** All divs are now centered and have the same width
+    ** Removed the slightly redundant name header now that the name is front and center in the item div
+    ** Tweaked item details logic to make it substantially faster when getting an item that has a lot of sources.
+        *** Still looking to speed this up more while still providing accurate data.
+* Tradeskill Details Page Modified:
+    ** All divs are now centered and have the same height
+    ** Added icons
+    ** Added tooltips
+* Spell Search Page Modified:
+    ** There's a bit more padding between the search button and the search options
+    ** Sorted to display alphabetically
 
 ==0.2.0.5==
 * New Functionality: Tools

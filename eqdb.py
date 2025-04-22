@@ -385,7 +385,7 @@ def spell_search():
 
 @app.route("/spell/detail/<int:spell_id>")
 def spell_detail(spell_id):
-    base_data, slots = spell.get_spell_data(spell_id)
+    base_data, slots = spell.get_full_spell_data(spell_id)
     return render_template('spell_detail.html', data=base_data, slots=slots)
 
 

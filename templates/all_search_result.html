@@ -1,54 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.spell-tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
-<h3>Search Results:</h3><br>
+<center><h3>Search Results:</h3></center>
+<div style="display: flex;">
 {% if data.game_items %}
-    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="vertical-align: top;" id="game_items">
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="" id="game_items">
         <center><h3>Items</h3></center>
         <ul>
     {% for entry in data.game_items %}
@@ -107,4 +62,5 @@
         </ul>
     </div>
 {% endif %}
+</div>
 {% endblock %}

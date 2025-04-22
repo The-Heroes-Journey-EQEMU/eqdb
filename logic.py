@@ -109,7 +109,8 @@ def _get_arg_list(tooltip=False):
                 Item.focuseffect, Item.clickeffect, Item.banedmgamt, Item.banedmgbody, Item.banedmgrace,
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
                 Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore, Item.bagtype,
-                Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype]
+                Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype,
+                Item.icon]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -253,20 +254,27 @@ def get_item_data(item_id, full=False):
             item_id = item_id - 2000000
         elif 2000000 > item_id > 1000000:
             item_id = item_id - 1000000
+        known_zones = {}
         with Session(bind=engine) as session:
             query = session.query(NPCTypes.id, NPCTypes.name).filter(LootDropEntries.item_id == item_id).\
                 filter(LootDropEntries.lootdrop_id == LootTableEntries.lootdrop_id).\
                 filter(LootTableEntries.loottable_id == NPCTypes.loottable_id)
             result = query.all()
             for entry in result:
-                query = session.query(Zone.long_name).filter(Zone.zoneidnumber == int(entry[0]/1000))
-                sub_result = query.one()
+                zone_id = int(entry[0] / 1000)
+                if zone_id not in known_zones:
+                    query = session.query(Zone.long_name).filter(Zone.zoneidnumber == int(entry[0]/1000))
+                    sub_result = query.one()
+                    zone_name = sub_result[0]
+                    known_zones.update({zone_id: zone_name})
+                else:
+                    zone_name = known_zones[zone_id]
 
-                if {'npc_id': entry[0], 'npc_name': utils.fix_npc_name(entry[1]), 'zone_name': sub_result[0]} in droppers:
+                if {'npc_id': entry[0], 'npc_name': utils.fix_npc_name(entry[1]), 'zone_name': zone_name} in droppers:
                     continue
                 droppers.append({'npc_id': entry[0],
                                  'npc_name': utils.fix_npc_name(entry[1]),
-                                 'zone_name': sub_result[0]})
+                                 'zone_name': zone_name})
         ret_dict['droppers'] = droppers
 
         # Get vendors that sell this

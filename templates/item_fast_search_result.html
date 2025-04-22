@@ -1,28 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
+function checkSubmit(e) {
+	if(e && e.keyCode == 13) {
+		document.forms[0].submit();
+	}
+}
+</script>
+<script>
+$(document).ready(function() {
+
+    $('textarea').keypress(function(event) {
+
+        if (event.keyCode == 13) {
+            event.preventDefault();
+        }
     });
+});
+
+
 </script>
 <h3>Search Results:</h3>
 {% for entry in data %}

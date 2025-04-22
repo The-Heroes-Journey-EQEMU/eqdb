@@ -3,7 +3,15 @@ from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 
 import utils
-from logic import Zone, engine, Spawn2, SpawnEntry, SpawnGroup, NPCTypes, Item, _get_link_filters, expansion, ZonePoints
+from logic import Zone, engine, Spawn2, SpawnEntry, SpawnGroup, NPCTypes, Item, expansion, \
+    ZonePoints, LootTableEntries, LootDropEntries
+
+
+def _get_link_filters():
+    """Helper to return the basic link filters between zone, npc, and item"""
+    return [NPCTypes.loottable_id == LootTableEntries.loottable_id,
+            LootTableEntries.lootdrop_id == LootDropEntries.lootdrop_id,
+            LootDropEntries.item_id == Item.id]
 
 
 def get_zone_listing():
