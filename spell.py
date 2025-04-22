@@ -1,11 +1,140 @@
 """Utility file to convert SPA data into human readible information."""
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 import logic
 import utils
-from logic import SpellsNewReference, SpellsNew
+from logic import SpellsNewReference, SpellsNew, engine, Item
 
 LEVEL_CAP = 65
+
+
+def get_spell_data(spell_id):
+    spell_data, slots = get_spell_data(spell_id, engine)
+
+    procs = []
+    clicks = []
+    focus = []
+    worn = []
+    bard = []
+
+    with Session(bind=engine) as session:
+        # Find all the items that have this as a proc
+        query = session.query(logic.Item.id, Item.Name).filter(Item.proceffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            procs.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a click effect
+        query = session.query(Item.id, Item.Name).filter(Item.clickeffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            clicks.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a focus effect
+        query = session.query(Item.id, Item.Name).filter(Item.focuseffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            focus.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a worn effect
+        query = session.query(Item.id, Item.Name).filter(Item.worneffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            worn.append({'item_id': item_id,
+                          'item_name': item_name})
+
+        # Find all the items that have this as a bard effect
+        query = session.query(Item.id, Item.Name).filter(Item.bardeffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            item_name = entry[1]
+            bard.append({'item_id': item_id,
+                          'item_name': item_name})
+
+    spell_data.update({'procs': procs,
+                       'clicks': clicks,
+                       'focus': focus,
+                       'worn': worn,
+                       'bard': bard})
+
+    return spell_data, slots
+
+
+def get_spell_tooltip(spell_id):
+    return get_spell_data(spell_id, engine, basic_data=False)
+
+
+def get_spells(spell_name):
+    partial = "%%%s%%" % spell_name
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference.id, SpellsNewReference.name).\
+            filter(SpellsNewReference.name.like(partial)).limit(50)
+        result = query.all()
+
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNew.id, SpellsNew.name).filter(SpellsNew.name.like(partial)).limit(50)
+        result2 = query.all()
+
+    out_data = []
+    for entry in result + result2:
+        spell_id = entry[0]
+        name = entry[1]
+        out_data.append({'spell_id': spell_id,
+                         'name': name})
+    return out_data
+
+
+def get_spell_raw_data(spell_id):
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+        result = query.first()
+
+    if not result:
+        with Session(bind=engine) as session:
+            query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
+            result = query.first()
+
+    ret_dict = result.__dict__
+    ret_dict.pop('_sa_instance_state')
+    return ret_dict
+
+
+def get_spells_by_class(class_id, min_level=1, max_level=65):
+    filters = [getattr(SpellsNewReference, f'classes{class_id}') >= min_level,
+               getattr(SpellsNewReference, f'classes{class_id}') <= max_level]
+    params = and_(*filters)
+
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNewReference.id, getattr(SpellsNewReference, f'classes{class_id}'),
+                              SpellsNewReference.name).filter(params)
+        result = query.all()
+
+    data = {}
+    for entry in result:
+        spell_id = entry[0]
+        level = entry[1]
+        spell_name = entry[2]
+        if level in data:
+            level_list = data.get(level)
+        else:
+            level_list = []
+        level_list.append({'spell_id': spell_id, 'spell_name': spell_name})
+        data.update({level: level_list})
+
+    return data
 
 
 def get_spell_data(spell_id, engine, basic_data=True):

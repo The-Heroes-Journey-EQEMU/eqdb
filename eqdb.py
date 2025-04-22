@@ -4,11 +4,18 @@ import os
 
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 
+import factions
+import item_identify
+import items
 import logic
 
 from flask import Flask, render_template, request, flash, redirect, url_for
 
+import npc
+import pets
 import spell
+import tradeskills
+import zones
 
 # Application Setup
 here = os.path.dirname(__file__)
@@ -22,7 +29,7 @@ SITE_VERSION = site_config.get('DEFAULT', 'site_version')
 app = Flask(__name__)
 fh = logging.FileHandler(site_config.get('path', 'flask_log'))
 app.logger.addHandler(fh)
-app.secret_key = ('this_is_a_secret')
+app.secret_key = 'this_is_a_secret'
 app.config['SITE_TYPE'] = SITE_TYPE
 app.config['SITE_VERSION'] = SITE_VERSION
 app.config['DISCORD_CLIENT_ID'] = site_config.get('discord', 'client_id')
@@ -84,7 +91,7 @@ def identify_attributed():
         return redirect(url_for('error'))
     user = discord.fetch_user()
     if request.method == 'GET':
-        item = logic.get_unidentified_item(user=user)
+        item = item_identify.get_unidentified_item(user=user)
         return render_template('identify.html', item=item)
     else:
         data = request.form
@@ -92,7 +99,7 @@ def identify_attributed():
         if data['expansion'] == 'None' and data['source'] == 'None':
             flash('You must at least specify the expansion and source for an item identification.')
             return redirect(url_for('identify_attributed'))
-        data = logic.add_item_identification(data, user=user)
+        data = item_identify.add_item_identification(data, user=user)
         item = logic.get_item_data(data.get('item_id'))
         return render_template('identify_result.html', item=item, data=data)
 
@@ -103,11 +110,11 @@ def identify_unattributed():
         flash('Item Identification is not supported on Beta site')
         return redirect(url_for('error'))
     if request.method == 'GET':
-        item = logic.get_unidentified_item()
+        item = item_identify.get_unidentified_item()
         return render_template('identify.html', item=item)
     else:
         data = request.form
-        data = logic.add_item_identification(data)
+        data = item_identify.add_item_identification(data)
         item = logic.get_item_data(data.get('item_id'))
         return render_template('identify_result.html', item=item, data=data)
 
@@ -121,13 +128,13 @@ def pet_listing():
         if class_id == 'None':
             flash("You must select a class")
             return redirect(url_for('pet_listing'))
-        data = logic.get_all_class_pets(class_id)
+        data = pets.get_all_class_pets(class_id)
         return render_template('pet_listing_result.html', data=data)
 
 
 @app.route("/pet/detail/<pet_sum_name>")
 def pet_detail(pet_sum_name):
-    data = logic.get_pet_data(pet_sum_name)
+    data = pets.get_pet_data(pet_sum_name)
     return render_template('pet_detail.html', data=data)
 
 
@@ -143,18 +150,18 @@ def spell_listing():
         min_level = request.form.get('min_level')
         max_level = request.form.get('max_level')
 
-        data = logic.get_spells_by_class(class_id, min_level=min_level, max_level=max_level)
+        data = spell.get_spells_by_class(class_id, min_level=min_level, max_level=max_level)
         return render_template('spell_listing_result.html', data=data)
 
 
 @app.route("/zone/waypoint/listing")
 def waypoint_listing():
-    return render_template('waypoint_listing.html', data=logic.waypoint_listing())
+    return render_template('waypoint_listing.html', data=zones.waypoint_listing())
 
 
 @app.route("/faction/detail/<int:faction_id>")
 def faction_detail(faction_id):
-    return render_template('faction_detail.html', data=logic.get_faction(faction_id))
+    return render_template('faction_detail.html', data=factions.get_faction(faction_id))
 
 
 @app.route("/search/all", methods=['POST'])
@@ -188,7 +195,7 @@ def faction_search():
         if not faction_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('npc_search'))
-        data = logic.get_factions(faction_name)
+        data = factions.get_factions(faction_name)
         return render_template('faction_search_result.html', data=data)
 
 
@@ -211,35 +218,35 @@ def tradeskill_search():
         if not tradeskill_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('tradeskill_search'))
-        data = logic.get_tradeskills(name=tradeskill_name, trivial=trivial, tradeskill=tradeskill)
+        data = tradeskills.get_tradeskills(name=tradeskill_name, trivial=trivial, tradeskill=tradeskill)
         return render_template('tradeskill_search_result.html', data=data)
 
 
 @app.route("/tradeskill/detail/<int:ts_id>")
 def tradeskill_detail(ts_id):
-    data = logic.get_tradeskill_detail(ts_id)
+    data = tradeskills.get_tradeskill_detail(ts_id)
     return render_template('tradeskill_detail.html', data=data)
 
 
 @app.route("/npc/raw/<int:npc_id>")
 def npc_raw(npc_id):
-    raw_data = logic.get_npc_raw_data(npc_id)
+    raw_data = npc.get_npc_raw_data(npc_id)
     return render_template('raw_data.html', data=raw_data)
 
 
 @app.route("/npc/detail/<int:npc_id>")
 def npc_detail(npc_id):
-    return render_template('npc_detail.html', data=logic.get_npc_detail(npc_id))
+    return render_template('npc_detail.html', data=npc.get_npc_detail(npc_id))
 
 
 @app.route("/zone/detail/<int:zone_id>")
 def zone_detail(zone_id):
-    return render_template('zone_detail.html', data=logic.get_zone_detail(zone_id))
+    return render_template('zone_detail.html', data=zones.get_zone_detail(zone_id))
 
 
 @app.route("/zone/listing")
 def zone_listing():
-    return render_template('zone_listing.html', data=logic.get_zone_listing())
+    return render_template('zone_listing.html', data=zones.get_zone_listing())
 
 
 @app.route("/identify/leaderboard/", methods=['GET'])
@@ -247,7 +254,7 @@ def identify_leaderboard():
     if SITE_TYPE == 'Beta':
         flash('Item Identification is not supported on Beta site')
         return redirect(url_for('error'))
-    data = logic.get_leaderboard()
+    data = item_identify.get_leaderboard()
     return render_template('identify_leaderboard.html', data=data)
 
 
@@ -258,7 +265,7 @@ def tooltip(item_id):
 
 @app.route("/spell-tooltip/<spell_id>", methods=['GET', 'POST'])
 def spell_tooltip(spell_id):
-    _, slots = logic.get_spell_tooltip(spell_id)
+    _, slots = spell.get_spell_tooltip(spell_id)
     return render_template('spell_tooltip.html', slots=slots)
 
 
@@ -303,7 +310,7 @@ def item_detail(item_id):
 
 @app.route("/item/raw/<int:item_id>")
 def item_raw(item_id):
-    raw_data = logic.get_item_raw_data(item_id)
+    raw_data = items.get_item_raw_data(item_id)
     return render_template('raw_data.html', data=raw_data)
 
 
@@ -322,7 +329,7 @@ def npc_search():
         if not npc_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('npc_search'))
-        data = logic.get_npcs(npc_name)
+        data = npc.get_npcs(npc_name)
         return render_template('npc_search_result.html', data=data)
 
 
@@ -352,7 +359,7 @@ def item_fast_search():
         if not item_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('item_fast_search'))
-        data = logic.get_fast_item(item_name, tradeskill=tradeskill, equippable=equippable,
+        data = items.get_fast_item(item_name, tradeskill=tradeskill, equippable=equippable,
                                    itype=itype, no_glamours=no_glamour, only_aug=only_aug)
         return render_template('item_fast_search_result.html', data=data)
 
@@ -372,19 +379,19 @@ def spell_search():
         if not spell_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('spell_search'))
-        data = logic.get_spells(spell_name)
+        data = spell.get_spells(spell_name)
         return render_template('spell_search_result.html', data=data)
 
 
 @app.route("/spell/detail/<int:spell_id>")
 def spell_detail(spell_id):
-    base_data, slots = logic.get_spell_data(spell_id)
+    base_data, slots = spell.get_spell_data(spell_id)
     return render_template('spell_detail.html', data=base_data, slots=slots)
 
 
 @app.route("/spell/raw/<int:spell_id>")
 def spell_raw(spell_id):
-    raw_data = logic.get_spell_raw_data(spell_id)
+    raw_data = spell.get_spell_raw_data(spell_id)
     return render_template('raw_data.html', data=raw_data)
 
 
@@ -548,8 +555,8 @@ def item_search():
         'stunresist': False,
     }
     for i in range(1, 100):
-        thing = 'stat_%s' % (i)
-        thing_val = 'stat_val_%s' % (i)
+        thing = 'stat_%s' % i
+        thing_val = 'stat_val_%s' % i
         if thing in request.form:
             if request.form[thing] in filters:
                 flash('Cannot add the same item stat filter twice.')
@@ -569,8 +576,8 @@ def item_search():
     show_values = False
     weights = {}
     for i in range(1, 100):
-        thing = 'weight_%s' % (i)
-        thing_val = 'stat_weight_%s' % (i)
+        thing = 'weight_%s' % i
+        thing_val = 'stat_weight_%s' % i
         if thing in request.form:
             show_values = True
             if request.form[thing] in weights:

@@ -1,3 +1,7 @@
+==0.2.0 RC 1==
+* TODO Refactored logic code into appropriate separate files.
+
+
 ==0.2.0.5==
 * New Functionality: Tools
     ** Moved Armor Search to Tools dropdown
@@ -16,7 +20,6 @@
 * Fixed body types to include all possibilities
 * Clarified what the name search is searching for in Tradeskill Search
 * Reworded the main page since it's no longer accurate
-
 
 ==0.2.0.4==
 * Added new functionality: Tradeskill Detail

@@ -7,3 +7,5 @@ __pycache__
 /gather_item_ids.py
 local_db.db
 maps
+/static/item_icons/
+/static/spell_icons/

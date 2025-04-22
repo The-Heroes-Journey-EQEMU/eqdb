@@ -361,6 +361,81 @@ def get_elem_dmg_type(num):
     else:
         raise Exception(f'Unknown elemental type: {num}')
 
+def translate_specials(spc):
+    specials = []
+    if 'E' in spc:
+        specials.append('Enrages')
+    if 'F' in spc:
+        specials.append('Flurries')
+    if 'R' in spc:
+        specials.append('Rampages')
+    if 'r' in spc:
+        specials.append('Wild Rampages')
+    if 'S' in spc:
+        specials.append('Summons')
+    if 'T' in spc:
+        specials.append('Triple Attacks')
+    if 'Q' in spc:
+        specials.append('Quad Attacks')
+    if 'b' in spc:
+        specials.append('Bane Attacks')
+    if 'm' in spc:
+        specials.append('Magical Attacks')
+    if 'U' in spc:
+        specials.append('Immune to Slow')
+    if 'C' in spc:
+        specials.append('Immune to Charm')
+    if 'N' in spc:
+        specials.append('Immune to Stuns')
+    if 'I' in spc:
+        specials.append('Immune to Snare')
+    if 'D' in spc:
+        specials.append('Immune to Slow')
+    if 'K' in spc:
+        specials.append('Immune to Dispel Magic')
+    if 'A' in spc:
+        specials.append('Immune to Melee')
+    if 'B' in spc:
+        specials.append('Immune to Magic')
+    if 'f' in spc:
+        specials.append('Will not flee')
+    if 'O' in spc:
+        specials.append('Immune to non-bane Melee')
+    if 'W' in spc:
+        specials.append('Immune to non-magical Melee')
+    if 'G' in spc:
+        specials.append('Cannot be agroed')
+    if 'g' in spc:
+        specials.append('Belly Caster')
+    if 'd' in spc:
+        specials.append('Ignores Feign Death')
+    if 'Y' in spc:
+        specials.append('Has a Ranged Attack')
+    if 'L' in spc:
+        specials.append('Dual Wields')
+    if 't' in spc:
+        specials.append('Focused Hate')
+    if 'n' in spc:
+        specials.append('Does not buff/heal friends')
+    if 'p' in spc:
+        specials.append('Immune to Pacify')
+    if 'J' in spc:
+        specials.append('Leashed to combat area')
+    if 'j' in spc:
+        specials.append('Thetered to combat area')
+    if 'o' in spc:
+        specials.append('Destructible Object')
+    if 'Z' in spc:
+        specials.append('Immune to player damage')
+    if 'i' in spc:
+        specials.append('Immune to Taunt')
+    if 'e' in spc:
+        specials.append('Will always flee')
+    if 'h' in spc:
+        specials.append('Flee at low percent health')
+
+    return specials
+
 
 def get_aug_type(num):
     if num == 1:
