@@ -17,19 +17,41 @@ $(document).ready(function() {
         }
     });
 });
-
-
 </script>
 <form action="{{ url_for('item_fast_search') }}" method="post" class="add-entry" id="demoForm">
-    Item Name (partial allowed): <textarea rows="1" class="nameentry" name="item_name"
-                                           onKeyPress="return checkSubmit(event)"></textarea><br>
-    <abbr title="Setting Tradeskill will cause search to ignore all other settings except name, and will automatically exclude glamours">Tradeskill Only</abbr>: <input type="checkbox" name="tradeskill" value="True"><br>
-    Equippable Items Only: <input type="checkbox" name="equippable" value="True"><br>
-    Item Quality Type: <input type="radio" checked="checked" name="itype" value="Base"> Base
-                       <input type="radio" name="itype" value="Enchanted"> Enchanted
-                       <input type="radio" name="itype" value="Legendary"> Legendary<br>
-    Exclude Glamours: <input type="checkbox" name="no_glamour" value="True"><br>
-    Only Augments: <input type="checkbox" name="only_aug" value="True"><br>
-<input type="submit" value="Search">
+    <table>
+        <tr>
+            <td align="right">Item Name (partial allowed):</td>
+            <td><textarea rows="1" class="nameentry" name="item_name" onKeyPress="return checkSubmit(event)"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td align="right"><abbr
+                    title="Setting Tradeskill will cause search to ignore all other settings except name, and will automatically exclude glamours">Tradeskill
+                Only: </abbr></td>
+            <td><input type="checkbox" name="tradeskill" value="True"></td>
+        </tr>
+        <tr>
+            <td align="right">Equippable Items Only:</td>
+            <td><input type="checkbox" name="equippable" value="True"></td>
+        </tr>
+        <tr>
+            <td align="right">Item Quality Type:</td>
+            <td><input type="radio" checked="checked" name="itype" value="Base"> Base <input type="radio" name="itype"
+                                                                                             value="Enchanted">
+                Enchanted <input type="radio" name="itype" value="Legendary"> Legendary
+            </td>
+        </tr>
+        <tr>
+            <td align="right">Exclude Glamours:</td>
+            <td><input type="checkbox" name="no_glamour" value="True"></td>
+        </tr>
+        <tr>
+            <td align="right">Only Augments:</td>
+            <td><input type="checkbox" name="only_aug" value="True"></td>
+        </tr>
+    </table>
+    <br>
+    <input type="submit" value="Search">
 </form>
 {% endblock %}

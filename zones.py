@@ -102,14 +102,16 @@ def get_zone_detail(zone_id):
     link_filters = _get_link_filters()
     link_params = and_(*link_filters)
     with Session(bind=engine) as session:
-        query = session.query(Item.id, Item.Name).filter(NPCTypes.id.like(f'{zone_id}___')).filter(link_params)
+        query = session.query(Item.id, Item.Name, Item.icon).filter(NPCTypes.id.like(f'{zone_id}___')).\
+            filter(link_params)
         result = query.all()
     out_items = []
     for entry in result:
         if entry[0] not in known_ids:
             known_ids.append(entry[0])
             out_items.append({'item_id': entry[0],
-                              'item_name': entry[1]})
+                              'item_name': entry[1],
+                              'icon': entry[2]})
     base_data.update({'dropped_items': out_items})
 
     # Parse the map files and add them to the returned data.

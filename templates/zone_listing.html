@@ -1,7 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
 {% for entry in data %}
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell_slots">
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 75%;" id="spell_slots">
     <center><h3>{{entry}}</h3></center>
   {% set rower = namespace(value=0) %}
   <table style="width: 100%;">
@@ -23,6 +24,6 @@
         {% endif %}
     {% endfor %}
   </table>
-</div><br>
+</div></div><br>
 {% endfor %}
 {% endblock %}

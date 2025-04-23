@@ -22,7 +22,7 @@ $(document).ready(function() {
 </script>
 <form actions="{{ url_for('faction_search') }}" method="post" class="add-entry" id="demoForm">
     Faction Name (partial allowed): <textarea rows="1" class="nameentry" name="faction_name"
-                                           onKeyPress="return checkSubmit(event)"></textarea><br>
+                                           onKeyPress="return checkSubmit(event)"></textarea><br><br>
 <input type="submit" value="Search">
 </form>
 {% endblock %}

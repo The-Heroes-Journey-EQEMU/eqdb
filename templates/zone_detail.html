@@ -1,56 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
 <center><h3>{{data.long_name}}</h3></center>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="float:right;" id="extra_details">
-    <h3>Zone Information</h3>
-    <ul>
-        <li>Expansion: {{data.expansion}}</li>
-        <li>Short Name: {{data.short_name}}</li>
-        <li>Succor: {{data.safe_x}}, {{data.safe_y}}</li>
-        {% if data.waypoint %}
-           <li><font color="green">Waypoint: {{data.waypoint.x}}, {{data.waypoint.y}}, {{data.waypoint.z}}</font></li>
-        {% endif %}
-        {% if data.can_bind %}
-            <li>Players can bind here</li>
-        {% else %}
-            <li>Players cannot bind here</li>
-        {% endif %}
-        {% if data.can_lev %}
-            <li>Levitation allowed here</li>
-        {% else %}
-            <li>Levitation NOT allowed here</li>
-        {% endif %}
-        {% if data.outdoor %}
-            <li>Outdoor Zone</li>
-        {% else %}
-            <li>Indoor Zone</li>
-        {% endif %}
-    </ul>
-</div>
+<div style="display: flex; justify-content: center;">
 <div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
 <main class="flex-shrink-0 pt-4">
     <div class="container py-4">
@@ -83,13 +34,11 @@
         font-size: 14px;
         color: black;
     }
-
-
                     </style>
-                    <div id="map" class="border" style="min-width: 400px; height: 600px;position:relative;">
+                    <div id="map" class="border" style="min-width: 1000px; height: 500px;">
                         <div class="map-container">
                             <svg class="svg" id="zone-map" width="100%" height="100%"
-                                 viewBox="0 0 1640.0 1679.0" xmlns="http://www.w3.org/2000/svg"
+                                 viewBox="-1640.00 -1679.0 1640.0 1679.0" xmlns="http://www.w3.org/2000/svg"
                                  style="border: 1px solid black;">
                                 <defs>
                                     <!-- A marker to be used as an arrowhead -->
@@ -155,7 +104,35 @@
         </div>
     </div>
 </main>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="zone_links">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="extra_details">
+    <h3>Zone Information</h3>
+    <ul>
+        <li>Expansion: {{data.expansion}}</li>
+        <li>Short Name: {{data.short_name}}</li>
+        <li>Succor: {{data.safe_x}}, {{data.safe_y}}</li>
+        {% if data.waypoint %}
+           <li><font color="green">Waypoint: {{data.waypoint.x}}, {{data.waypoint.y}}, {{data.waypoint.z}}</font></li>
+        {% endif %}
+        {% if data.can_bind %}
+            <li>Players can bind here</li>
+        {% else %}
+            <li>Players cannot bind here</li>
+        {% endif %}
+        {% if data.can_lev %}
+            <li>Levitation allowed here</li>
+        {% else %}
+            <li>Levitation NOT allowed here</li>
+        {% endif %}
+        {% if data.outdoor %}
+            <li>Outdoor Zone</li>
+        {% else %}
+            <li>Indoor Zone</li>
+        {% endif %}
+    </ul>
+</div>
+</div>
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 1250px;" id="zone_links">
     <ul class="nav nav-tabs" id="myTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Connected Zones</a>
@@ -183,7 +160,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="items" role="tabpanel" aria-labelledby="items-tab">
             <ul>
                 {% for entry in data.dropped_items|sort(attribute='item_name') %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></li>
+                <div class="icon-container" style="display: flex;"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span>  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">  {{entry.item_name}}</a></div>
                 {% endfor %}
             </ul>
         </div>
@@ -203,5 +180,6 @@
         </div>
         {% endif %}
     </div>
+</div>
 </div>
 {% endblock %}

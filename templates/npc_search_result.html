@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
 <h3>Search Results:</h3>
-{% for entry in data %}
-<li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.name}}</a> :: {{entry.zone}}</li>
-{% endfor %}
+<table>
+    {% for entry in data|sort(attribute='name') %}
+    <tr>
+        <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.name}}</a></td>
+        <td>{{entry.zone}}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}

@@ -18,7 +18,7 @@ def get_factions(name):
 
 def get_faction(faction_id):
     # Get name
-    if faction_id == 5013:
+    if faction_id == 5013 or faction_id == 242:
         return None
     base_data = {}
     with Session(bind=engine) as session:

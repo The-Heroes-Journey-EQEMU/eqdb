@@ -81,20 +81,23 @@ def get_spell_tooltip(spell_id):
 def get_spells(spell_name):
     partial = "%%%s%%" % spell_name
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference.id, SpellsNewReference.name).\
+        query = session.query(SpellsNewReference.id, SpellsNewReference.name, SpellsNewReference.new_icon).\
             filter(SpellsNewReference.name.like(partial)).limit(50)
         result = query.all()
 
     with Session(bind=engine) as session:
-        query = session.query(SpellsNew.id, SpellsNew.name).filter(SpellsNew.name.like(partial)).limit(50)
+        query = session.query(SpellsNew.id, SpellsNew.name, SpellsNew.new_icon).\
+            filter(SpellsNew.name.like(partial)).limit(50)
         result2 = query.all()
 
     out_data = []
     for entry in result + result2:
         spell_id = entry[0]
         name = entry[1]
+        icon = entry[2]
         out_data.append({'spell_id': spell_id,
-                         'name': name})
+                         'name': name,
+                         'icon': icon})
     return out_data
 
 

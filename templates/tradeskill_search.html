@@ -6,6 +6,7 @@ function checkSubmit(e) {
 		document.forms[0].submit();
 	}
 }
+
 </script>
 <script>
 $(document).ready(function() {
@@ -19,26 +20,39 @@ $(document).ready(function() {
 });
 
 
+
 </script>
-<form actions="{{ url_for('tradeskill_search') }}" method="post" class="add-entry" id="demoForm">
-    Recipe/Item Name (partial allowed): <textarea rows="1" class="nameentry" name="tradeskill_name"
-                                           onKeyPress="return checkSubmit(event)"></textarea><br>
-    Trivial (number and below): <input type="number" id="trivial" name="quantity" min="0" max="500"><br>
-    Tradeskill: <select name="tradeskill" id="tradeskill">
-                    <option value="None" selected="selected">--Select Tradeskill--</option>
-                    <option value="59">Alchemy</option>
-                    <option value="60">Baking</option>
-                    <option value="63">Blacksmithing</option>
-                    <option value="65">Brewing</option>
-                    <option value="64">Fletching</option>
-                    <option value="68">Jewelcrafting</option>
-                    <option value="56">Poison Making</option>
-                    <option value="69">Pottery</option>
-                    <option value="58">Research</option>
-                    <option value="61">Tailoring</option>
-                    <option value="57">Tinkering</option>
-                    <option value="75">Non-Tradeskill</option>
-                </select><br><br>
-<input type="submit" value="Search">
+<form action="{{ url_for('tradeskill_search') }}" method="post" class="add-entry" id="demoForm">
+    <table>
+        <tr>
+            <td align="right">Recipe/Item Name (partial allowed):</td>
+            <td><textarea rows="1" class="nameentry" name="tradeskill_name"
+                          onKeyPress="return checkSubmit(event)"></textarea></td>
+        </tr>
+        <tr>
+            <td align="right">Trivial (number and below):</td>
+            <td><input type="number" id="trivial" name="quantity" min="0" max="500" value="100"></td>
+        </tr>
+        <tr>
+            <td align="right">Tradeskill:</td>
+            <td><select name="tradeskill" id="tradeskill">
+                <option value="None" selected="selected">--Select Tradeskill--</option>
+                <option value="59">Alchemy</option>
+                <option value="60">Baking</option>
+                <option value="63">Blacksmithing</option>
+                <option value="65">Brewing</option>
+                <option value="64">Fletching</option>
+                <option value="68">Jewelcrafting</option>
+                <option value="56">Poison Making</option>
+                <option value="69">Pottery</option>
+                <option value="58">Research</option>
+                <option value="61">Tailoring</option>
+                <option value="57">Tinkering</option>
+                <option value="75">Non-Tradeskill</option>
+            </select></td>
+        </tr>
+    </table>
+    <br>
+    <input type="submit" value="Search">
 </form>
 {% endblock %}

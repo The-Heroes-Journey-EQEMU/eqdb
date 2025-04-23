@@ -1,105 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.spell-tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
 <center><h3>{{data.name}}</h3></center>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="float:right;" id="base_details">
-    <h3>NPC Information</h3>
-    <ul>
-        <li>Expansion: {{data.expansion}}</li>
-        <li>Zone: <a href="{{url_for('zone_detail', zone_id=data.zone_id)}}">{{data.zone_name}}</a></li>
-        {% if not data.spawn_groups %}
-         <li><b>This NPC spawn is triggered</b></li>
-        {% endif %}
-        <li>Level: {{data.level}}</li>
-        <li>Class: {{data.class}}</li>
-        <li>Race: {{data.race}}</li>
-        <li>Body Type: {{data.bodytype}}</li>
-        <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
-        <li>Min Hit: {{data.mindmg}}</li>
-        <li>Max Hit: {{data.maxdmg}}</li>
-        <li>HP: {{data.hp}}</li>
-    </ul>
-        <table>
-            <thead>
-            <th>MR</th>
-            <th>CR</th>
-            <th>FR</th>
-            <th>DR</th>
-            <th>PR</th>
-            </thead>
-            <tr>
-                <td>{{data.MR}}</td>
-                <td>{{data.CR}}</td>
-                <td>{{data.FR}}</td>
-                <td>{{data.DR}}</td>
-                <td>{{data.PR}}</td>
-            </tr>
-        </table>
-        {% if data.special_attacks %}
-         <h6>Special Abilities</h6>
-         {% for entry in data.special_attacks %}
-             <li>{{entry}}</li>
-         {% endfor %}
-        {% endif %}
-        {% if data.spells %}
-         <details class="border bg-body-secondary p-1">
-         <summary>Spells</summary>
-         {% for entry in data.spells %}
-            {% if entry.proc_chance %}
-              <dd><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a> ({{entry.spell_type}} {{entry.proc_chance}}% chance)</dd>
-            {% else %}
-              <dd><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a> ({{entry.spell_type}})</dd>
-            {% endif %}
-        {% endfor %}
-        </details>
-       {% endif %}
-        <br><a href="{{url_for('npc_raw', npc_id=data.id)}}">Raw Data</a>
-</div>
+<div style="display: flex; justify-content: center;">
 <div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
 <main class="flex-shrink-0 pt-4">
     <div class="container py-4">
@@ -135,7 +37,7 @@
 
 
                     </style>
-                    <div id="map" class="border" style="min-width: 400px; height: 600px;position:relative;">
+                    <div id="map" class="border" style="min-width: 1000px; height: 500px;">
                         <div class="map-container">
                             {% if data['spawn_groups'] %}
                               {% set cx = data['spawn_groups'][0]['x'] - 750 %}
@@ -213,7 +115,61 @@
         </div>
     </div>
 </main>
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="zone_links">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="base_details">
+    <h3>NPC Information</h3>
+    <ul>
+        <li>Expansion: {{data.expansion}}</li>
+        <li>Zone: <a href="{{url_for('zone_detail', zone_id=data.zone_id)}}">{{data.zone_name}}</a></li>
+        {% if not data.spawn_groups %}
+         <li><b>This NPC spawn is triggered</b></li>
+        {% endif %}
+        <li>Level: {{data.level}}</li>
+        <li>Class: {{data.class}}</li>
+        <li>Race: {{data.race}}</li>
+        <li>Body Type: {{data.bodytype}}</li>
+        <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
+        <li>Min Hit: {{data.mindmg}}</li>
+        <li>Max Hit: {{data.maxdmg}}</li>
+        <li>HP: {{data.hp}}</li>
+    </ul>
+        <table>
+            <thead>
+            <th>MR</th>
+            <th>CR</th>
+            <th>FR</th>
+            <th>DR</th>
+            <th>PR</th>
+            </thead>
+            <tr>
+                <td>{{data.MR}}</td>
+                <td>{{data.CR}}</td>
+                <td>{{data.FR}}</td>
+                <td>{{data.DR}}</td>
+                <td>{{data.PR}}</td>
+            </tr>
+        </table>
+        {% if data.special_attacks %}
+         <h6>Special Abilities</h6>
+         {% for entry in data.special_attacks %}
+             <li>{{entry}}</li>
+         {% endfor %}
+        {% endif %}
+        {% if data.spells %}
+         <details class="border bg-body-secondary p-1">
+         <summary>Spells</summary>
+         {% for entry in data.spells %}
+            {% if entry.proc_chance %}
+              <img src="/static/spell_icons/{{entry.icon}}.png">  <a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a> ({{entry.spell_type}} {{entry.proc_chance}}% chance)<br>
+            {% else %}
+              <img src="/static/spell_icons/{{entry.icon}}.png">  <a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a> ({{entry.spell_type}})<br>
+            {% endif %}
+        {% endfor %}
+        </details>
+       {% endif %}
+        <br><a href="{{url_for('npc_raw', npc_id=data.id)}}">Raw Data</a>
+</div></div>
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 1325px;" id="zone_links">
     <ul class="nav nav-tabs" id="myTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link active" id="loot-tab" data-bs-toggle="tab" href="#loot" role="tab" aria-controls="loot" aria-selected="true">Loot Drops</a>
@@ -235,22 +191,18 @@
             {% for entry in data['loot_lists'] %}
                 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="{{entry}}">
                     <h6>{{entry}} - Probability: {{data['loot_lists'][entry]['probability']|int}}% - {{data['loot_lists'][entry]['mindrop']}} to {{data['loot_lists'][entry]['droplimit']}} drops</h6>
-                    <ul>
                         {% for sub_entry in data['loot_lists'][entry]['items'] %}
-                            <li><a href="{{url_for('item_detail', item_id=sub_entry.item_id)}}" data-url="{{sub_entry.item_id}}" class="tooltip-link">{{sub_entry.item_name}}</a> {{sub_entry.probability|int}}% Chance</li>
+                        <img src="/static/item_icons/item_{{sub_entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=sub_entry.item_id)}}" data-url="{{sub_entry.item_id}}" class="tooltip-link">{{sub_entry.item_name}}</a> {{sub_entry.probability|int}}% Chance<br>
                         {% endfor %}
-                    </ul>
                     </div><br>
             {% endfor %}
 
         </div>
         {% if data['merch'] %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="merch" role="tabpanel" aria-labelledby="merch-tab">
-            <ul>
             {% for entry in data['merch'] %}
-              <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></li>
+              <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><br>
             {% endfor %}
-            </ul>
         </div>
         {% endif %}
         {% if data['spawn_groups'] %}
@@ -266,5 +218,5 @@
         </div>
         {% endif %}
     </div>
-</div>
+</div></div>
 {% endblock %}

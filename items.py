@@ -36,19 +36,21 @@ def get_fast_item(item_name, tradeskill=None, equippable=None, itype='Base', no_
     with Session(bind=engine) as session:
         if or_filters:
             or_params = or_(*or_filters)
-            query = session.query(Item.id, Item.Name).filter(params).filter(or_params).limit(50)
+            query = session.query(Item.id, Item.Name, Item.icon).filter(params).filter(or_params).limit(50)
         else:
-            query = session.query(Item.id, Item.Name).filter(params).limit(50)
+            query = session.query(Item.id, Item.Name, Item.icon).filter(params).limit(50)
         result = query.all()
 
     out_data = []
     for entry in result:
         item_id = entry[0]
         name = entry[1]
+        icon = entry[2]
         if no_glamours and 'glamour' in name.lower():
             continue
         out_data.append({'item_id': item_id,
-                         'name': name})
+                         'name': name,
+                         'icon': icon})
     return out_data
 
 

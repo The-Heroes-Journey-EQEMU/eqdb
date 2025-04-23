@@ -2,6 +2,7 @@
 {% block body %}
 {% if data is not none %}
 <center><h1>{{data.name}}</h1></center>
+<div style="display: flex; justify-content: center;">
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="positive">
     <center><h3>Raises Faction</h3></center>
     <table>
@@ -40,8 +41,10 @@
     {% endfor %}
     </table>
 </div>
+</div>
 {% else %}
-<center><h2>KOS</h2></center>
-There are too many entires in the KOS faction to make any sense showing.  There are no NPCs you can kill to raise this Faction.
+<center><h2>KOS and Deepwater Knights</h2></center>
+There are too many entires in the KOS faction to make any sense showing.  There are no NPCs you can kill to raise this Faction.<br>
+The deepwater knights _are_ a real faction which you might want to raise your faction with, unfortunately they're also the "default" faction and thus have way too many entries to show.<br>
 {% endif %}
 {% endblock %}

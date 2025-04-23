@@ -1,21 +1,55 @@
 ==0.2.0 RC 1==
 * Refactored logic code into appropriate separate files.
-* Item Tooltip Modifications:
+* Item Tooltip:
     ** Now shows the icon associated with the item
-* All Search Modifications:
+* All Search:
     ** All divs now have the same height
-* Item Details Page Modified:
+* Tradeskill Search:
+    ** Put all of the options in a table so that they look nicer
+    ** Defaulted Trivial number to 100
+* Tradeskill Details:
+    ** All divs are now centered and have the same height
+    ** Added icons
+    ** Added tooltips
+* Spell Search:
+    ** There's a bit more padding between the search button and the search options
+* Spell Search Results:
+    ** Sorted to display alphabetically
+    ** Replaced the line-item dots with the icon of the item
+* Spell Detail:
+    ** All divs are now centered.
+    ** Top divs have the same height.
+* Item Search (Basic):
+    ** Put all of the options in a table so that they look nicer
+    ** Added a bit of padding between search button and the table
+* Item Search Results (Basic):
+    ** Replaced the line-item dots with the icon of the item
+    ** Sorted to display alphabetically
+* Item Details:
     ** All divs are now centered and have the same width
     ** Removed the slightly redundant name header now that the name is front and center in the item div
     ** Tweaked item details logic to make it substantially faster when getting an item that has a lot of sources.
         *** Still looking to speed this up more while still providing accurate data.
-* Tradeskill Details Page Modified:
-    ** All divs are now centered and have the same height
-    ** Added icons
-    ** Added tooltips
-* Spell Search Page Modified:
-    ** There's a bit more padding between the search button and the search options
-    ** Sorted to display alphabetically
+* Zone Listing:
+    ** All divs are now centered and have the same width
+* Zone Detail:
+    ** All divs are now centered
+    ** Shrunk the map slightly
+* NPC Search:
+    ** Added a bit of padding between search button and the name entry
+* NPC Search Results:
+    ** Put the output in a table so that it looks nicer
+* NPC Detail:
+    ** All divs are now centered
+    ** Spells now show their spell icon
+    ** Items now show their item icon
+* Faction Search:
+    ** Added a bit of padding between search button and the name entry
+* Faction Detail:
+    ** Put in a block on KOS and Deepwater Knights factions, as they have _way_ too many entries due to beind defaults.
+    ** All divs are now centered
+
+
 
 ==0.2.0.5==
 * New Functionality: Tools

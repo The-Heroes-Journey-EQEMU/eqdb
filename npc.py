@@ -56,7 +56,7 @@ def get_npc_detail(npc_id):
         query = session.query(FactionList.name, FactionList.id).\
             filter(NPCFactionEntries.npc_faction_id == base_data['npc_faction_id']).\
             filter(FactionList.id == NPCFactionEntries.faction_id)
-        sub_result = query.one()
+        sub_result = query.first()
     base_data['faction'] = {'faction_name': sub_result[0], 'faction_id': sub_result[1]}
 
     # Convert special abilities to make sense
@@ -69,7 +69,7 @@ def get_npc_detail(npc_id):
     merch = []
     with Session(bind=engine) as session:
         # If this is a merchant, get it's merchant items
-        query = session.query(MerchantList.item, Item.Name, MerchantList.min_expansion).\
+        query = session.query(MerchantList.item, Item.Name, MerchantList.min_expansion, Item.icon).\
             filter(MerchantList.merchantid == npc_id).\
             filter(MerchantList.item == Item.id)
         result = query.all()
@@ -77,11 +77,13 @@ def get_npc_detail(npc_id):
             if int(entry[2]) > expansion:
                 continue
             merch.append({'item_id': entry[0],
-                          'item_name': entry[1]})
+                          'item_name': entry[1],
+                          'icon': entry[3]})
         base_data['merch'] = merch
 
         # Get proc spell
-        query = session.query(NPCSpells.attack_proc, SpellsNewReference.name, NPCSpells.proc_chance).\
+        query = session.query(NPCSpells.attack_proc, SpellsNewReference.name,
+                              NPCSpells.proc_chance, SpellsNewReference.new_icon).\
             filter(NPCSpells.id == base_data['npc_spells_id']).\
             filter(NPCSpells.attack_proc == SpellsNewReference.id)
         result = query.first()
@@ -89,9 +91,11 @@ def get_npc_detail(npc_id):
             spells.append({'spell_type': 'proc',
                            'spell_name': result[1],
                            'spell_id': result[0],
-                           'proc_chance': result[2]})
+                           'proc_chance': result[2],
+                           'icon': result[3]})
         # Get defensive proc spell
-        query = session.query(NPCSpells.defensive_proc, SpellsNewReference.name, NPCSpells.dproc_chance).\
+        query = session.query(NPCSpells.defensive_proc, SpellsNewReference.name,
+                              NPCSpells.dproc_chance, SpellsNewReference.new_icon).\
             filter(NPCSpells.id == base_data['npc_spells_id']).\
             filter(NPCSpells.defensive_proc == SpellsNewReference.id)
         result = query.first()
@@ -99,9 +103,11 @@ def get_npc_detail(npc_id):
             spells.append({'spell_type': 'defensive',
                            'spell_name': result[1],
                            'spell_id': result[0],
-                           'proc_chance': result[2]})
+                           'proc_chance': result[2],
+                           'icon': result[3]})
         # Get ranged proc spell
-        query = session.query(NPCSpells.range_proc, SpellsNewReference.name, NPCSpells.rproc_chance).\
+        query = session.query(NPCSpells.range_proc, SpellsNewReference.name,
+                              NPCSpells.rproc_chance, SpellsNewReference.new_icon).\
             filter(NPCSpells.id == base_data['npc_spells_id']).\
             filter(NPCSpells.range_proc == SpellsNewReference.id)
         result = query.first()
@@ -109,10 +115,11 @@ def get_npc_detail(npc_id):
             spells.append({'spell_type': 'ranged',
                            'spell_name': result[1],
                            'spell_id': result[0],
-                           'proc_chance': result[2]})
+                           'proc_chance': result[2],
+                           'icon': result[3]})
 
         # Get all cast spells
-        query = session.query(NPCSpellsEntries.spellid, SpellsNewReference.name).\
+        query = session.query(NPCSpellsEntries.spellid, SpellsNewReference.name, SpellsNewReference.new_icon).\
             filter(NPCSpellsEntries.npc_spells_id == base_data['npc_spells_id']).\
             filter(NPCSpellsEntries.spellid == SpellsNewReference.id)
         result = query.all()
@@ -120,7 +127,8 @@ def get_npc_detail(npc_id):
             spells.append({'spell_type': 'cast',
                            'spell_name': entry[1],
                            'spell_id': entry[0],
-                           'proc_chance': None})
+                           'proc_chance': None,
+                           'icon': entry[2]})
 
         # Get the loot lists
         query = session.query(LootTableEntries).\
@@ -133,7 +141,7 @@ def get_npc_detail(npc_id):
             loot_list_name = sub_result[0]
 
             # Get the items
-            query = session.query(LootDropEntries.item_id, Item.Name, LootDropEntries.chance).\
+            query = session.query(LootDropEntries.item_id, Item.Name, LootDropEntries.chance, Item.icon).\
                 filter(LootDropEntries.lootdrop_id == entry.lootdrop_id).filter(LootDropEntries.item_id == Item.id)
             sub_result = query.all()
 
@@ -141,7 +149,8 @@ def get_npc_detail(npc_id):
             for sub_entry in sub_result:
                 item = {'item_id': sub_entry[0],
                         'item_name': sub_entry[1],
-                        'probability': sub_entry[2]}
+                        'probability': sub_entry[2],
+                        'icon': sub_entry[3]}
                 items.append(item)
             loot_lists.update({entry.lootdrop_id: {'name': loot_list_name,
                                                    'items': items,
