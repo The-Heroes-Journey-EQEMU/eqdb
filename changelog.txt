@@ -1,3 +1,7 @@
+==0.2.0 RC 2==
+* Added logo, thanks to Drake and Neidel for their incredible submissions!
+* Converted the table for tradeskill results into a datatable so that it can be sorted by trivial or name, and searched.
+
 ==0.2.0 RC 1==
 * Refactored logic code into appropriate separate files.
 * Item Tooltip:

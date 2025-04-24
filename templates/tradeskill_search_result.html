@@ -1,12 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
+ <script>
+ $(document).ready(function() {
+	 $('#results').DataTable({
+		 "order": [[1, "desc"]],
+		 "pageLength": 25,
+		 searching: true,
+		 paging: false,
+		 info: false,
+		 "dom": '<lfp<t>i>'
+	 });
+ });
+ </script>
 <h3>Search Results:</h3>
-<table>
+<table class="mediumfont table table-bordered" id="results">
     <thead>
     <th>Recipe Name</th>
     <th>Recipe Trivial</th>
     </thead>
-    {% for entry in data|sort(attribute='trivial') %}
+    {% for entry in data %}
      <tr>
          <td><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></td>
          <td>{{entry.trivial}}</td>
