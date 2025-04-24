@@ -1,10 +1,16 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-function checkSubmit(e) {
-	if(e && e.keyCode == 13) {
-		document.forms[0].submit();
-	}
+window.onload = doStuff;
+
+function doStuff() {
+    var form = document.getElementById("demoForm");
+    form.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission
+            form.submit(); // Manually submit the form
+        }
+    });
 }
 </script>
 <script>
@@ -17,12 +23,9 @@ $(document).ready(function() {
         }
     });
 });
-
-
 </script>
 <form actions="{{ url_for('faction_search') }}" method="post" class="add-entry" id="demoForm">
-    Faction Name (partial allowed): <textarea rows="1" class="nameentry" name="faction_name"
-                                           onKeyPress="return checkSubmit(event)"></textarea><br><br>
+    Faction Name (partial allowed): <textarea rows="1" class="nameentry" name="faction_name"></textarea><br><br>
 <input type="submit" value="Search">
 </form>
 {% endblock %}

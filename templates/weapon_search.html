@@ -1,13 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-function checkSubmit(e) {
-	if(e && e.keyCode == 13) {
-		document.forms[0].submit();
-	}
+window.onload = doStuff;
+
+function doStuff() {
+    var form = document.getElementById("demoForm");
+    form.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission
+            form.submit(); // Manually submit the form
+        }
+    });
 }
-
-
 </script>
 <script>
 $(document).ready(function() {
@@ -19,8 +23,6 @@ $(document).ready(function() {
         }
     });
 });
-
-
 </script>
 <script language="javascript" type="text/javascript">
 $(document).ready(function() {

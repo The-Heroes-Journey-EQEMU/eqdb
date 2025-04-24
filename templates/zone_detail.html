@@ -158,18 +158,41 @@
         </div>
         {% if data.items %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="items" role="tabpanel" aria-labelledby="items-tab">
-            <ul>
+            {% set rower = namespace(value=0) %}
+            <table>
                 {% for entry in data.dropped_items|sort(attribute='item_name') %}
-                <div class="icon-container" style="display: flex;"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span>  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">  {{entry.item_name}}</a></div>
+                 {% if rower.value == 0 %}
+                  <tr>
+                   <td><img src="/static/item_icons/item_{{entry.icon}}.png"></td>
+                   <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+                 {% set rower.value = 1 %}
+                 {% elif rower.value == 1 %}
+                    <td><img src="/static/item_icons/item_{{entry.icon}}.png"></td>
+                    <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+                  {% set rower.value = 2 %}
+                      {% elif rower.value == 2 %}
+                    <td><img src="/static/item_icons/item_{{entry.icon}}.png"></td>
+                    <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+                  {% set rower.value = 3 %}
+                      {% elif rower.value == 3 %}
+                    <td><img src="/static/item_icons/item_{{entry.icon}}.png"></td>
+                    <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+                  {% set rower.value = 4 %}
+                  {% elif rower.value == 4 %}
+                      <td><img src="/static/item_icons/item_{{entry.icon}}.png"></td>
+                     <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+                  </tr>
+                  {% set rower.value = 0 %}
+                  {% endif%}
                 {% endfor %}
-            </ul>
+            </table>
         </div>
         {% endif %}
         {% if data.spawn_groups %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="spawns" role="tabpanel" aria-labelledby="spawns-tab">
             <ul>
                 {% for entry in data.spawn_groups %}
-                  <li>{{entry}} :: {{data.spawn_groups[entry].y}}, {{data.spawn_groups[entry].x}}, {{data.spawn_groups[entry].z}} :: Respawn: {{data.spawn_groups[entry].respawn}}s</li>
+                  <li>{{entry}} :: {{data.spawn_groups[entry].y}}, {{data.spawn_groups[entry].x}}, {{data.spawn_groups[entry].z}} :: Respawn: {{data.spawn_groups[entry].respawn}}s :: <abbr title="spawngroupID: {{data.spawn_groups[entry].group_id}}, spawn2ID: {{data.spawn_groups[entry].spawn_id}}">Spawn Info</abbr></li>
                   <ul>
                       {% for sub_entry in data.spawn_groups[entry].npcs %}
                       <li><a href="{{url_for('npc_detail', npc_id=sub_entry.npc_id)}}">{{sub_entry.npc_name}}</a> ({{sub_entry.chance}}% Chance)</li>

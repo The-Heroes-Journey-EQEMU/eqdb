@@ -326,8 +326,9 @@ def get_item_data(item_id, full=False):
         with Session(bind=engine) as session:
             query = session.query(TradeskillRecipeEntries.recipe_id, TradeskillRecipe.name).\
                 filter(TradeskillRecipe.id == TradeskillRecipeEntries.recipe_id).\
-                filter(TradeskillRecipeEntries.item_id == item_id). \
-                filter(TradeskillRecipeEntries.successcount >= 1)
+                filter(TradeskillRecipeEntries.item_id == item_id).\
+                filter(TradeskillRecipeEntries.successcount >= 1). \
+                filter(TradeskillRecipe.enabled == 1)
             result = query.all()
 
         for entry in result:
@@ -340,8 +341,9 @@ def get_item_data(item_id, full=False):
         with Session(bind=engine) as session:
             query = session.query(TradeskillRecipeEntries.recipe_id, TradeskillRecipe.name).\
                 filter(TradeskillRecipe.id == TradeskillRecipeEntries.recipe_id).\
-                filter(TradeskillRecipeEntries.item_id == item_id). \
-                filter(TradeskillRecipeEntries.componentcount >= 1)
+                filter(TradeskillRecipeEntries.item_id == item_id).\
+                filter(TradeskillRecipeEntries.componentcount >= 1).\
+                filter(TradeskillRecipe.enabled == 1)
             result = query.all()
 
         for entry in result:

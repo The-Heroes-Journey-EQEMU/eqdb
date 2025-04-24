@@ -167,13 +167,13 @@ def all_search():
     name = request.form['all_names']
     if len(name) > 50:
         flash('Search by name limited to 50 characters.')
-        return redirect(url_for('tradeskill_search'))
+        return redirect(url_for('main_page'))
     elif 0 < len(name) < 3:
         flash('Search by name requires at least 3 characters.')
-        return redirect(url_for('tradeskill_search'))
+        return redirect(url_for('main_page'))
     if not name.isascii():
         flash('Only ASCII characters are allowed.')
-        return redirect(url_for('tradeskill_search'))
+        return redirect(url_for('main_page'))
     data = logic.all_search(name=name)
     return render_template('all_search_result.html', data=data)
 
@@ -186,10 +186,10 @@ def faction_search():
         faction_name = request.form['faction_name']
         if len(faction_name) > 50:
             flash('Search by name limited to 50 characters.')
-            return redirect(url_for('npc_search'))
+            return redirect(url_for('faction_search'))
         elif len(faction_name) < 3:
             flash('Search by name requires at least 3 characters')
-            return redirect(url_for('npc_search'))
+            return redirect(url_for('faction_search'))
         if not faction_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('npc_search'))
@@ -204,7 +204,9 @@ def tradeskill_search():
     else:
         tradeskill_name = request.form['tradeskill_name']
         trivial = request.form.get('trivial')
+        trivial_min = request.form.get('trivial_min')
         tradeskill = request.form.get('tradeskill')
+        remove_no_fail = request.form.get('no_fail')
         if tradeskill == 'None':
             tradeskill = None
         if len(tradeskill_name) > 50:
@@ -216,7 +218,9 @@ def tradeskill_search():
         if not tradeskill_name.isascii():
             flash('Only ASCII characters are allowed.')
             return redirect(url_for('tradeskill_search'))
-        data = tradeskills.get_tradeskills(name=tradeskill_name, trivial=trivial, tradeskill=tradeskill)
+        data = tradeskills.get_tradeskills(name=tradeskill_name, trivial=trivial,
+                                           tradeskill=tradeskill, remove_no_fail=remove_no_fail,
+                                           trivial_min=trivial_min)
         return render_template('tradeskill_search_result.html', data=data)
 
 

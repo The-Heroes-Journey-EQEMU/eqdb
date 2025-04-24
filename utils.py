@@ -1233,6 +1233,23 @@ def get_map_data(short_name):
     return lines
 
 
+def get_map_poi(short_name):
+    points = []
+    if short_name == 'Unknown':
+        return points
+    with open(os.path.join(here, 'maps', f'{short_name}_1.txt'), 'r') as fh:
+        data = fh.read()
+        for line in data.split('\n'):
+            if line.startswith('P'):
+                split_line = line.split()
+                points.append({'x': float(split_line[1].strip(',')),
+                               'y': float(split_line[2].strip(',')),
+                               'z': float(split_line[3].strip(',')),
+                               'rgb': f'{split_line[4].strip(",")}, {split_line[5].strip(",")}, {split_line[6].strip(",")}',
+                               'label': split_line[8].replace('_', ' ')})
+    return points
+
+
 def parse_skill(skill_num):
     if skill_num == 0:
         return '1H Blunt'

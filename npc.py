@@ -57,7 +57,10 @@ def get_npc_detail(npc_id):
             filter(NPCFactionEntries.npc_faction_id == base_data['npc_faction_id']).\
             filter(FactionList.id == NPCFactionEntries.faction_id)
         sub_result = query.first()
-    base_data['faction'] = {'faction_name': sub_result[0], 'faction_id': sub_result[1]}
+    if sub_result:
+        base_data['faction'] = {'faction_name': sub_result[0], 'faction_id': sub_result[1]}
+    else:
+        base_data['faction'] = {}
 
     # Convert special abilities to make sense
     base_data.update({'special_attacks': utils.translate_specials(result.npcspecialattks)})
@@ -160,7 +163,7 @@ def get_npc_detail(npc_id):
                                                    'probability': entry.probability}})
 
         # Get spawn point(s)
-        args = [Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, SpawnGroup.id]
+        args = [Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, SpawnGroup.id, Spawn2.id]
         query = session.query(*args).filter(SpawnEntry.npcID == npc_id).\
             filter(SpawnEntry.spawngroupID == Spawn2.spawngroupID).\
             filter(SpawnEntry.spawngroupID == SpawnGroup.id)
@@ -183,7 +186,9 @@ def get_npc_detail(npc_id):
                                  'y': int(entry[1]) * -1,
                                  'z': entry[2],
                                  'respawn': entry[3],
-                                 'spawn_npcs': spawn_npcs})
+                                 'spawn_npcs': spawn_npcs,
+                                 'group_id': entry[5],
+                                 'spawn_id': entry[6]})
 
         base_data['spawn_groups'] = spawn_groups
         # Translate the spawn ID into a zone id, then get that name

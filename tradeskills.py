@@ -86,15 +86,19 @@ def get_tradeskill_detail(ts_id):
     return base_data
 
 
-def get_tradeskills(name=None, trivial=None, tradeskill=None):
-    filters = []
+def get_tradeskills(name=None, trivial=None, tradeskill=None, remove_no_fail=False, trivial_min=None):
+    filters = [TradeskillRecipe.enabled == 1]
     if name:
         partial = "%%%s%%" % name
         filters.append(TradeskillRecipe.name.like(partial))
     if trivial:
         filters.append(TradeskillRecipe.trivial <= int(trivial))
+    if trivial_min:
+        filters.append(TradeskillRecipe.trivial >= int(trivial_min))
     if tradeskill:
         filters.append(TradeskillRecipe.tradeskill == tradeskill)
+    if remove_no_fail:
+        filters.append(TradeskillRecipe.nofail != 1)
 
     params = and_(*filters)
     with Session(bind=engine) as session:

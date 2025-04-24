@@ -1,12 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
 <script>
-function checkSubmit(e) {
-	if(e && e.keyCode == 13) {
-		document.forms[0].submit();
-	}
-}
+window.onload = doStuff;
 
+function doStuff() {
+    var form = document.getElementById("demoForm");
+    form.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevent default form submission
+            form.submit(); // Manually submit the form
+        }
+    });
+}
 </script>
 <script>
 $(document).ready(function() {
@@ -18,20 +23,20 @@ $(document).ready(function() {
         }
     });
 });
-
-
-
 </script>
 <form action="{{ url_for('tradeskill_search') }}" method="post" class="add-entry" id="demoForm">
     <table>
         <tr>
             <td align="right">Recipe/Item Name (partial allowed):</td>
-            <td><textarea rows="1" class="nameentry" name="tradeskill_name"
-                          onKeyPress="return checkSubmit(event)"></textarea></td>
+            <td><textarea rows="1" class="nameentry" name="tradeskill_name"></textarea></td>
         </tr>
         <tr>
-            <td align="right">Trivial (number and below):</td>
+            <td align="right">Trivial Maximum:</td>
             <td><input type="number" id="trivial" name="trivial" min="0" max="500" value="100"></td>
+        </tr>
+        <tr>
+            <td align="right">Trivial Minimum:</td>
+            <td><input type="number" id="trivial_min" name="trivial_min" min="0" max="500" value="1"></td>
         </tr>
         <tr>
             <td align="right">Tradeskill:</td>
@@ -50,6 +55,10 @@ $(document).ready(function() {
                 <option value="57">Tinkering</option>
                 <option value="75">Non-Tradeskill</option>
             </select></td>
+        </tr>
+        <tr>
+            <td align="right">Remove No Fail:</td>
+            <td><input type="checkbox" name="no_fail" value="True"></td>
         </tr>
     </table>
     <br>

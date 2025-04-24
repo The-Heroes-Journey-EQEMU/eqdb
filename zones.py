@@ -117,11 +117,13 @@ def get_zone_detail(zone_id):
     # Parse the map files and add them to the returned data.
     short_name = base_data['short_name']
     base_data.update({'mapping': utils.get_map_data(short_name)})
+    # base_data.update({'poi': utils.get_map_poi(short_name)})
 
     # Get all the NPCs for this zone
     spawn_groups = {}
     with Session(bind=engine) as session:
-        query = session.query(Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, NPCTypes.name, NPCTypes.id, SpawnEntry.chance).\
+        query = session.query(Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, NPCTypes.name,
+                              NPCTypes.id, SpawnEntry.chance, Spawn2.id, Spawn2.spawngroupID).\
             filter(Spawn2.spawngroupID == SpawnGroup.id).\
             filter(SpawnEntry.spawngroupID == Spawn2.spawngroupID).\
             filter(Spawn2.zone == short_name). \
@@ -137,6 +139,8 @@ def get_zone_detail(zone_id):
             npc_name = entry[5]
             npc_id = entry[6]
             chance = entry[7]
+            spawn_id = entry[8]
+            group_id = entry[9]
             if name in spawn_groups:
                 npc_list = spawn_groups[name]['npcs']
             else:
@@ -149,7 +153,9 @@ def get_zone_detail(zone_id):
                                         'y': y,
                                         'z': z,
                                         'respawn': respawn,
-                                        'npcs': npc_list}})
+                                        'npcs': npc_list,
+                                        'spawn_id': spawn_id,
+                                        'group_id': group_id}})
     base_data['spawn_groups'] = spawn_groups
 
     # Get waypoint, assuming there is one

@@ -127,7 +127,9 @@
         <li>Class: {{data.class}}</li>
         <li>Race: {{data.race}}</li>
         <li>Body Type: {{data.bodytype}}</li>
-        <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
+        {% if data.faction %}
+         <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
+        {% endif %}
         <li>Min Hit: {{data.mindmg}}</li>
         <li>Max Hit: {{data.maxdmg}}</li>
         <li>HP: {{data.hp}}</li>
@@ -208,7 +210,7 @@
         {% if data['spawn_groups'] %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="spawns" role="tabpanel" aria-labelledby="spawns-tab">
             {% for entry in data['spawn_groups'] %}
-              <li>{{entry.name}} :: {{entry.x * -1}}, {{entry.y * -1}}, {{entry.z}} :: {{entry.respawn}}s respawn</li>
+              <li>{{entry.name}}:: {{entry.x * -1}}, {{entry.y * -1}}, {{entry.z}} :: {{entry.respawn}}s respawn :: <abbr title="spawngroupID: {{entry.group_id}}, spawn2ID: {{entry.spawn_id}}">Spawn Info</abbr></li>
               <ul>
               {% for subentry in entry.spawn_npcs  %}
                   <li><a href="{{url_for('npc_detail', npc_id=subentry.npc_id)}}">{{subentry.npc_name}}</a> ({{subentry.chance}}% chance)</li>

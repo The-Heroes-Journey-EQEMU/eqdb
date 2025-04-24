@@ -1,6 +1,17 @@
 ==0.2.0 RC 2==
-* Added logo, thanks to Drake and Neidel for their incredible submissions!
+* Added a site Icon, thanks to Drake and Neidel for their incredible submissions!
 * Converted the table for tradeskill results into a datatable so that it can be sorted by trivial or name, and searched.
+* Navbar search errors now returns user to main page, not tradeskill search
+* Faction search errors now returns user to faction search, not npc search
+* Searching text areas now allow you to press enter to submit the form
+* Fixed getting details on an NPC when they don't have a faction
+* Added spawn info (spawngroupID and spawn2ID) to NPC details page spawn groups.
+* Added spawn info (spawngroupID and spawn2ID) to Zone details page spawn groups.
+* Items no longer show tradeskill recipes they're a component in if the tradeskill recipe is disabled.
+* Tradeskill search no longer shows disabled recipes.
+* Tradeskill search can now filter out no-fail / 0 trivial recipes
+* Added a minimum trivial to help users reduce the results they get from tradeskill searching
+* Zone detail page now consumes more of the empty space when showing items.
 
 ==0.2.0 RC 1==
 * Refactored logic code into appropriate separate files.
