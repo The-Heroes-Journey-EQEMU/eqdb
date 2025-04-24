@@ -1,38 +1,36 @@
 {% extends "layout.html" %}
 {% block body %}
-<script src="https://unpkg.com/@popperjs/core@2"></script>
-<script src="https://unpkg.com/tippy.js@6"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        tippy('.spell-tooltip-link', {
-            placement: 'right',
-            flipDuration: 0,
-            content: 'Loading...',
-            allowHTML: true,
-            maxWidth: 'none',
-            onShow(instance) {
-                const url = instance.reference.dataset.url;
-                fetch(`/spell-tooltip/${encodeURIComponent(url)}`)
-                    .then(response => response.text())
-                    .then(content => {
-                        instance.setContent(content);
-                    })
-                    .catch(error => {
-                        console.error('Error fetching tooltip content:', error);
-                    });
-            },
-        });
-    });
-</script>
+<center><h2>Spell Listing for {{data.pop('game_class')}}</h2></center>
 <div id="top"></div>
+<div style="display: flex; justify-content: center;">
+    <div class="col-6">
+    <ul class="nav justify-content-center py-3">
 {% for level in data|sort %}
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="{{level}}">
-    <center><h3>Level {{level}}</h3></center>
-    <ul>
+    <li class="nav-item border"><a href="#level_{{level}}" class="border-0 btn btn-outline-secondary btn-sm rounded-0">{{level}}</a></li>
+{% endfor %}
+  </ul>
+        </div></div>
+{% for level in data|sort %}
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 50%;" id="level_{{level}}">
+    <center><h3>Level {{level}}  <a href="#top">TOP</a></h3>  </center>
+    <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
     {% for entry in data[level]|sort(attribute="spell_name") %}
-        <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></li>
+        <tr style="border: 1px solid black; border-collapse: collapse;">
+            <td style="border: 1px solid black; border-collapse: collapse;"><img src="/static/spell_icons/{{entry.icon}}.png"</td>
+            <td style="border: 1px solid black; border-collapse: collapse;"><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
+            <td style="border: 1px solid black; border-collapse: collapse;">{{entry.skill}}</td>
+            <td style="border: 1px solid black; border-collapse: collapse;">{{entry.target}}</td>
+            <td style="border: 1px solid black; border-collapse: collapse;">
+                {% for sub_entry in entry['slots'] %}
+                  {% if entry['slots'][sub_entry]['desc'] is not none %}
+                   {{sub_entry.replace('_', ' ')}}: {{entry['slots'][sub_entry]['desc']}}<br>
+                  {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
     {% endfor %}
-    </ul>
-</div><br>
+    </table>
+</div></div><br>
 {% endfor %}
 {% endblock %}

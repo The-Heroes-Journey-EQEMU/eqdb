@@ -5,7 +5,7 @@
 * All Search:
     ** All divs now have the same height
 * Tradeskill Search:
-    ** Put all of the options in a table so that they look nicer
+    ** Put the options in a table so that they look nicer
     ** Defaulted Trivial number to 100
 * Tradeskill Details:
     ** All divs are now centered and have the same height
@@ -48,7 +48,24 @@
 * Faction Detail:
     ** Put in a block on KOS and Deepwater Knights factions, as they have _way_ too many entries due to beind defaults.
     ** All divs are now centered
-
+* Spell Listing:
+    ** Put the options in a table so that they look nicer
+    ** Minimum level now defaults to 1
+    ** Maximum level now defaults to 65 (dependent on configuration settings)
+* Spell Listing Result:
+    ** Completely reworked this page to be much more like THJ
+    ** All divs are now centered
+* Pet Listing:
+    ** Completely reworked this page to be much more like THJ
+    ** All divs are now centered
+* Pet Listing Result:
+    ** Completely reworked this page to be much more like THJ
+    ** Fixed the class name lookup
+* Pet Detail:
+    ** Added more stats
+    ** Added spells cast data
+* Advanced Gear Search:
+    ** Added the icon next to the items
 
 
 ==0.2.0.5==

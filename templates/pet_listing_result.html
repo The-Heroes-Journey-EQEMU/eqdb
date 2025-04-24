@@ -1,8 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
-<ul>
-{% for entry in data %}
-    <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}">{{entry.spell_name}}</a> - <a href="{{url_for('pet_detail', pet_sum_name=entry.pet_name)}}">{{entry.pet_name}}</a></li>
+<center><h3>{{g_class}} Pets</h3></center>
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="base_details">
+<table>
+    <thead>
+    <td>Icon</td>
+    <td>Spell Name</td>
+    <td>Pet Type</td>
+    <td>Pet Race</td>
+    <td>Pet Level</td>
+    <td>Pet Class</td>
+    <td>Pet HP</td>
+    <td>Pet AC</td>
+    <td>Min Damage</td>
+    <td>Max Damage</td>
+    </thead>
+{% for entry in data|sort(attribute='level') %}
+    <tr style="border: 1px solid black; border-collapse: collapse;">
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.level}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;"><img src="/static/spell_icons/{{entry.icon}}.png"></td>
+        <td style="border: 1px solid black; border-collapse: collapse;"><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
+        <td style="border: 1px solid black; border-collapse: collapse;"><a href="{{url_for('pet_detail', pet_sum_name=entry.pet_name)}}">{{entry.pet_name}}</a></td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.race}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.pet_level}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.class}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.hp}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.ac}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.mindmg}}</td>
+        <td style="border: 1px solid black; border-collapse: collapse;">{{entry.maxdmg}}</td>
+    </tr>
 {% endfor %}
-</ul>
+</table>
+</div>
+</div>
 {% endblock %}

@@ -1,24 +1,124 @@
 {% extends "layout.html" %}
 {% block body %}
+<center><h3>{{data.pet_name}}</h3></center>
 {% if data is none %}
 <h3>Pet Data Not Found</h3>
 {% else %}
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="pet">
-    <center><h3>{{data.pet_name}}</h3></center>
-<ul>
-    <li>Pet Power: {{data.pet_power}}</li>
-    <li>Swarm Pet? {{data.swarm_pet}}</li>
-    <li>Level: {{data.npc.level}}</li>
-    <li>Class: {{data.npc.class}}</li>
-    <li>Race: {{data.npc.race}}</li>
-    <li>Body: {{data.npc.bodytype}}</li>
-    <li>Special Attack:</li>
-    <ul>
-        {% for entry in data.npc.special_attacks %}
-        <li>{{entry}}</li>
-        {% endfor%}
-    </ul>
-</ul>
+<div style="display: flex; justify-content: center;">
+<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="margin-right: 25px;" id="pet">
+    <center><h3>Pet Stats</h3></center>
+<table>
+    <tr>
+        <td align="right">Pet Power:</td>
+        <td>{{data.pet_power}}</td>
+    </tr>
+    <tr>
+        <td align="right">Swarm Pet?</td>
+        <td>{{data.swarm_pet}}</td>
+    </tr>
+    <tr>
+        <td align="right">Level:</td>
+        <td>{{data.npc.level}}</td>
+    </tr>
+    <tr>
+        <td align="right">Class:</td>
+        <td>{{data.npc.class}}</td>
+    </tr>
+<tr>
+    <td align="right">Race:</td>
+    <td>{{data.npc.race}}</td>
+</tr>
+    <tr>
+        <td align="right">Body:</td>
+        <td>{{data.npc.bodytype}}</td>
+    </tr>
+    <tr>
+        <td align="right" style="word-wrap: break-word; width=100px;">Special Attacks:</td>
+        <td>{{data.npc.special_attacks}}</td>
+    </tr>
+    <tr>
+        <td align="right">AC:</td>
+        <td>{{data.npc.AC}}</td>
+    </tr>
+    <tr>
+        <td align="right">HP:</td>
+        <td>{{data.npc.hp}}</td>
+    </tr>
+    <tr>
+        <td align="right">Damage:</td>
+        <td>{{data.npc.mindmg}} to {{data.npc.maxdmg}}</td>
+    </tr>
+        <tr>
+        <td align="right">HP Regen:</td>
+        <td>{{data.npc.hp_regen_rate}} per tick</td>
+    </tr>
+        <tr>
+        <td align="right">Strength:</td>
+        <td>{{data.npc.STR}}</td>
+    </tr>
+        <tr>
+        <td align="right">Stamina:</td>
+        <td>{{data.npc.STA}}</td>
+    </tr>
+        <tr>
+        <td align="right">Dexterity:</td>
+        <td>{{data.npc.DEX}}</td>
+    </tr>
+        <tr>
+        <td align="right">Agility:</td>
+        <td>{{data.npc.AGI}}</td>
+    </tr>
+        <tr>
+        <td align="right">Intelligence:</td>
+        <td>{{data.npc._INT}}</td>
+    </tr>
+            <tr>
+        <td align="right">Wisdom:</td>
+        <td>{{data.npc.WIS}}</td>
+    </tr>
+            <tr>
+        <td align="right">Charisma:</td>
+        <td>{{data.npc.CHA}}</td>
+    </tr>
+            <tr>
+        <td align="right">Magic Resist:</td>
+        <td>{{data.npc.MR}}</td>
+    </tr>
+            <tr>
+        <td align="right">Fire Resist:</td>
+        <td>{{data.npc.FR}}</td>
+    </tr>
+            <tr>
+        <td align="right">Cold Resist:</td>
+        <td>{{data.npc.CR}}</td>
+    </tr>
+            <tr>
+        <td align="right">Disease Resist:</td>
+        <td>{{data.npc.DR}}</td>
+    </tr>
+            <tr>
+        <td align="right">Poison Resist:</td>
+        <td>{{data.npc.PR}}</td>
+    </tr>
+</table>
+    {% if data.spells %}
 </div>
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="spell">
+        <center><h3>Spells Cast</h3></center>
+        <table>
+            {% for entry in data.spells %}
+            <tr>
+                <td><img src="/static/spell_icons/{{entry.icon}}.png"></td>
+                <td><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
+                <td>{{entry.spell_type}}</td>
+                {% if entry.proc_chance is not none %}
+                <td>{{entry.proc_chance}}%</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endif %}
 {% endblock %}

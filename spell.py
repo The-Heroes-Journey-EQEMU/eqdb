@@ -122,20 +122,27 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
     params = and_(*filters)
 
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference.id, getattr(SpellsNewReference, f'classes{class_id}'),
-                              SpellsNewReference.name).filter(params)
+        query = session.query(SpellsNewReference).filter(params)
         result = query.all()
 
-    data = {}
+    data = {'game_class': utils.get_spell_class(int(class_id))}
     for entry in result:
-        spell_id = entry[0]
-        level = entry[1]
-        spell_name = entry[2]
+        spell_id = entry.id
+        level = getattr(entry, f'classes{class_id}')
+        spell_name = entry.name
+        skill = utils.parse_skill(entry.skill)
+        target = parse_target_type(int(entry.targettype))
+        icon = entry.new_icon
+        slots = {}
+        for idx in range(1, 13):
+            if getattr(entry, f'effectid{idx}') != 254:
+                slots.update({f'slot_{idx}': parse_slot_data(idx, entry)})
         if level in data:
-            level_list = data.get(level)
+            level_list = data[level]
         else:
             level_list = []
-        level_list.append({'spell_id': spell_id, 'spell_name': spell_name})
+        level_list.append({'spell_id': spell_id, 'spell_name': spell_name, 'skill': skill,
+                           'target': target, 'slots': slots, 'icon': icon})
         data.update({level: level_list})
 
     return data

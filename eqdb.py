@@ -119,17 +119,15 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
-@app.route("/pet/listing", methods=['GET', 'POST'])
+@app.route("/pet/listing/<int:class_id>", methods=['GET'])
+def pet_listing_result(class_id):
+    data, game_class = pets.get_all_class_pets(class_id)
+    return render_template('pet_listing_result.html', data=data, g_class=game_class)
+
+
+@app.route("/pet/listing", methods=['GET'])
 def pet_listing():
-    if request.method == 'GET':
-        return render_template('pet_listing.html')
-    else:
-        class_id = request.form.get('class_id')
-        if class_id == 'None':
-            flash("You must select a class")
-            return redirect(url_for('pet_listing'))
-        data = pets.get_all_class_pets(class_id)
-        return render_template('pet_listing_result.html', data=data)
+    return render_template('pet_listing.html')
 
 
 @app.route("/pet/detail/<pet_sum_name>")

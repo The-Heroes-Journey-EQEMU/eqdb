@@ -203,7 +203,7 @@
     </thead>
 {% for entry in data %}
     <tr>
-        <td><a href="{{url_for('item_detail', item_id=entry.id)}}" data-url="{{entry.id}}" class="tooltip-link">{{entry.Name}}</a></td>
+        <td><img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.id)}}" data-url="{{entry.id}}" class="tooltip-link">{{entry.Name}}</a></td>
         {% if show_values %}
          <td>{{'%0.2f' % entry.weight|float}}</td>
         {% endif %}

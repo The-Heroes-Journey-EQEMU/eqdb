@@ -20,9 +20,12 @@ $(document).ready(function() {
 
 
 </script>
+<h3>Spell Listing</h3>
 <form actions="{{ url_for('spell_listing') }}" method="post" class="add-entry" id="demoForm">
-    Class:
-    <select name="class_id" id="class_id">
+    <table>
+        <tr>
+            <td align="right">Class:</td>
+            <td>    <select name="class_id" id="class_id">
         <option value="None" selected="selected">--Select Class--</option>
         <option value="8">Bard</option>
         <option value="15">Beastlord</option>
@@ -40,9 +43,17 @@ $(document).ready(function() {
         <option value="10">Shaman</option>
         <option value="12">Wizard</option>
         <option value="1">Warrior</option>
-</select><br>
-    Minimum Level: <input type="number" id="min_level" name="min_level" min="1" max="65"><br>
-    Maximum Level: <input type="number" id="max_level" name="max_level" min="1" max="65"><br>
+</select></td>
+        </tr>
+        <tr>
+            <td align="right">Minimum Level:</td>
+            <td><input type="number" id="min_level" name="min_level" min="1" max="65" value="1"></td>
+        </tr>
+        <tr>
+            <td align="right">Maximum Level:</td>
+            <td><input type="number" id="max_level" name="max_level" min="1" max="65" value="65"></td>
+        </tr>
+    </table><br>
 <input type="submit" value="Search">
 </form>
 {% endblock %}

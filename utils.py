@@ -13,6 +13,41 @@ class ReducedItem:
             setattr(self, k, v)
 
 
+def get_spell_class(class_num):
+    if class_num == 1:
+        return 'Warrior'
+    elif class_num == 2:
+        return 'Cleric'
+    elif class_num == 3:
+        return 'Paladin'
+    elif class_num == 4:
+        return 'Ranger'
+    elif class_num == 5:
+        return 'Shadow Knight'
+    elif class_num == 6:
+        return 'Druid'
+    elif class_num == 7:
+        return 'Monk'
+    elif class_num == 8:
+        return 'Bard'
+    elif class_num == 9:
+        return 'Rogue'
+    elif class_num == 10:
+        return 'Shaman'
+    elif class_num == 11:
+        return 'Necromancer'
+    elif class_num == 12:
+        return 'Wizard'
+    elif class_num == 13:
+        return 'Magician'
+    elif class_num == 14:
+        return 'Enchanter'
+    elif class_num == 15:
+        return 'Beastlord'
+    elif class_num == 16:
+        return 'Berserker'
+
+
 def get_zone_waypoint(short_name):
     if short_name == 'blackburrow':
         return {'y': 38, 'x': -7, 'z': 3}
@@ -268,6 +303,8 @@ def get_bane_dmg_race(num):
     """Returns the "Race Type" of a bane."""
     if num == 12:
         return 'Gnome'
+    elif num == 0:
+        return 'Warder'
     elif num == 20:
         return 'Venril Sathir'
     elif num == 26:
@@ -276,12 +313,22 @@ def get_bane_dmg_race(num):
         return 'Gnoll'
     elif num == 40:
         return 'Goblin'
+    elif num == 43:
+        return 'Bear'
     elif num == 51:
         return 'Lizard Man'
     elif num == 54:
         return 'Orc'
     elif num == 60:
         return 'Skeleton'
+    elif num == 75:
+        return 'Elemental'
+    elif num == 85 or num == 485:
+        return 'Spectre'
+    elif num == 120:
+        return 'Wolf'
+    elif num == 127:
+        return 'Invisible Man'
     elif num == 134:
         return 'Mosquito'
     elif num == 202:
@@ -335,7 +382,7 @@ def get_bane_dmg_race(num):
     elif num == 581:
         return 'Wyvern'
     else:
-        return 'Unknown Race'
+        return f'Unknown Race {num}'
 
 
 def get_elem_dmg_type(num):
@@ -1211,22 +1258,36 @@ def parse_skill(skill_num):
         return 'Bash'
     elif skill_num == 11:
         return 'Block'
+    elif skill_num == 12:
+        return 'Brass Instruments'
     elif skill_num == 13:
         return 'Channeling'
     elif skill_num == 14:
         return 'Conjuration'
     elif skill_num == 15:
         return 'Defense'
+    elif skill_num == 16:
+        return 'Disarm'
     elif skill_num == 17:
         return 'Disarm Traps'
     elif skill_num == 18:
         return 'Divination'
     elif skill_num == 19:
         return 'Dodge'
+    elif skill_num == 20:
+        return 'Double Attack'
+    elif skill_num == 21:
+        return 'Dragon Punch'
     elif skill_num == 22:
         return 'Dual Wield'
+    elif skill_num == 23:
+        return 'Eagle Strike'
     elif skill_num == 24:
         return 'Evocation'
+    elif skill_num == 25:
+        return 'Feign Death'
+    elif skill_num == 26:
+        return 'Flying Kick'
     elif skill_num == 27:
         return 'Forage'
     elif skill_num == 28:
@@ -1239,16 +1300,24 @@ def parse_skill(skill_num):
         return 'Meditate'
     elif skill_num == 32:
         return 'Mend'
+    elif skill_num == 33:
+        return 'Offense'
+    elif skill_num == 34:
+        return 'Parry'
     elif skill_num == 35:
         return 'Pick Locks'
     elif skill_num == 36:
         return 'Piercing'
     elif skill_num == 37:
         return 'Riposte'
+    elif skill_num == 38:
+        return 'Round Kick'
     elif skill_num == 39:
         return 'Safe Fall'
     elif skill_num == 40:
         return 'Sense Heading'
+    elif skill_num == 41:
+        return 'Singing'
     elif skill_num == 42:
         return 'Sneak'
     elif skill_num == 43:
@@ -1261,12 +1330,20 @@ def parse_skill(skill_num):
         return 'Specialize Divination'
     elif skill_num == 47:
         return 'Specialize Evocation'
+    elif skill_num == 48:
+        return 'Pick Pockets'
+    elif skill_num == 49:
+        return 'Stringed Instruments'
     elif skill_num == 50:
         return 'Swimming'
     elif skill_num == 51:
         return 'Throwing'
+    elif skill_num == 52:
+        return 'Tiger Claw'
     elif skill_num == 53:
         return 'Tracking'
+    elif skill_num == 54:
+        return 'Wind Instruments'
     elif skill_num == 55:
         return 'Fishing'
     elif skill_num == 56:
@@ -1281,6 +1358,8 @@ def parse_skill(skill_num):
         return 'Baking'
     elif skill_num == 61:
         return 'Tailoring'
+    elif skill_num == 62:
+        return 'Sense Traps'
     elif skill_num == 63:
         return 'Blacksmithing'
     elif skill_num == 64:
@@ -1289,16 +1368,28 @@ def parse_skill(skill_num):
         return 'Brewing'
     elif skill_num == 66:
         return 'Alcohol Tolerance'
+    elif skill_num == 67:
+        return 'Begging'
     elif skill_num == 68:
         return 'Jewel Crafting'
     elif skill_num == 69:
         return 'Pottery'
+    elif skill_num == 70:
+        return 'Percussion Instruments'
     elif skill_num == 71:
         return 'Intimidate'
+    elif skill_num == 72:
+        return 'Berserking'
     elif skill_num == 73:
         return 'Taunt'
+    elif skill_num == 74:
+        return 'Frenzy'
     elif skill_num == 75:
         return 'Non-Tradeskill'
+    elif skill_num == 76:
+        return 'Triple Attack'
+    elif skill_num == 77:
+        return '2H Piercing'
     elif skill_num == 255:
         return 'none'
     else:
