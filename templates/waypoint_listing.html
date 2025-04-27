@@ -1,12 +1,22 @@
 {% extends "layout.html" %}
 {% block body %}
+<center><h3>Waypoints</h3></center>
+<div id="top"></div>
+ <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="" id="Continents">
+     {% for entry in data %}
+        <a href="#{{entry}}">Go to {{entry}}</a><br>
+     {% endfor %}
+ </div>
+<br>
 {% for entry in data %}
- <h3>{{entry}}</h3>
+ <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="" id="{{entry}}">
+     <h3>{{entry}} - <a href="#top">Top</a></h3>
  <ul>
      {% for sub_entry in data[entry] %}
       <li><a href="{{url_for('zone_detail', zone_id=data[entry][sub_entry]['zone_id'])}}">{{sub_entry}}</a> - ({{data[entry][sub_entry]['x']}}, {{data[entry][sub_entry]['y']}}, {{data[entry][sub_entry]['z']}})</li>
      {% endfor %}
  </ul>
+ </div>
 <br>
 {% endfor %}
 {% endblock %}

@@ -185,8 +185,8 @@ def waypoint_listing():
     velious = {}
     luclin = {}
     planes = {}
-    taelosia = {}
-    kuua = {}
+    #taelosia = {}
+    #kuua = {}
     entries = [Zone.short_name == 'blackburrow',
                Zone.short_name == 'commons',
                Zone.short_name == 'ecommons',
@@ -331,31 +331,31 @@ def waypoint_listing():
         sub_data.update({'zone_id': entry[1]})
         planes.update({entry[2]: sub_data})
 
-    entries = [Zone.short_name == 'barindu',
-               Zone.short_name == 'kodtaz',
-               Zone.short_name == 'natimbi',
-               Zone.short_name == 'qvic',
-               Zone.short_name == 'txevu']
-    entry_params = or_(*entries)
-    with Session(bind=engine) as session:
-        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
-        result = query.all()
-
-    for entry in result:
-        sub_data = utils.get_zone_waypoint(entry[0])
-        sub_data.update({'zone_id': entry[1]})
-        taelosia.update({entry[2]: sub_data})
-
-    entries = [Zone.short_name == 'wallofslaughter']
-    entry_params = or_(*entries)
-    with Session(bind=engine) as session:
-        query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
-        result = query.all()
-
-    for entry in result:
-        sub_data = utils.get_zone_waypoint(entry[0])
-        sub_data.update({'zone_id': entry[1]})
-        kuua.update({entry[2]: sub_data})
+    # entries = [Zone.short_name == 'barindu',
+    #            Zone.short_name == 'kodtaz',
+    #            Zone.short_name == 'natimbi',
+    #            Zone.short_name == 'qvic',
+    #            Zone.short_name == 'txevu']
+    # entry_params = or_(*entries)
+    # with Session(bind=engine) as session:
+    #     query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+    #     result = query.all()
+    #
+    # for entry in result:
+    #     sub_data = utils.get_zone_waypoint(entry[0])
+    #     sub_data.update({'zone_id': entry[1]})
+    #     taelosia.update({entry[2]: sub_data})
+    #
+    # entries = [Zone.short_name == 'wallofslaughter']
+    # entry_params = or_(*entries)
+    # with Session(bind=engine) as session:
+    #     query = session.query(Zone.short_name, Zone.zoneidnumber, Zone.long_name).filter(entry_params)
+    #     result = query.all()
+    #
+    # for entry in result:
+    #     sub_data = utils.get_zone_waypoint(entry[0])
+    #     sub_data.update({'zone_id': entry[1]})
+    #     kuua.update({entry[2]: sub_data})
 
     return {'Antonica': antonica,
             'Faydwer': faydwer,
@@ -363,6 +363,6 @@ def waypoint_listing():
             'Kunark': kunark,
             'Velious': velious,
             'Luclin': luclin,
-            'Planes': planes,
-            'Taelosia': taelosia,
-            'Kuua': kuua}
+            'Planes': planes}
+            #'Taelosia': taelosia,
+            #'Kuua': kuua}

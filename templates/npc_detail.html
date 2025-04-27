@@ -68,7 +68,7 @@
                                       stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
                                 {% endfor %}
                                 {% for entry in data['spawn_groups'] %}
-                                     <circle r="25" cx="{{entry['x']}}" cy="{{entry['y']}}" fill="red">
+                                     <circle r="10" cx="{{entry['x']}}" cy="{{entry['y']}}" fill="red">
                                          <animate attributeName="opacity" dur="1s" values="0;1;0" repeatCount="indefinite" begin="0.1" />
                                      </circle>
                                 {% endfor %}

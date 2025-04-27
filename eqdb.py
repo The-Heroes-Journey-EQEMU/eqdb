@@ -175,7 +175,7 @@ def all_search():
         flash('Only ASCII characters are allowed.')
         return redirect(url_for('main_page'))
     data = logic.all_search(name=name)
-    return render_template('all_search_result.html', data=data)
+    return render_template('all_search_result.html', search_txt=name, data=data)
 
 
 @app.route("/search/faction", methods=['GET', 'POST'])

@@ -1,3 +1,10 @@
+==0.2.0 RC 3==
+* Added a header to Waypoints page
+* Removed Taelosia and Kuua Waypoints
+* Clarified the heading on all search page
+* Added a table of contents and "top" returner links to the Waypoints page.
+* Reduced the size of npc markers on NPC Detail
+
 ==0.2.0 RC 2==
 * Added a site Icon, thanks to Drake and Neidel for their incredible submissions!
 * Converted the table for tradeskill results into a datatable so that it can be sorted by trivial or name, and searched.
