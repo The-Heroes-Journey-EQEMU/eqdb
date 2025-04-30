@@ -15,8 +15,6 @@ site_config = configparser.RawConfigParser()
 ini_path = os.path.join(here, 'configuration.ini')
 site_config.read_file(open(ini_path))
 expansion = site_config.getint('thj', 'expansion')
-site_type = site_config.get('DEFAULT', 'site_type')
-email_password = site_config.get('gmail', 'appkey')
 
 driver = site_config.get('database', 'driver')
 user = site_config.get('database', 'user')
