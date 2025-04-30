@@ -59,6 +59,16 @@ ALLOWED_EXTENSIONS = {'txt'}
 """ MAIN METHODS """
 
 
+@app.route("/site_error")
+@app.errorhandler(Exception)
+def all_exception_handler(error):
+    if SITE_TYPE == 'Development':
+        raise error
+    referrer = request.path
+    logic.send_error_email(error, referrer)
+    return render_template('site_error.html')
+
+
 @app.route("/login/")
 def login():
     return discord.create_session(scope=['identify'])

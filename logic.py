@@ -3,6 +3,9 @@ import configparser
 import datetime
 import operator
 import os
+import smtplib
+import traceback
+from email.mime.text import MIMEText
 
 import utils
 
@@ -15,6 +18,8 @@ site_config = configparser.RawConfigParser()
 ini_path = os.path.join(here, 'configuration.ini')
 site_config.read_file(open(ini_path))
 expansion = site_config.getint('thj', 'expansion')
+site_type = site_config.get('DEFAULT', 'site_type')
+email_password = site_config.get('gmail', 'appkey')
 
 driver = site_config.get('database', 'driver')
 user = site_config.get('database', 'user')
@@ -138,6 +143,35 @@ def _get_arg_list(tooltip=False):
         arg_list.append(BardSpell.effect_base_value1.label('inst_value'))
 
     return arg_list
+
+
+def send_error_email(error, referrer):
+    # See if this referrer exists in local text already.
+    error_file = os.path.join(here, 'error_list.txt')
+    if os.path.exists(error_file):
+        with open(error_file, 'r') as fh:
+            errors = fh.read()
+        error_list = errors.split('\n')
+        if referrer in error_list:
+            return
+
+    subject = f"EQDB [{site_type}] error detected."
+    body = f'Exception: "{error}" occurred when accessing page {referrer}\nStack: {traceback.format_exc()}'
+    sender = "mfish1@gmail.com"
+    recipients = ["mfish1@gmail.com"]
+    password = email_password
+
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = ', '.join(recipients)
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
+        smtp_server.login(sender, password)
+        smtp_server.sendmail(sender, recipients, msg.as_string())
+
+    with open(error_file, 'a') as fh:
+        fh.write(error)
+        fh.write('\n')
 
 
 def all_search(name=None):

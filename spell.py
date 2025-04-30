@@ -2330,6 +2330,8 @@ def fast_spa_lookup(spa):
         return 'HP to Mana'
     elif spa == 339:
         return 'Cast Proc'
+    elif spa == 350:
+        return 'Manaburn'
     elif spa == 369:
         return 'Corruption'
     elif spa == 371:

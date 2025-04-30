@@ -140,7 +140,9 @@ def get_npc_detail(npc_id):
         for entry in result:
             # Get the name
             query = session.query(LootDrop.name).filter(LootDrop.id == entry.lootdrop_id)
-            sub_result = query.one()
+            sub_result = query.first()
+            if not sub_result:
+                continue
             loot_list_name = sub_result[0]
 
             # Get the items

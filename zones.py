@@ -16,7 +16,8 @@ def _get_link_filters():
 
 def get_zone_listing():
     era_list = {'Classic': 0, 'Ruins of Kunark': 1, 'Legacy of Ykesha': 5, 'Scars of Velious': 2, 'Shadows of Luclin': 3,
-                'Planes of Power': 4, 'Lost Dungeons of Norrath': 6, 'Gates of Discord': 7}
+                #'Planes of Power': 4, 'Lost Dungeons of Norrath': 6, 'Gates of Discord': 7}
+                'Planes of Power': 4}
     out_list = {}
     exclusion_list = ['cshome', 'hateplane', 'powar', 'soldungc', 'qvicb']
     # Massaging
