@@ -17,7 +17,7 @@
         <center><h3>Spells</h3></center>
         <ul>
     {% for entry in data.spells %}
-        <li><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.name}}</a></li>
+        <li><img src="/static/spell_icons/{{entry.icon}}.png">  <a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.name}}</a></li>
     {% endfor %}
         </ul>
     </div>
