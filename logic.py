@@ -3,9 +3,6 @@ import configparser
 import datetime
 import operator
 import os
-import smtplib
-import traceback
-from email.mime.text import MIMEText
 
 import utils
 
@@ -155,22 +152,8 @@ def send_error_email(error, referrer):
         if referrer in error_list:
             return
 
-    subject = f"EQDB [{site_type}] error detected."
-    body = f'Exception: "{error}" occurred when accessing page {referrer}\nStack: {traceback.format_exc()}'
-    sender = "mfish1@gmail.com"
-    recipients = ["mfish1@gmail.com"]
-    password = email_password
-
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = ', '.join(recipients)
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
-        smtp_server.login(sender, password)
-        smtp_server.sendmail(sender, recipients, msg.as_string())
-
     with open(error_file, 'a') as fh:
-        fh.write(error)
+        fh.write(referrer)
         fh.write('\n')
 
 

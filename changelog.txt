@@ -3,7 +3,7 @@
 * Removed LDoN and GoD zones from zone listing
 * Added an exception handler so users don't get flashbanged.
     ** This exception handler will also send Convection an email that something went wrong.
-* Added icons to items in all-search
+* Added icons to all-search
 * Added the level header for class pet listing, fixing the all headers
 
 ==0.2.0 RC 3==
