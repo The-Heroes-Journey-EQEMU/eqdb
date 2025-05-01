@@ -172,6 +172,8 @@ def get_item_data(item_id, full=False):
         args = _get_arg_list(tooltip=True)
         query = session.query(*args).filter(Item.id == item_id)
         result = query.all()
+        if not result:
+            return None
         ret_dict = dict(result[0]._mapping)
 
         proc = ret_dict['proceffect']

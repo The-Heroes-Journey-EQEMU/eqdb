@@ -66,6 +66,9 @@ def get_zone_detail(zone_id):
         query = session.query(*args).filter(Zone.zoneidnumber == zone_id)
         result = query.first()
 
+    if not result:
+        return None
+
     base_data = {'expansion': utils.get_era_name(result[0]),
                  'short_name': result[1],
                  'long_name': result[2],

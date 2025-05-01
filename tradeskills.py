@@ -13,7 +13,9 @@ def get_tradeskill_detail(ts_id):
                 TradeskillRecipe.trivial, TradeskillRecipe.nofail, TradeskillRecipe.replace_container,
                 TradeskillRecipe.must_learn, TradeskillRecipe.enabled, TradeskillRecipe.min_expansion]
         query = session.query(*args).filter(TradeskillRecipe.id == ts_id)
-        result = query.one()
+        result = query.first()
+    if not result:
+        return None
 
     base_data.update({'name': result[0],
                       'skill': utils.parse_skill(result[1]),

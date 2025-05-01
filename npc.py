@@ -45,7 +45,9 @@ def get_npc_detail(npc_id):
     # Get basic npc details:
     with Session(bind=engine) as session:
         query = session.query(NPCTypes).filter(NPCTypes.id == npc_id)
-        result = query.one()
+        result = query.first()
+    if not result:
+        return None
     base_data = result.__dict__
     base_data.pop('_sa_instance_state')
 

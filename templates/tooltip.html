@@ -1,3 +1,6 @@
+{% if item is none %}
+<h3>Item data not found or item does not exist</h3>
+{% else %}
 <style>
     .item-card {
         border: 1px solid transparent;
@@ -446,4 +449,4 @@
         </tbody>
     </table>
 </div>
-
+{% endif %}
