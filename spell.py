@@ -699,7 +699,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
     elif spa == 59:
         # Damage Shield
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
-        if min_val < 0:
+        if min_val > 0:
             return f'Decrease Damage Shield by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             return f'Increase Damage Shield by {minimum} (L{min_level}) to {max_val} (L{max_level})'
