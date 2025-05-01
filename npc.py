@@ -10,7 +10,7 @@ def get_npcs(npc_name):
     npc_name = npc_name.replace(' ', '_')
     partial = "%%%s%%" % npc_name
     with Session(bind=engine) as session:
-        query = session.query(NPCTypes.id, NPCTypes.name).\
+        query = session.query(NPCTypes.id, NPCTypes.name, NPCTypes.level, NPCTypes.hp).\
             filter(NPCTypes.name.like(partial)).limit(50)
         result = query.all()
 
@@ -19,6 +19,8 @@ def get_npcs(npc_name):
         npc_id = entry[0]
         npc_name = entry[1]
         zone_id = int(npc_id/1000)
+        level = entry[2]
+        hp = entry[3]
         with Session(bind=engine) as session:
             query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
             sub_result = query.first()
@@ -33,7 +35,9 @@ def get_npcs(npc_name):
             sub_result = ['Unknown']
         out_data.append({'npc_id': npc_id,
                          'name': utils.fix_npc_name(npc_name),
-                         'zone': sub_result[0]})
+                         'zone': sub_result[0],
+                         'level': level,
+                         'hp': hp})
     return out_data
 
 

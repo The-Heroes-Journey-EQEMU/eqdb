@@ -27,7 +27,10 @@
         <center><h3>NPCs</h3></center>
         <ul>
     {% for entry in data.npcs %}
-        <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.name}}</a> - {{entry.zone}}</li>
+        <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.name}}</a></li>
+            <ul>
+                <li>{{entry.zone}} :: Level: {{entry.level}} :: HP: {{entry.hp}}</li>
+                </ul>
     {% endfor %}
         </ul>
     </div>
