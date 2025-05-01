@@ -56,7 +56,7 @@ def get_full_spell_data(spell_id):
             item_id = entry[0]
             item_name = entry[1]
             worn.append({'item_id': item_id,
-                          'item_name': item_name})
+                         'item_name': item_name})
 
         # Find all the items that have this as a bard effect
         query = session.query(Item.id, Item.Name).filter(Item.bardeffect == spell_id)
@@ -93,13 +93,17 @@ def get_spells(spell_name):
         result2 = query.all()
 
     out_data = []
+    known_spells = []
     for entry in result + result2:
         spell_id = entry[0]
+        if spell_id in known_spells:
+            continue
         name = entry[1]
         icon = entry[2]
         out_data.append({'spell_id': spell_id,
                          'name': name,
                          'icon': icon})
+        known_spells.append(spell_id)
     return out_data
 
 
