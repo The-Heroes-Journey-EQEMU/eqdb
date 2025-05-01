@@ -171,7 +171,9 @@ def get_zone_detail(zone_id):
 def get_zone(name):
     partial = "%%%s%%" % name
     with Session(bind=engine) as session:
-        query = session.query(Zone.zoneidnumber, Zone.long_name).filter(Zone.long_name.like(partial))
+        query = session.query(Zone.zoneidnumber, Zone.long_name).\
+            filter(Zone.long_name.like(partial)).\
+            filter(Zone.expansion <= expansion)
         result = query.all()
 
     out_zones = []
