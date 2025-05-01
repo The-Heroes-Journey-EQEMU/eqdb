@@ -265,6 +265,7 @@ def get_item_data(item_id, full=False):
     if full:
         # Get mobs that drop this as loot
         droppers = []
+        orig_item_id = item_id
         if item_id > 2000000:
             item_id = item_id - 2000000
         elif 2000000 > item_id > 1000000:
@@ -341,7 +342,7 @@ def get_item_data(item_id, full=False):
         with Session(bind=engine) as session:
             query = session.query(TradeskillRecipeEntries.recipe_id, TradeskillRecipe.name).\
                 filter(TradeskillRecipe.id == TradeskillRecipeEntries.recipe_id).\
-                filter(TradeskillRecipeEntries.item_id == item_id).\
+                filter(TradeskillRecipeEntries.item_id == orig_item_id).\
                 filter(TradeskillRecipeEntries.successcount >= 1). \
                 filter(TradeskillRecipe.enabled == 1)
             result = query.all()
@@ -356,14 +357,14 @@ def get_item_data(item_id, full=False):
         with Session(bind=engine) as session:
             query = session.query(TradeskillRecipeEntries.recipe_id, TradeskillRecipe.name).\
                 filter(TradeskillRecipe.id == TradeskillRecipeEntries.recipe_id).\
-                filter(TradeskillRecipeEntries.item_id == item_id).\
-                filter(TradeskillRecipeEntries.componentcount >= 1).\
+                filter(TradeskillRecipeEntries.item_id == orig_item_id).\
+                filter(or_(TradeskillRecipeEntries.componentcount >= 1, TradeskillRecipeEntries.iscontainer >= 1)).\
                 filter(TradeskillRecipe.enabled == 1)
             result = query.all()
 
         for entry in result:
             ts_component.append({'ts_id': entry[0],
-                              'ts_name': entry[1]})
+                                 'ts_name': entry[1]})
         ret_dict['ts_component'] = ts_component
 
     return ret_dict
