@@ -399,11 +399,22 @@
         {% endif %}
         {% if item.clickeffect > 0 %}
         <tr>
-            <td nowrap="1" colspan='3'>Effect: {{item.click_name}} (Click)</td>
+            <td nowrap="1" colspan='3'>Effect: {{item.click_name}}
+                {% if item.casttime == 0 %}
+              (Casting Time: Instant)
+            {% else %}
+              (Casting Time: {{item.casttime / 1000}})
+            {% endif %}
+            </td>
         </tr>
         {% if item.clicklevel2 > 0 %}
         <tr>
             <td nowrap="1" colspan="3">Clickable at level {{item.clicklevel2}}</td>
+        </tr>
+        {% endif %}
+        {% if item.maxcharges > 0 %}
+        <tr>
+            <td nowrap="1" colspan="3">Charges: {{item.maxcharges}}</td>
         </tr>
         {% endif %}
         {% endif %}

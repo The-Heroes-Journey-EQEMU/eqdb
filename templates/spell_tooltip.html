@@ -26,6 +26,9 @@
 </style>
 <div class="" id="" style="width: 450px;">
 <table class="item_card">
+    {% if slots is none %}
+      <h6>Spell Data Does Not Exist</h6>
+    {% else %}
     {% for entry in slots.keys() %}
     {% if slots[entry]['desc'] is not none %}
     <tr>
@@ -34,5 +37,6 @@
     </tr>
     {% endif %}
     {% endfor %}
+    {% endif %}
 </table>
 </div>

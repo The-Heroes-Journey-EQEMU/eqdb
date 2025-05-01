@@ -12,6 +12,8 @@ LEVEL_CAP = 65
 
 def get_full_spell_data(spell_id):
     spell_data, slots = get_spell_data(spell_id, engine)
+    if not spell_data:
+        return spell_data, slots
 
     procs = []
     clicks = []
@@ -63,7 +65,7 @@ def get_full_spell_data(spell_id):
             item_id = entry[0]
             item_name = entry[1]
             bard.append({'item_id': item_id,
-                          'item_name': item_name})
+                         'item_name': item_name})
 
     spell_data.update({'procs': procs,
                        'clicks': clicks,
@@ -161,7 +163,7 @@ def get_spell_data(spell_id, basic_data=True):
             result = query.first()
 
             if not result:
-                raise Exception(f'Spell with id {spell_id} was not found.')
+                return None, None
 
     if basic_data:
         base = {'id': spell_id,

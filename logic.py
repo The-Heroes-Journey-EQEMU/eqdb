@@ -110,7 +110,7 @@ def _get_arg_list(tooltip=False):
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
                 Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore, Item.bagtype,
                 Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype,
-                Item.icon]
+                Item.icon, Item.casttime, Item.maxcharges]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -209,14 +209,21 @@ def get_item_data(item_id, full=False):
             if not result:
                 query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
                 result = query.all()
-            ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
+
+            if not result:
+                ret_dict['click_name'] = 'Unknown Spell'
+            else:
+                ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
         if focus > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
             if not result:
                 query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
                 result = query.all()
-            ret_dict['focus_name'] = result[0][0]
+            if not result:
+                ret_dict['focus_name'] = 'Unknown Spell'
+            else:
+                ret_dict['focus_name'] = result[0][0]
         if inst > 0:
             query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
             result = query.all()
