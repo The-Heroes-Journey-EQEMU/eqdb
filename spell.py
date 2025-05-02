@@ -575,7 +575,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
         # Spawn NPC
-        return f'Summon pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon pet: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 34:
         # Confuse
         return f'SPA 34: Unused (tell the EQDB dev to fix me)'
@@ -758,7 +758,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'SPA 70: Unused (tell the EQDB dev to fix me)'
     elif spa == 71:
         # Create Undead
-        return f'Summon undead pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon undead pet: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 72:
         # PreserveCorpse
         return f'SPA 72: Unused (tell the EQDB dev to fix me)'
@@ -804,8 +804,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return 'Summon PC'
     elif spa == 83:
         # Portal
-        zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
-        return f'Teleport Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
+        if data.teleport_zone == 'same':
+            return f'Teleport Group to Safe Spot'
+        else:
+            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
+            return f'Teleport Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 84:
         # HP-NPC-ONLY (but really, its gravity flux)
         return f'Toss up by {abs(min_val)}'
@@ -821,8 +824,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Increase Magnification by {min_val}%'
     elif spa == 88:
         # Evacuate
-        zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
-        return f'Evacuate Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
+        if data.teleport_zone == 'same':
+            return f'Evacuate Group to Safe Spot'
+        else:
+            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
+            return f'Evacuate Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 89:
         # Change Size
         if min_val > 100:
@@ -914,13 +920,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return 'Prevent Gate Spell'
     elif spa == 106:
         # BeastLordPet
-        return f'Summon Warder: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Warder: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 107:
         # Alter Pet Level
         return f'SPA 107: Unused (tell the EQDB dev to fix me)'
     elif spa == 108:
         # Familiar
-        return f'Summon Familiar: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Familiar: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 109:
         # CreateItemInBag
         item_data = logic.get_item_data(min_val)
@@ -937,7 +943,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Increase Effective Casting Level by {min_val}'
     elif spa == 113:
         # Summon Horse
-        return f'Summon Horse: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Horse: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 114:
         # Modify Hate
         if min_val < 0:
@@ -1107,7 +1113,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return "Suspend Pet"
     elif spa == 152:
         # PetSwarm
-        return f'Summon Swarm Pet(s): <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Swarm Pet(s): <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 153:
         # Damage Balance
         return f'Balance group health with {min_val} penalty'
@@ -1658,10 +1664,10 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Shrink Pet'
     elif spa == 299:
         # Wake the Dead 1 (Corpse Class)
-        return f'Summon Swarm Pet: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Swarm Pet: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 300:
         # Doppelganger
-        return f'Summon Swarm Pets: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Swarm Pets: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 301:
         # Increase Range Damage
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
@@ -1679,7 +1685,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Reduce damage shield damage taken by {min_val}'
     elif spa == 306:
         # Wake the Dead 2 (File Class)
-        return f'Summon Swarm Pets: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Swarm Pets: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 307:
         # Appraisal
         return 'Show Sell Price of Item on Cursor'
@@ -1836,7 +1842,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Convert {min_val} mana to damage'
     elif spa == 351:
         # Spawn Interactive Object
-        return f'Summon Aura: <a href="/pets/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
+        return f'Summon Aura: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 352:
         # Increase Trap Count
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
