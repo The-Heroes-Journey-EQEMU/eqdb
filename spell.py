@@ -23,49 +23,59 @@ def get_full_spell_data(spell_id):
 
     with Session(bind=engine) as session:
         # Find all the items that have this as a proc
-        query = session.query(logic.Item.id, Item.Name).filter(Item.proceffect == spell_id)
+        query = session.query(logic.Item.id, Item.Name, Item.icon).filter(Item.proceffect == spell_id)
         result = query.all()
         for entry in result:
             item_id = entry[0]
             item_name = entry[1]
+            icon = entry[2]
             procs.append({'item_id': item_id,
-                          'item_name': item_name})
+                          'item_name': item_name,
+                          'icon': icon})
 
         # Find all the items that have this as a click effect
-        query = session.query(Item.id, Item.Name).filter(Item.clickeffect == spell_id)
+        query = session.query(Item.id, Item.Name, Item.icon).filter(Item.clickeffect == spell_id)
         result = query.all()
         for entry in result:
             item_id = entry[0]
             item_name = entry[1]
+            icon = entry[2]
             clicks.append({'item_id': item_id,
-                          'item_name': item_name})
+                          'item_name': item_name,
+                           'icon': icon})
 
         # Find all the items that have this as a focus effect
-        query = session.query(Item.id, Item.Name).filter(Item.focuseffect == spell_id)
+        query = session.query(Item.id, Item.Name, Item.icon).filter(Item.focuseffect == spell_id)
         result = query.all()
         for entry in result:
             item_id = entry[0]
             item_name = entry[1]
+            icon = entry[2]
             focus.append({'item_id': item_id,
-                          'item_name': item_name})
+                          'item_name': item_name,
+                          'icon': icon})
 
         # Find all the items that have this as a worn effect
-        query = session.query(Item.id, Item.Name).filter(Item.worneffect == spell_id)
+        query = session.query(Item.id, Item.Name, Item.icon).filter(Item.worneffect == spell_id)
         result = query.all()
         for entry in result:
             item_id = entry[0]
             item_name = entry[1]
+            icon = entry[2]
             worn.append({'item_id': item_id,
-                         'item_name': item_name})
+                         'item_name': item_name,
+                         'icon': icon})
 
         # Find all the items that have this as a bard effect
-        query = session.query(Item.id, Item.Name).filter(Item.bardeffect == spell_id)
+        query = session.query(Item.id, Item.Name, Item.icon).filter(Item.bardeffect == spell_id)
         result = query.all()
         for entry in result:
             item_id = entry[0]
             item_name = entry[1]
+            icon = entry[2]
             bard.append({'item_id': item_id,
-                         'item_name': item_name})
+                         'item_name': item_name,
+                         'icon': icon})
 
     spell_data.update({'procs': procs,
                        'clicks': clicks,

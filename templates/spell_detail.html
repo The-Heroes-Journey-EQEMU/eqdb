@@ -67,7 +67,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="click" role="tabpanel" aria-labelledby="click-tab">
             <ul>
                 {% for entry in data.clicks %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><<br>
 
                 {% endfor %}
             </ul>
@@ -77,7 +77,7 @@
             <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="proc" role="tabpanel" aria-labelledby="proc-tab">
             <ul>
                 {% for entry in data.procs %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><br>
                 {% endfor %}
             </ul>
         </div>
@@ -86,7 +86,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="focus" role="tabpanel" aria-labelledby="focus-tab">
             <ul>
                 {% for entry in data.focus %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><br>
                 {% endfor %}
             </ul>
         </div>
@@ -95,7 +95,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="worn" role="tabpanel" aria-labelledby="worn-tab">
                 <ul>
                 {% for entry in data.worn %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><br>
                 {% endfor %}
                 </ul>
         </div>
@@ -104,7 +104,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="bard" role="tabpanel" aria-labelledby="bard-tab">
             <dl>
                 {% for entry in data.bard %}
-                <li><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></li>
+                <img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a><br>
                 {% endfor %}
             </dl>
         </div>

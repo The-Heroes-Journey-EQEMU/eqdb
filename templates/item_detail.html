@@ -4,8 +4,8 @@
 <h3>Item data not found or item does not exist</h3>
 {% else %}
 <div style="display: flex; justify-content: center;">
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width=750px;" id="itemstats">
-<style>
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width=750px;" id="itemstats">
+        <style>
     .item-card {
         border: 1px solid transparent;
         border-collapse: collapse;
@@ -31,616 +31,657 @@
     table {
         border-collapse: collapse;
     }
-</style>
-    <table class='item-card'>
-        <tbody>
-        <tr>
-            <td colspan='3'>
-            <table>
-                <colgroup>
-                    <col style="width: 45px;"/>
-                </colgroup>
-                <tr>
-                    <td rowspan="5"><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{item.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{item.icon}}'></span></div></td>
-                </tr>
-                <tr>
-                    <td rowspan="5"></td>
-                    <td>{{item.Name}}</td>
-                </tr>
-            </table>
-            </td>
-        </tr>
-        <tr></tr>
-        <tr>
-            <td style="max-width: 225px; word-wrap: break-word">
-                <b>Class:</b> {{item.class_str}}
-            </td>
-        </tr>
-        <tr>
-            <td style="max-width: 225px; word-wrap: break-word">
-                <b>Slots:</b> {{item.slot_str}}
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3">&nbsp;</td>
-        </tr>
-        <tr>
-            <td>
-                <table style="min-width: 150px;">
-                    <tr></tr>
-                    <tr></tr>
-                    {% if item.type_str != '__na__' %}
-                    <tr>
-                        <td><b>Skill:</b></td>
-                        <td>{{item.type_str}}</td>
-                    </tr>
-                    {% else %}
-                    <tr></tr>
-                    {% endif %}
-                    {% if item.bagtype > 0 %}
-                    <tr>
-                        <td><b>Weight Red:</b></td>
-                        <td>{{item.bagwr}}%</td>
-                    </tr>
-                    <tr>
-                        <td><b>Capacity:</b></td>
-                        <td>{{item.bagslots}}</td>
-                    </tr>
-                    <tr>
-                        <td><b>Size Cap:</b></td>
-                        {% if item.bagsize >= 4 %}
-                         <td>GIANT</td>
-                        {% elif item.bagsize == 3 %}
-                         <td>LARGE</td>
-                        {% elif item.bagsize == 2 %}
-                         <td>MEDIUM</td>
-                        {% elif item.bagsize == 1 %}
-                         <td>SMALL</td>
-                        {% elif item.bagsize == 0 %}
-                         <td>TINY</td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td>
-                <table style="min-width: 150px;">
-                    {% if item.ac != 0 %}
-                    <tr>
-                        <td><b>AC:</b></td>
-                        <td align="right">{{item.ac}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.hp != 0 %}
-                    <tr>
-                        <td><b>HP:</b></td>
-                        <td align="right">{{item.hp}}</td>
-                        <td alitn="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.mana != 0 %}
-                    <tr>
-                        <td><b>Mana:</b></td>
-                        <td align="right">{{item.mana}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.endur != 0 %}
-                    <tr>
-                        <td><b>End:</b></td>
-                        <td align="right">{{item.endur}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.haste != 0 %}
-                    <tr>
-                        <td><b>Haste:</b></td>
-                        <td align="right">{{item.haste}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td>
-                <table style="min-width: 150px;">
-                    {% if item.damage != 0 %}
-                    <tr>
-                        <td><b>Base Dmg:</b></td>
-                        <td align="right">{{item.damage}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% else %}
-                    <tr></tr>
-                    {% endif %}
-                    {% if item.backstabdmg %}
-                    <tr>
-                        <td><b>Backstab Dmg:</b></td>
-                        <td align="right">{{item.backstabdmg}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.elem_dmg_name %}
-                    <tr>
-                        <td><b>{{item.elem_dmg_name}} Dmg:</b></td>
-                        <td align="right">{{item.elem_dmg_amount}}</td>
-                        <td align="left"></td>
-                    </tr>
-                     {% endif %}
-                    {% if item.delay != 0 %}
-                    <tr>
-                        <td><b>Delay:</b></td>
-                        <td align="right">{{item.delay}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% else %}
-                    <tr></tr>
-                    {% endif%}
-                </table>
-            </td>
-        </tr>
-        <tr></tr>
-        <tr>
-            <td>
-                <table>
-                    {% if item.astr != 0 or item.heroic_str != 0 %}
-                    <tr>
-                        <td><b>Strength:</b></td>
-                        <td align="right">{{item.astr}}</td>
-                        {% if item.heroic_str != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_str}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.asta != 0 or item.heroic_sta != 0 %}
-                    <tr>
-                        <td><b>Stamina:</b></td>
-                        <td align="right">{{item.asta}}</td>
-                        {% if item.heroic_sta != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_sta}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.adex != 0 or item.heroic_dex != 0 %}
-                    <tr>
-                        <td><b>Dexterity:</b></td>
-                        <td align="right">{{item.adex}}</td>
-                        {% if item.heroic_dex != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_dex}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.aagi != 0 or item.heroic_agi != 0 %}
-                    <tr>
-                        <td><b>Agility:</b></td>
-                        <td align="right">{{item.aagi}}</td>
-                        {% if item.heroic_agi != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_agi}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.awis != 0 or item.heroic_wis != 0 %}
-                    <tr>
-                        <td><b>Wisdom:</b></td>
-                        <td align="right">{{item.awis}}</td>
-                        {% if item.heroic_wis != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_wis}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.aint != 0 or item.heroic_int != 0 %}
-                    <tr>
-                        <td><b>Intelligence:</b></td>
-                        <td align="right">{{item.aint}}</td>
-                        {% if item.heroic_int != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_int}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.acha != 0 or item.heroic_cha != 0 %}
-                    <tr>
-                        <td><b>Charisma:</b></td>
-                        <td align="right">{{item.acha}}</td>
-                        {% if item.heroic_cha != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_cha}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td>
-                <table>
-                    {% if item.fr != 0 or item.heroic_fr != 0 %}
-                    <tr>
-                        <td><b>Fire:</b></td>
-                        <td align="right">{{item.fr}}</td>
-                        {% if item.heroic_fr != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_fr}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.cr != 0 or item.heroic_cr != 0 %}
-                    <tr>
-                        <td><b>Cold:</b></td>
-                        <td align="right">{{item.cr}}</td>
-                        {% if item.heroic_cr != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_cr}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.mr != 0 or item.heroic_mr != 0 %}
-                    <tr>
-                        <td><b>Magic:</b></td>
-                        <td align="right">{{item.mr}}</td>
-                        {% if item.heroic_mr != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_mr}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.dr != 0 or item.heroic_dr != 0 %}
-                    <tr>
-                        <td><b>Disease:</b></td>
-                        <td align="right">{{item.dr}}</td>
-                        {% if item.heroic_dr != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_dr}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                    {% if item.pr != 0 or item.heroic_pr != 0 %}
-                    <tr>
-                        <td><b>Poison:</b></td>
-                        <td align="right">{{item.pr}}</td>
-                        {% if item.heroic_pr != 0 %}
-                        <td align="left"><font color="Orange">+{{item.heroic_pr}}</font></td>
-                        {% else %}
-                        <td align="left"></td>
-                        {% endif %}
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td>
-                <table>
-                    {% if item.attack != 0 %}
-                    <tr>
-                        <td><b>Attack:</b></td>
-                        <td align='right'>{{item.attack}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.regen != 0 %}
-                    <tr>
-                        <td><b>HP Regen:</b></td>
-                        <td align="right">{{item.regen}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.manaregen != 0 %}
-                    <tr>
-                        <td><b>Mana Regen:</b></td>
-                        <td align="right">{{item.manaregen}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.accuracy != 0 %}
-                    <tr>
-                        <td><b>Accuracy:</b></td>
-                        <td align="right">{{item.accuracy}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.avoidance != 0 %}
-                    <tr>
-                        <td><b>Avoidance:</b></td>
-                        <td align="right">{{item.avoidance}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.combateffects|int != 0 %}
-                    <tr>
-                        <td><b>Combat Effects:</b></td>
-                        <td align="right">{{item.combateffects}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.damageshield != 0 %}
-                    <tr>
-                        <td><b>Damage Shield:</b></td>
-                        <td align="right">{{item.damageshield}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.dotshielding != 0 %}
-                    <tr>
-                        <td><b>DoT Shielding:</b></td>
-                        <td align="right">{{item.dotshielding}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.shielding != 0 %}
-                    <tr>
-                        <td><b>Shielding:</b></td>
-                        <td align="right">{{item.shielding}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.spellshield != 0 %}
-                    <tr>
-                        <td><b>Spell Shield:</b></td>
-                        <td align="right">{{item.spellshield}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.strikethrough != 0 %}
-                    <tr>
-                        <td><b>Strikethrough:</b></td>
-                        <td align="right">{{item.strikethrough}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.stunresist != 0 %}
-                    <tr>
-                        <td><b>Stun Resist:</b></td>
-                        <td align="right">{{item.stunresist}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.spelldmg != 0 %}
-                    <tr>
-                        <td><b>Spell Dmg:</b></td>
-                        <td align="right">{{item.spelldmg}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                    {% if item.healamt != 0 %}
-                    <tr>
-                        <td><b>Heal Amount</b></td>
-                        <td align="right">{{item.healamt}}</td>
-                        <td align="left"></td>
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-        </tr>
-        {% if item.aug_slot_1 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Slot</b> 1, <b>Type</b> {{item.aug_slot_1}}</td>
-        </tr>
-        {% endif %}
-        {% if item.aug_slot_2 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Slot</b> 2, <b>Type</b> {{item.aug_slot_2}}</td>
-        </tr>
-        {% endif %}
-        {% if item.aug_slot_3 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Slot</b> 3, <b>Type</b> {{item.aug_slot_3}}</td>
-        </tr>
-        {% endif %}
-        {% if item.aug_slot_4 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Slot</b> 4, <b>Type</b> {{item.aug_slot_4}}</td>
-        </tr>
-        {% endif %}
-        {% if item.aug_slot_5 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Slot</b> 5, <b>Type</b> {{item.aug_slot_5}}</td>
-        </tr>
-        {% endif %}
-        {% if item.skillmodtype > 0 %}
-        <tr>
-            <td nowrap="1" colspan="3"><b>Skill Mod:</b> {{item.skillmodname}} {{item.skillmodvalue}}% ({{item.skillmodmax}} max)</td>
-        </tr>
-        {% endif %}
-        {% if item.worneffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan="3"><b>Worn:</b> <a href="{{url_for('spell_detail', spell_id=item.worneffect)}}" data-url="{{item.worneffect}}" class="spell-tooltip-link">{{item.worn_name}}</a></td>
-        </tr>
-        {% endif %}
-        {% if item.proceffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Effect:</b> <a href="{{url_for('spell_detail', spell_id=item.proceffect)}}" data-url="{{item.proceffect}}" class="spell-tooltip-link">{{item.proc_name}}</a> (Combat)</td>
-        </tr>
-        {% if item.proclevel2 > 0 %}
-        <tr>
-            <td nowrap="1" colspan="3">Procs at level {{item.proclevel2}}</td>
-        </tr>
-        {% endif %}
-        {% endif %}
-        {% if item.clickeffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Effect:</b> <a href="{{url_for('spell_detail', spell_id=item.clickeffect)}}" data-url="{{item.clickeffect}}" class="spell-tooltip-link">{{item.click_name}}</a>
-            {% if item.casttime == 0 %}
-              (Casting Time: Instant)
-            {% else %}
-              (Casting Time: {{item.casttime / 1000}})
-            {% endif %}
-            </td>
-        </tr>
-        {% if item.clicklevel2 > 0 %}
-        <tr>
-            <td nowrap="1" colspan="3">Clickable at level {{item.clicklevel2}}</td>
-        </tr>
-        {% endif %}
-        {% if item.maxcharges > 0 %}
-        <tr>
-            <td nowrap="1" colspan="3"><b>Charges:</b> {{item.maxcharges}}</td>
-        </tr>
-        {% endif %}
-        {% endif %}
-        {% if item.focuseffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Effect:</b> <a href="{{url_for('spell_detail', spell_id=item.focuseffect)}}" data-url="{{item.focuseffect}}" class="spell-tooltip-link">{{item.focus_name}}</a> (Worn)</td>
-        </tr>
-        {% endif %}
-        {% if item.bardeffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Effect:</b> <a href="{{url_for('spell_detail', spell_id=item.bardeffect)}}" data-url="{{item.bardeffect}}" class="spell-tooltip-link">{{item.inst_name}}</a> (Worn)</td>
-        </tr>
-        {% endif %}
-        {% if "bane_body_name" in item %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Bane Dmg:</b> {{item.bane_body_name}} +{{item.bane_body_amount}}</td>
-        </tr>
-        {% endif %}
-        {% if "bane_race_name" in item %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Bane Dmg:</b> {{item.bane_race_name}} +{{item.bane_race_amount}}</td>
-        </tr>
-        {% endif %}
-        {% if item.procrate and item.proceffect > 0 %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Proc Rate:</b> {{item.procrate}}</td>
-        </tr>
-        {% endif %}
-        <tr>
-            <td nowrap="1" colspan='3'><b>Item Lore:</b> {{item.lore}}</td>
-        </tr>
-        </tbody>
-    </table>
-</div></div>
-<div style="display: flex; justify-content: center;">
-<div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 750px;" id="item_links">
-    <ul class="nav nav-tabs" id="myTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic Info</a>
-        </li>
-        {% if item.droppers %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="dropper-tab" data-bs-toggle="tab" href="#dropper" role="tab" aria-controls="dropper" aria-selected="false">Drops From</a>
-        </li>
-        {% endif %}
-        {% if item.vendors %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="vendors-tab" data-bs-toggle="tab" href="#vendors" role="tab" aria-controls="vendors" aria-selected="false">Purchased From</a>
-        </li>
-        {% endif %}
-        {% if item.foraged %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="foraged-tab" data-bs-toggle="tab" href="#foraged" role="tab" aria-controls="foraged" aria-selected="false">Foraged From</a>
-        </li>
-        {% endif %}
-        {% if item.ground %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="ground-tab" data-bs-toggle="tab" href="#ground" role="tab" aria-controls="ground" aria-selected="false">Ground Spawn</a>
-        </li>
-        {% endif %}
-        {% if item.ts_result %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="tsresult-tab" data-bs-toggle="tab" href="#tsresult" role="tab" aria-controls="tsresult" aria-selected="false">Tradeskill</a>
-        </li>
-        {% endif %}
-        {% if item.ts_component %}
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="tscomponent-tab" data-bs-toggle="tab" href="#tscomponent" role="tab" aria-controls="tscomponent" aria-selected="false">Component In</a>
-        </li>
-        {% endif %}
-    </ul>
-    <div class="tab-content" id="myTabsContent">
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic" role="tabpanel" aria-labelledby="basic-tab">
-        {% if item.thj_enabled %}
-         {% if item.id < 1000000 %}
-          <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
-          <a href="{{url_for('item_detail', item_id=item.id+2000000)}}">Legendary Version</a><br>
-         {% elif 1000000 < item.id < 2000000 %}
-          <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Base Version</a><br>
-          <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Legendary Version</a><br>
-         {% else %}
-          <a href="{{url_for('item_detail', item_id=item.id-2000000)}}">Base Version</a><br>
-          <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Enchanted Version</a><br>
-         {% endif %}
-        {% endif %}
-        <a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
-        </div>
-        {% if item.droppers %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="dropper" role="tabpanel" aria-labelledby="dropper-tab">
-            <ul>
-            {% for entry in item.droppers %}
-              <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a> :: {{entry.zone_name}}</li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if item.vendors %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
 
-            {% for zone in item.vendors %}
+        </style>
+        <table class='item-card'>
+            <tbody>
+            <tr>
+                <td colspan='3'>
+                    <table>
+                        <colgroup>
+                            <col style="width: 45px;"/>
+                        </colgroup>
+                        <tr>
+                            <td rowspan="5">
+                                <div class="icon-container"><span class="item-icon"
+                                                                  style='background-image:url(/static/item_icons/item_{{item.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;'
+                                                                  title='Icon {{item.icon}}'></span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td rowspan="5"></td>
+                            <td>{{item.Name}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <td style="max-width: 225px; word-wrap: break-word">
+                    <b>Class:</b> {{item.class_str}}
+                </td>
+            </tr>
+            <tr>
+                <td style="max-width: 225px; word-wrap: break-word">
+                    <b>Slots:</b> {{item.slot_str}}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;</td>
+            </tr>
+            <tr>
+                <td>
+                    <table style="min-width: 150px;">
+                        <tr></tr>
+                        <tr></tr>
+                        {% if item.type_str != '__na__' %}
+                        <tr>
+                            <td><b>Skill:</b></td>
+                            <td>{{item.type_str}}</td>
+                        </tr>
+                        {% else %}
+                        <tr></tr>
+                        {% endif %}
+                        {% if item.bagtype > 0 %}
+                        <tr>
+                            <td><b>Weight Red:</b></td>
+                            <td>{{item.bagwr}}%</td>
+                        </tr>
+                        <tr>
+                            <td><b>Capacity:</b></td>
+                            <td>{{item.bagslots}}</td>
+                        </tr>
+                        <tr>
+                            <td><b>Size Cap:</b></td>
+                            {% if item.bagsize >= 4 %}
+                            <td>GIANT</td>
+                            {% elif item.bagsize == 3 %}
+                            <td>LARGE</td>
+                            {% elif item.bagsize == 2 %}
+                            <td>MEDIUM</td>
+                            {% elif item.bagsize == 1 %}
+                            <td>SMALL</td>
+                            {% elif item.bagsize == 0 %}
+                            <td>TINY</td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+                <td>
+                    <table style="min-width: 150px;">
+                        {% if item.ac != 0 %}
+                        <tr>
+                            <td><b>AC:</b></td>
+                            <td align="right">{{item.ac}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.hp != 0 %}
+                        <tr>
+                            <td><b>HP:</b></td>
+                            <td align="right">{{item.hp}}</td>
+                            <td alitn="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.mana != 0 %}
+                        <tr>
+                            <td><b>Mana:</b></td>
+                            <td align="right">{{item.mana}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.endur != 0 %}
+                        <tr>
+                            <td><b>End:</b></td>
+                            <td align="right">{{item.endur}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.haste != 0 %}
+                        <tr>
+                            <td><b>Haste:</b></td>
+                            <td align="right">{{item.haste}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+                <td>
+                    <table style="min-width: 150px;">
+                        {% if item.damage != 0 %}
+                        <tr>
+                            <td><b>Base Dmg:</b></td>
+                            <td align="right">{{item.damage}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% else %}
+                        <tr></tr>
+                        {% endif %}
+                        {% if item.backstabdmg %}
+                        <tr>
+                            <td><b>Backstab Dmg:</b></td>
+                            <td align="right">{{item.backstabdmg}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.elem_dmg_name %}
+                        <tr>
+                            <td><b>{{item.elem_dmg_name}} Dmg:</b></td>
+                            <td align="right">{{item.elem_dmg_amount}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.delay != 0 %}
+                        <tr>
+                            <td><b>Delay:</b></td>
+                            <td align="right">{{item.delay}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% else %}
+                        <tr></tr>
+                        {% endif%}
+                    </table>
+                </td>
+            </tr>
+            <tr></tr>
+            <tr>
+                <td>
+                    <table>
+                        {% if item.astr != 0 or item.heroic_str != 0 %}
+                        <tr>
+                            <td><b>Strength:</b></td>
+                            <td align="right">{{item.astr}}</td>
+                            {% if item.heroic_str != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_str}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.asta != 0 or item.heroic_sta != 0 %}
+                        <tr>
+                            <td><b>Stamina:</b></td>
+                            <td align="right">{{item.asta}}</td>
+                            {% if item.heroic_sta != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_sta}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.adex != 0 or item.heroic_dex != 0 %}
+                        <tr>
+                            <td><b>Dexterity:</b></td>
+                            <td align="right">{{item.adex}}</td>
+                            {% if item.heroic_dex != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_dex}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.aagi != 0 or item.heroic_agi != 0 %}
+                        <tr>
+                            <td><b>Agility:</b></td>
+                            <td align="right">{{item.aagi}}</td>
+                            {% if item.heroic_agi != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_agi}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.awis != 0 or item.heroic_wis != 0 %}
+                        <tr>
+                            <td><b>Wisdom:</b></td>
+                            <td align="right">{{item.awis}}</td>
+                            {% if item.heroic_wis != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_wis}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.aint != 0 or item.heroic_int != 0 %}
+                        <tr>
+                            <td><b>Intelligence:</b></td>
+                            <td align="right">{{item.aint}}</td>
+                            {% if item.heroic_int != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_int}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.acha != 0 or item.heroic_cha != 0 %}
+                        <tr>
+                            <td><b>Charisma:</b></td>
+                            <td align="right">{{item.acha}}</td>
+                            {% if item.heroic_cha != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_cha}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        {% if item.fr != 0 or item.heroic_fr != 0 %}
+                        <tr>
+                            <td><b>Fire:</b></td>
+                            <td align="right">{{item.fr}}</td>
+                            {% if item.heroic_fr != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_fr}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.cr != 0 or item.heroic_cr != 0 %}
+                        <tr>
+                            <td><b>Cold:</b></td>
+                            <td align="right">{{item.cr}}</td>
+                            {% if item.heroic_cr != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_cr}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.mr != 0 or item.heroic_mr != 0 %}
+                        <tr>
+                            <td><b>Magic:</b></td>
+                            <td align="right">{{item.mr}}</td>
+                            {% if item.heroic_mr != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_mr}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.dr != 0 or item.heroic_dr != 0 %}
+                        <tr>
+                            <td><b>Disease:</b></td>
+                            <td align="right">{{item.dr}}</td>
+                            {% if item.heroic_dr != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_dr}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% if item.pr != 0 or item.heroic_pr != 0 %}
+                        <tr>
+                            <td><b>Poison:</b></td>
+                            <td align="right">{{item.pr}}</td>
+                            {% if item.heroic_pr != 0 %}
+                            <td align="left"><font color="Orange">+{{item.heroic_pr}}</font></td>
+                            {% else %}
+                            <td align="left"></td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        {% if item.attack != 0 %}
+                        <tr>
+                            <td><b>Attack:</b></td>
+                            <td align='right'>{{item.attack}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.regen != 0 %}
+                        <tr>
+                            <td><b>HP Regen:</b></td>
+                            <td align="right">{{item.regen}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.manaregen != 0 %}
+                        <tr>
+                            <td><b>Mana Regen:</b></td>
+                            <td align="right">{{item.manaregen}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.accuracy != 0 %}
+                        <tr>
+                            <td><b>Accuracy:</b></td>
+                            <td align="right">{{item.accuracy}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.avoidance != 0 %}
+                        <tr>
+                            <td><b>Avoidance:</b></td>
+                            <td align="right">{{item.avoidance}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.combateffects|int != 0 %}
+                        <tr>
+                            <td><b>Combat Effects:</b></td>
+                            <td align="right">{{item.combateffects}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.damageshield != 0 %}
+                        <tr>
+                            <td><b>Damage Shield:</b></td>
+                            <td align="right">{{item.damageshield}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.dotshielding != 0 %}
+                        <tr>
+                            <td><b>DoT Shielding:</b></td>
+                            <td align="right">{{item.dotshielding}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.shielding != 0 %}
+                        <tr>
+                            <td><b>Shielding:</b></td>
+                            <td align="right">{{item.shielding}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.spellshield != 0 %}
+                        <tr>
+                            <td><b>Spell Shield:</b></td>
+                            <td align="right">{{item.spellshield}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.strikethrough != 0 %}
+                        <tr>
+                            <td><b>Strikethrough:</b></td>
+                            <td align="right">{{item.strikethrough}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.stunresist != 0 %}
+                        <tr>
+                            <td><b>Stun Resist:</b></td>
+                            <td align="right">{{item.stunresist}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.spelldmg != 0 %}
+                        <tr>
+                            <td><b>Spell Dmg:</b></td>
+                            <td align="right">{{item.spelldmg}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                        {% if item.healamt != 0 %}
+                        <tr>
+                            <td><b>Heal Amount</b></td>
+                            <td align="right">{{item.healamt}}</td>
+                            <td align="left"></td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </td>
+            </tr>
+            {% if item.aug_slot_1 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Slot</b> 1, <b>Type</b> {{item.aug_slot_1}}</td>
+            </tr>
+            {% endif %}
+            {% if item.aug_slot_2 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Slot</b> 2, <b>Type</b> {{item.aug_slot_2}}</td>
+            </tr>
+            {% endif %}
+            {% if item.aug_slot_3 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Slot</b> 3, <b>Type</b> {{item.aug_slot_3}}</td>
+            </tr>
+            {% endif %}
+            {% if item.aug_slot_4 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Slot</b> 4, <b>Type</b> {{item.aug_slot_4}}</td>
+            </tr>
+            {% endif %}
+            {% if item.aug_slot_5 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Slot</b> 5, <b>Type</b> {{item.aug_slot_5}}</td>
+            </tr>
+            {% endif %}
+            {% if item.skillmodtype > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3"><b>Skill Mod:</b> {{item.skillmodname}} {{item.skillmodvalue}}%
+                    ({{item.skillmodmax}} max)
+                </td>
+            </tr>
+            {% endif %}
+            {% if item.worneffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3"><b>Worn:</b> <a href="{{url_for('spell_detail', spell_id=item.worneffect)}}"
+                                                           data-url="{{item.worneffect}}" class="spell-tooltip-link">{{item.worn_name}}</a>
+                </td>
+            </tr>
+            {% endif %}
+            {% if item.proceffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Effect:</b> <a
+                        href="{{url_for('spell_detail', spell_id=item.proceffect)}}" data-url="{{item.proceffect}}"
+                        class="spell-tooltip-link">{{item.proc_name}}</a> (Combat)
+                </td>
+            </tr>
+            {% if item.proclevel2 > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3">Procs at level {{item.proclevel2}}</td>
+            </tr>
+            {% endif %}
+            {% endif %}
+            {% if item.clickeffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Effect:</b> <a
+                        href="{{url_for('spell_detail', spell_id=item.clickeffect)}}" data-url="{{item.clickeffect}}"
+                        class="spell-tooltip-link">{{item.click_name}}</a>
+                    {% if item.casttime == 0 %}
+                    (Casting Time: Instant)
+                    {% else %}
+                    (Casting Time: {{item.casttime / 1000}})
+                    {% endif %}
+                </td>
+            </tr>
+            {% if item.clicklevel2 > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3">Clickable at level {{item.clicklevel2}}</td>
+            </tr>
+            {% endif %}
+            {% if item.maxcharges > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3"><b>Charges:</b> {{item.maxcharges}}</td>
+            </tr>
+            {% endif %}
+            {% endif %}
+            {% if item.focuseffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Effect:</b> <a
+                        href="{{url_for('spell_detail', spell_id=item.focuseffect)}}" data-url="{{item.focuseffect}}"
+                        class="spell-tooltip-link">{{item.focus_name}}</a> (Worn)
+                </td>
+            </tr>
+            {% endif %}
+            {% if item.bardeffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Effect:</b> <a
+                        href="{{url_for('spell_detail', spell_id=item.bardeffect)}}" data-url="{{item.bardeffect}}"
+                        class="spell-tooltip-link">{{item.inst_name}}</a> (Worn)
+                </td>
+            </tr>
+            {% endif %}
+            {% if "bane_body_name" in item %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Bane Dmg:</b> {{item.bane_body_name}} +{{item.bane_body_amount}}</td>
+            </tr>
+            {% endif %}
+            {% if "bane_race_name" in item %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Bane Dmg:</b> {{item.bane_race_name}} +{{item.bane_race_amount}}</td>
+            </tr>
+            {% endif %}
+            {% if item.procrate and item.proceffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Proc Rate:</b> {{item.procrate}}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td nowrap="1" colspan='3'><b>Item Lore:</b> {{item.lore}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div style="display: flex; justify-content: center;">
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 750px;" id="item_links">
+        <ul class="nav nav-tabs" id="myTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab"
+                   aria-controls="basic" aria-selected="true">Basic Info</a>
+            </li>
+            {% if item.droppers %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="dropper-tab" data-bs-toggle="tab" href="#dropper" role="tab"
+                   aria-controls="dropper" aria-selected="false">Drops From</a>
+            </li>
+            {% endif %}
+            {% if item.vendors %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="vendors-tab" data-bs-toggle="tab" href="#vendors" role="tab"
+                   aria-controls="vendors" aria-selected="false">Purchased From</a>
+            </li>
+            {% endif %}
+            {% if item.foraged %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="foraged-tab" data-bs-toggle="tab" href="#foraged" role="tab"
+                   aria-controls="foraged" aria-selected="false">Foraged From</a>
+            </li>
+            {% endif %}
+            {% if item.ground %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="ground-tab" data-bs-toggle="tab" href="#ground" role="tab"
+                   aria-controls="ground" aria-selected="false">Ground Spawn</a>
+            </li>
+            {% endif %}
+            {% if item.ts_result %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="tsresult-tab" data-bs-toggle="tab" href="#tsresult" role="tab"
+                   aria-controls="tsresult" aria-selected="false">Tradeskill</a>
+            </li>
+            {% endif %}
+            {% if item.ts_component %}
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="tscomponent-tab" data-bs-toggle="tab" href="#tscomponent" role="tab"
+                   aria-controls="tscomponent" aria-selected="false">Component In</a>
+            </li>
+            {% endif %}
+        </ul>
+        <div class="tab-content" id="myTabsContent">
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic"
+                 role="tabpanel" aria-labelledby="basic-tab">
+                {% if item.thj_enabled %}
+                {% if item.id < 1000000 %}
+                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id+2000000)}}">Legendary Version</a><br>
+                {% elif 1000000 < item.id < 2000000 %}
+                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Base Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Legendary Version</a><br>
+                {% else %}
+                <a href="{{url_for('item_detail', item_id=item.id-2000000)}}">Base Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Enchanted Version</a><br>
+                {% endif %}
+                {% endif %}
+                <a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
+            </div>
+            {% if item.droppers %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="dropper"
+                 role="tabpanel" aria-labelledby="dropper-tab">
+                <ul>
+                    {% for entry in item.droppers %}
+                    <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a> ::
+                        {{entry.zone_name}}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if item.vendors %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="vendors"
+                 role="tabpanel" aria-labelledby="vendors-tab">
+
+                {% for zone in item.vendors %}
                 <div class="border bg-body-tertiary p-3 mb-4" id="{{zone}}">
                     <h5>{{zone}}</h5>
                     <ul>
-                    {% for entry in item.vendors[zone] %}
+                        {% for entry in item.vendors[zone] %}
 
-              <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
+                        <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
 
-                    {% endfor %}
-                        </ul>
+                        {% endfor %}
+                    </ul>
                 </div>
-            {% endfor %}
-<br>
-
+                {% endfor %}
+                <br>
+            </div>
+            {% endif %}
+            {% if item.foraged %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="foraged"
+                 role="tabpanel" aria-labelledby="foraged-tab">
+                <ul>
+                    {% for entry in item.foraged %}
+                    <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
+                        ({{entry.chance}}% Chance)
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if item.ground %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="ground"
+                 role="tabpanel" aria-labelledby="ground-tab">
+                <ul>
+                    {% for entry in item.ground %}
+                    <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
+                        ({{entry.y}}, {{entry.x}})
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if item.ts_result %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="tsresult"
+                 role="tabpanel" aria-labelledby="tsresult-tab">
+                Item is created by:<br>
+                <ul>
+                    {% for entry in item.ts_result %}
+                    <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if item.ts_component %}
+            <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="tscomponent"
+                 role="tabpanel" aria-labelledby="tscomponent-tab">
+                Item is a component in:<br>
+                <ul>
+                    {% for entry in item.ts_component %}
+                    <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
-        {% if item.foraged %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="foraged" role="tabpanel" aria-labelledby="foraged-tab">
-            <ul>
-            {% for entry in item.foraged %}
-              <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a> ({{entry.chance}}% Chance)</li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if item.ground %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="ground" role="tabpanel" aria-labelledby="ground-tab">
-            <ul>
-            {% for entry in item.ground %}
-              <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a> ({{entry.y}}, {{entry.x}})</li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if item.ts_result %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="tsresult" role="tabpanel" aria-labelledby="tsresult-tab">
-            Item is created by:<br>
-            <ul>
-            {% for entry in item.ts_result %}
-              <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% if item.ts_component %}
-        <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="tscomponent" role="tabpanel" aria-labelledby="tscomponent-tab">
-            Item is a component in:<br>
-            <ul>
-            {% for entry in item.ts_component %}
-              <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
     </div>
-</div></div>
+</div>
 {% endif %}
 {% endblock %}
