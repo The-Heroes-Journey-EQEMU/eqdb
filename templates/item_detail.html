@@ -585,11 +585,21 @@
         {% endif %}
         {% if item.vendors %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
-            <ul>
-            {% for entry in item.vendors %}
+
+            {% for zone in item.vendors %}
+                <div class="border bg-body-tertiary p-3 mb-4" id="{{zone}}">
+                    <h5>{{zone}}</h5>
+                    <ul>
+                    {% for entry in item.vendors[zone] %}
+
               <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
+
+                    {% endfor %}
+                        </ul>
+                </div>
             {% endfor %}
-            </ul>
+<br>
+
         </div>
         {% endif %}
         {% if item.foraged %}

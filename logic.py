@@ -303,14 +303,32 @@ def get_item_data(item_id, full=False):
         ret_dict['droppers'] = droppers
 
         # Get vendors that sell this
-        vendors = []
+        vendors = {}
         with Session(bind=engine) as session:
             query = session.query(NPCTypes.id, NPCTypes.name).filter(MerchantList.item == item_id).\
-                filter(MerchantList.merchantid == NPCTypes.id)
+                filter(MerchantList.merchantid == NPCTypes.id).\
+                filter(MerchantList.min_expansion <= expansion)
             result = query.all()
+        lookup = {}
         for entry in result:
-            vendors.append({'npc_id': entry[0],
-                            'npc_name': utils.fix_npc_name(entry[1])})
+            zone_id = int(entry[0] / 1000)
+            if zone_id in lookup:
+                zone_name = lookup[zone_id]
+            else:
+                query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
+                sub_result = query.first()
+                if sub_result[1] > expansion:
+                    continue
+                zone_name = sub_result[0]
+                lookup.update({zone_id: zone_name})
+            if zone_name in vendors:
+                vendor_list = vendors[zone_name]
+            else:
+                vendor_list = []
+            vendor_list.append({'npc_id': entry[0],
+                                'npc_name': utils.fix_npc_name(entry[1])})
+            vendors.update({zone_name: vendor_list})
+
         ret_dict['vendors'] = vendors
 
         # Get where this is foraged from
