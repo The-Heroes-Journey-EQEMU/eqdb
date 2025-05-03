@@ -17,14 +17,14 @@
     <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
     {% for entry in data[level]|sort(attribute="spell_name") %}
         <tr style="border: 1px solid black; border-collapse: collapse;">
-            <td style="border: 1px solid black; border-collapse: collapse;"><img src="/static/spell_icons/{{entry.icon}}.png"</td>
+            <td style="border: 1px solid black; border-collapse: collapse;"><img src="/static/spell_icons/{{entry.icon}}.png"></td>
             <td style="border: 1px solid black; border-collapse: collapse;"><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
             <td style="border: 1px solid black; border-collapse: collapse;">{{entry.skill}}</td>
             <td style="border: 1px solid black; border-collapse: collapse;">{{entry.target}}</td>
             <td style="border: 1px solid black; border-collapse: collapse;">
                 {% for sub_entry in entry['slots'] %}
                   {% if entry['slots'][sub_entry]['desc'] is not none %}
-                   {{sub_entry.replace('_', ' ')}}: {{entry['slots'][sub_entry]['desc']}}<br>
+                   {{sub_entry.replace('_', ' ')}}: {{entry['slots'][sub_entry]['desc']|safe}}<br>
                   {% endif %}
                 {% endfor %}
             </td>

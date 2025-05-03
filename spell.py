@@ -1,7 +1,10 @@
 """Utility file to convert SPA data into human readible information."""
+import time
+
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
+import items
 import logic
 import utils
 import zones
@@ -138,11 +141,44 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
     params = and_(*filters)
 
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference).filter(params)
+        args = [SpellsNewReference.id, SpellsNewReference.classes1, SpellsNewReference.classes2,
+                SpellsNewReference.classes3, SpellsNewReference.classes4, SpellsNewReference.classes5,
+                SpellsNewReference.classes6, SpellsNewReference.classes7, SpellsNewReference.classes8,
+                SpellsNewReference.classes9, SpellsNewReference.classes10, SpellsNewReference.classes11,
+                SpellsNewReference.classes12, SpellsNewReference.classes13, SpellsNewReference.classes14,
+                SpellsNewReference.classes15, SpellsNewReference.classes16,
+                SpellsNewReference.name, SpellsNewReference.skill, SpellsNewReference.targettype,
+                SpellsNewReference.new_icon, SpellsNewReference.effectid1, SpellsNewReference.effectid2,
+                SpellsNewReference.effectid3, SpellsNewReference.effectid4, SpellsNewReference.effectid5,
+                SpellsNewReference.effectid6, SpellsNewReference.effectid7, SpellsNewReference.effectid8,
+                SpellsNewReference.effectid9, SpellsNewReference.effectid10, SpellsNewReference.effectid11,
+                SpellsNewReference.effectid12, SpellsNewReference.effect_base_value1,
+                SpellsNewReference.effect_base_value2, SpellsNewReference.effect_base_value3,
+                SpellsNewReference.effect_base_value4, SpellsNewReference.effect_base_value5,
+                SpellsNewReference.effect_base_value6, SpellsNewReference.effect_base_value7,
+                SpellsNewReference.effect_base_value8, SpellsNewReference.effect_base_value9,
+                SpellsNewReference.effect_base_value10, SpellsNewReference.effect_base_value11,
+                SpellsNewReference.effect_base_value12, SpellsNewReference.effect_limit_value1,
+                SpellsNewReference.effect_limit_value2, SpellsNewReference.effect_limit_value3,
+                SpellsNewReference.effect_limit_value4, SpellsNewReference.effect_limit_value5,
+                SpellsNewReference.effect_limit_value6, SpellsNewReference.effect_limit_value7,
+                SpellsNewReference.effect_limit_value8, SpellsNewReference.effect_limit_value9,
+                SpellsNewReference.effect_limit_value10, SpellsNewReference.effect_limit_value11,
+                SpellsNewReference.effect_limit_value12, SpellsNewReference.max1, SpellsNewReference.max2,
+                SpellsNewReference.max3, SpellsNewReference.max4, SpellsNewReference.max5,
+                SpellsNewReference.max6, SpellsNewReference.max7, SpellsNewReference.max8,
+                SpellsNewReference.max9, SpellsNewReference.max10, SpellsNewReference.max11,
+                SpellsNewReference.max12, SpellsNewReference.formula1, SpellsNewReference.formula2,
+                SpellsNewReference.formula3, SpellsNewReference.formula4, SpellsNewReference.formula5,
+                SpellsNewReference.formula6, SpellsNewReference.formula7, SpellsNewReference.formula8,
+                SpellsNewReference.formula9, SpellsNewReference.formula10, SpellsNewReference.formula11,
+                SpellsNewReference.formula12, SpellsNewReference.buffduration, SpellsNewReference.teleport_zone]
+        query = session.query(*args).filter(params)
         result = query.all()
 
     data = {'game_class': utils.get_spell_class(int(class_id))}
     for entry in result:
+        entry = entry._mapping
         spell_id = entry.id
         level = getattr(entry, f'classes{class_id}')
         spell_name = entry.name
@@ -152,7 +188,7 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
         slots = {}
         for idx in range(1, 13):
             if getattr(entry, f'effectid{idx}') != 254:
-                slots.update({f'slot_{idx}': parse_slot_data(idx, entry)})
+                slots.update({f'slot_{idx}': parse_slot_data(idx, entry, no_item_links=True)})
         if level in data:
             level_list = data[level]
         else:
@@ -290,7 +326,7 @@ def get_spell_min_level(data):
     return min_level
 
 
-def parse_slot_data(idx, data):
+def parse_slot_data(idx, data, no_item_links=False):
     spa = getattr(data, f'effectid{idx}')
     min_val = getattr(data, f'effect_base_value{idx}')
     limit_val = getattr(data, f'effect_limit_value{idx}')
@@ -302,11 +338,12 @@ def parse_slot_data(idx, data):
                 'max': max_val,
                 'limit_value': limit_val,
                 'formula': formula}
-    ret_data.update({'desc': translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data)})
+    ret_data.update({'desc': translate_spa(spa, min_val, limit_val, formula,
+                                           max_val, min_level, data, no_item_links=no_item_links)})
     return ret_data
 
 
-def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
+def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no_item_links=False):
     if spa == 0:
         # HP
         if max_val == 0:
@@ -570,7 +607,9 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Mesmerize up to level {max_val}'
     elif spa == 32:
         # Create Item
-        item_data = logic.get_item_data(min_val)
+        if no_item_links:
+            return f'Summon item: {data.name.lstrip("Summon ")}'
+        item_data = items.get_item_name(min_val)
         item_name = item_data['Name']
         return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
@@ -929,7 +968,9 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data):
         return f'Summon Familiar: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 109:
         # CreateItemInBag
-        item_data = logic.get_item_data(min_val)
+        if no_item_links:
+            return f'Summon item: {data.name.lstrip("Summon ")}'
+        item_data = items.get_item_raw_data(min_val)
         item_name = item_data['Name']
         return f'Summon item (In Bag): <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 110:

@@ -1,3 +1,8 @@
+==2.0.1==
+* Fixed display of links on class spell listing page
+* Optimized Spell Listing code to speed up returns
+    * Spell listing will no longer link to items being summoned, but the spell details for that spell still will.
+
 ==2.0==
 DEPLOYED: 5/2/2025
 * A massive site upgrade has been completed, adding many more features to allow EQDB to be a fully supported THJ database
