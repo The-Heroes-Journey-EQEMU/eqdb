@@ -172,7 +172,8 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
                 SpellsNewReference.formula3, SpellsNewReference.formula4, SpellsNewReference.formula5,
                 SpellsNewReference.formula6, SpellsNewReference.formula7, SpellsNewReference.formula8,
                 SpellsNewReference.formula9, SpellsNewReference.formula10, SpellsNewReference.formula11,
-                SpellsNewReference.formula12, SpellsNewReference.buffduration, SpellsNewReference.teleport_zone]
+                SpellsNewReference.formula12, SpellsNewReference.buffduration, SpellsNewReference.teleport_zone,
+                SpellsNewReference.buffduration, SpellsNewReference.buffdurationformula]
         query = session.query(*args).filter(params)
         result = query.all()
 
@@ -2524,7 +2525,8 @@ def do_formula(base_value, formula_id, max_val, level=1, ignore_max=False):
             return base + (level / 8)
         ret_val, max_level = calculate_values(base_value, level, max_val, test_value_func)
     elif formula_id == 120:
-        raise Exception('Currently not supported')
+        # TODO: Fix me (?)
+        ret_val = base_value
     elif formula_id == 121:
         def test_value_func(base, level):
             return base + (level / 3)
