@@ -280,6 +280,7 @@ def get_item_data(item_id, full=False):
         elif 2000000 > item_id > 1000000:
             item_id = item_id - 1000000
         known_zones = {}
+        skip_zones = []
         with Session(bind=engine) as session:
             query = session.query(NPCTypes.id, NPCTypes.name).filter(LootDropEntries.item_id == item_id).\
                 filter(LootDropEntries.lootdrop_id == LootTableEntries.lootdrop_id).\
@@ -287,10 +288,26 @@ def get_item_data(item_id, full=False):
             result = query.all()
             for entry in result:
                 zone_id = int(entry[0] / 1000)
+                if zone_id in skip_zones:
+                    continue
                 if zone_id not in known_zones:
-                    query = session.query(Zone.long_name).filter(Zone.zoneidnumber == int(entry[0]/1000))
-                    sub_result = query.one()
-                    zone_name = sub_result[0]
+                    query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
+                    sub_result = query.first()
+                    if not sub_result:
+                        # Walk through the spawn points instead
+                        query = session.query(Zone.long_name, Zone.expansion, Zone.short_name). \
+                            filter(SpawnEntry.npcID == entry[0]). \
+                            filter(SpawnEntry.spawngroupID == Spawn2.spawngroupID). \
+                            filter(Spawn2.zone == Zone.short_name)
+                        sub_result = query.first()
+
+                    if not sub_result:
+                        zone_name = 'Unknown'
+                    else:
+                        if sub_result[1] > expansion:
+                            skip_zones.append(zone_id)
+                            continue
+                        zone_name = sub_result[0]
                     known_zones.update({zone_id: zone_name})
                 else:
                     zone_name = known_zones[zone_id]

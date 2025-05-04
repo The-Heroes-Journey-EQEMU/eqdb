@@ -2,6 +2,9 @@
 * Fixed display of links on class spell listing page
 * Optimized Spell Listing code to speed up returns
     * Spell listing will no longer link to items being summoned, but the spell details for that spell still will.
+* Fixed a bug with auto-inserted NPC IDs not matching expected NPC ID standard causing issues with their associated zone
+* Implemented the formula for Splurt type progressively strengthening DoTs
+* Removed out-of-era item drop sources on Item Detail page.
 
 ==2.0==
 DEPLOYED: 5/2/2025

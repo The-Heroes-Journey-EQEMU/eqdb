@@ -346,6 +346,14 @@ def parse_slot_data(idx, data, no_item_links=False):
 def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no_item_links=False):
     if spa == 0:
         # HP
+        # Handle Formula = 122
+        if formula == 122:
+            duration = parse_duration(data, min_val=False, raw_seconds=True)
+            min_mod = duration - 6
+            min_dmg = min_val - (12 * (duration-min_mod))
+            max_dmg = min_val
+            return f'Decrease hitpoints by {abs(max_dmg)} per tick progressing to {abs(min_dmg)} per tick'
+
         if max_val == 0:
             minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level, ignore_max=True)
             max_val, _ = do_formula(abs(min_val), formula, max_val, level=LEVEL_CAP, ignore_max=True)
@@ -2522,7 +2530,9 @@ def do_formula(base_value, formula_id, max_val, level=1, ignore_max=False):
             return base + (level / 3)
         ret_val, max_level = calculate_values(base_value, level, max_val, test_value_func)
     elif formula_id == 122:
-        raise Exception('Currently not supported')
+        # TODO: Fix me
+        # Calculate buff duration
+        ret_val = base_value
     elif formula_id == 123:
         ret_val = base_value
     elif formula_id == 124:
@@ -2717,13 +2727,15 @@ def parse_resist(resist_num, resist_diff):
         raise Exception(f'Unknown resist number: {resist_num}')
 
 
-def parse_duration(data, min_val=True):
+def parse_duration(data, min_val=True, raw_seconds=False):
     """Helper to parse the duration of the spell"""
     seconds = 0
     if not min_val:
         if data.buffdurationformula == 50 or data.buffdurationformula == 51:
             return 'Permanent'
         seconds = data.buffduration * 6
+        if raw_seconds:
+            return seconds
     else:
         max_seconds = data.buffduration * 6
         if data.buffdurationformula == 1:

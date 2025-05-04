@@ -204,16 +204,29 @@ def get_npc_detail(npc_id):
         if zone_id != 0:
             query = session.query(Zone.long_name, Zone.expansion, Zone.short_name).filter(Zone.zoneidnumber == zone_id)
             result = query.first()
+            if not result:
+                # Walk through the spawn points instead
+                query = session.query(Zone.long_name, Zone.expansion, Zone.short_name).\
+                    filter(SpawnEntry.npcID == npc_id).\
+                    filter(SpawnEntry.spawngroupID == Spawn2.spawngroupID).\
+                    filter(Spawn2.zone == Zone.short_name)
+                result = query.first()
         else:
             result = ['Unknown', 0, 'Unknown']
-        base_data['zone_name'] = result[0]
+        if not result:
+            base_data['zone_name'] = 'Unknown'
+            base_data['expansion'] = 'Unknown'
+            base_data['mapping'] = []
+        else:
+            base_data['zone_name'] = result[0]
+            base_data['expansion'] = utils.get_era_name(result[1])
+            short_name = result[2]
+            # Get the mapping
+            base_data['mapping'] = utils.get_map_data(short_name)
         base_data['zone_id'] = zone_id
-        base_data['expansion'] = utils.get_era_name(result[1])
-        short_name = result[2]
         base_data['loot_lists'] = loot_lists
         base_data['spells'] = spells
-    # Get the mapping
-    base_data['mapping'] = utils.get_map_data(short_name)
+
     return base_data
 
 
