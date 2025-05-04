@@ -1,4 +1,5 @@
 ==2.0.1==
+DEPLOYED: 5/4/2024
 * Fixed display of links on class spell listing page
 * Optimized Spell Listing code to speed up returns
     * Spell listing will no longer link to items being summoned, but the spell details for that spell still will.
