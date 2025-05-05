@@ -9,7 +9,7 @@ import item_identify
 import items
 import logic
 
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 
 import npc
 import pets
@@ -59,12 +59,21 @@ ALLOWED_EXTENSIONS = {'txt'}
 """ MAIN METHODS """
 
 
+@app.route("/api/v1/items")
+def get_item_json():
+    name = request.args.get('name')
+    item_id = request.args.get('id')
+    data = items.get_item_json(name=name, item_id=item_id)
+    return jsonify(data)
+
+
 @app.route("/site_error")
 @app.errorhandler(Exception)
 def all_exception_handler(error):
+    referrer = request.path
+    print(referrer)
     if SITE_TYPE == 'Development':
         raise error
-    referrer = request.path
     logic.send_error_email(error, referrer)
     return render_template('site_error.html')
 

@@ -62,3 +62,27 @@ def get_item_raw_data(item_id):
     ret_dict = result.__dict__
     ret_dict.pop('_sa_instance_state')
     return ret_dict
+
+
+def get_item_json(name=None, item_id=None):
+    # ID trumps name
+    with Session(bind=engine) as session:
+        if item_id:
+            query = session.query(Item).filter(Item.id == item_id)
+        else:
+            partial = "%%%s%%" % name
+            query = session.query(Item).filter(Item.Name.like(partial))
+        result = query.first()
+
+    if not result:
+        return {}
+    ret_dict = result.__dict__
+    ret_dict.pop('_sa_instance_state')
+    return ret_dict
+
+
+def get_item_name(item_id):
+    with Session(bind=engine) as session:
+        query = session.query(Item.Name).filter(Item.id == item_id)
+        result = query.one()
+    return result[0]

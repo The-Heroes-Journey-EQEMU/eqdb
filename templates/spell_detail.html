@@ -19,6 +19,21 @@
     {% endif %}
     {% endfor %}
 </table>
+    <br><br>
+    {% if data.recourse_slots %}
+    <h5>Recourse: <a href="{{url_for('spell_detail', spell_id=data.recourse_base.id)}}">{{data.recourse_base.name}}</a></h5>
+    <table>
+    {% for entry in data.recourse_slots.keys() %}
+    {% if data.recourse_slots[entry]['desc'] is not none %}
+    <tr>
+        <td>
+            <abbr title="spa={{data.recourse_slots[entry]['spa']}}, base_value={{data.recourse_slots[entry]['base_value']}}, max={{data.recourse_slots[entry]['max']}}, limit_value={{data.recourse_slots[entry]['limit_value']}}, formula={{data.recourse_slots[entry]['formula']}}">{{entry.replace('_', '')}}</abbr></td>
+        <td>{{data.recourse_slots[entry]['desc']|safe}}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+        </table>
+    {% endif %}
 </div>
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="margin-left: 25px;" id="spell_extra">
     <ul class="nav nav-tabs" id="myTabs" role="tablist">

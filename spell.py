@@ -242,6 +242,11 @@ def get_spell_data(spell_id, basic_data=True):
         if getattr(result, f'effectid{idx}') != 254:
             slots.update({f'slot_{idx}': parse_slot_data(idx, result)})
 
+    if result.RecourseLink > 0:
+        recourse_base, recourse_slots = get_spell_data(result.RecourseLink)
+        base.update({'recourse_base': recourse_base,
+                     'recourse_slots': recourse_slots})
+
     return base, slots
 
 
@@ -618,8 +623,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Create Item
         if no_item_links:
             return f'Summon item: {data.name.lstrip("Summon ")}'
-        item_data = items.get_item_name(min_val)
-        item_name = item_data['Name']
+        item_name = items.get_item_name(min_val)
         return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
         # Spawn NPC
@@ -979,8 +983,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # CreateItemInBag
         if no_item_links:
             return f'Summon item: {data.name.lstrip("Summon ")}'
-        item_data = items.get_item_raw_data(min_val)
-        item_name = item_data['Name']
+        item_name = items.get_item_raw_data(min_val)
         return f'Summon item (In Bag): <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 110:
         # Ranger Archery Accuracy %
