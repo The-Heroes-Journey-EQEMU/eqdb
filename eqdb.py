@@ -71,7 +71,6 @@ def get_item_json():
 @app.errorhandler(Exception)
 def all_exception_handler(error):
     referrer = request.path
-    print(referrer)
     if SITE_TYPE == 'Development':
         raise error
     logic.send_error_email(error, referrer)
