@@ -110,7 +110,7 @@ def _get_arg_list(tooltip=False):
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
                 Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore, Item.bagtype,
                 Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype,
-                Item.icon, Item.casttime, Item.maxcharges]
+                Item.icon, Item.casttime, Item.maxcharges, Item.augtype, Item.augrestrict]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -172,106 +172,109 @@ def get_item_data(item_id, full=False):
         args = _get_arg_list(tooltip=True)
         query = session.query(*args).filter(Item.id == item_id)
         result = query.all()
+    if not result:
+        return None
+    ret_dict = dict(result[0]._mapping)
+
+    proc = ret_dict['proceffect']
+    click = ret_dict['clickeffect']
+    focus = ret_dict['focuseffect']
+    worn = ret_dict['worneffect']
+    inst = ret_dict['bardeffect']
+    banebody = ret_dict['banedmgbody']
+    banerace = ret_dict['banedmgrace']
+    elemtype = ret_dict['elemdmgtype']
+    aug_slot_1 = ret_dict['augslot1type']
+    aug_slot_2 = ret_dict['augslot2type']
+    aug_slot_3 = ret_dict['augslot3type']
+    aug_slot_4 = ret_dict['augslot4type']
+    aug_slot_5 = ret_dict['augslot5type']
+    skill_mod = ret_dict['skillmodtype']
+
+    if worn > 0:
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
+        result = query.all()
         if not result:
-            return None
-        ret_dict = dict(result[0]._mapping)
+            query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
+            result = query.all()
+        ret_dict['worn_name'] = result[0][0]
+    if proc > 0:
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
+        result = query.all()
+        if not result:
+            query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
+            result = query.all()
+        ret_dict['proc_name'] = result[0][0]
+    if click > 0:
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
+        result = query.all()
+        if not result:
+            query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
+            result = query.all()
 
-        proc = ret_dict['proceffect']
-        click = ret_dict['clickeffect']
-        focus = ret_dict['focuseffect']
-        worn = ret_dict['worneffect']
-        inst = ret_dict['bardeffect']
-        banebody = ret_dict['banedmgbody']
-        banerace = ret_dict['banedmgrace']
-        elemtype = ret_dict['elemdmgtype']
-        aug_slot_1 = ret_dict['augslot1type']
-        aug_slot_2 = ret_dict['augslot2type']
-        aug_slot_3 = ret_dict['augslot3type']
-        aug_slot_4 = ret_dict['augslot4type']
-        aug_slot_5 = ret_dict['augslot5type']
-        skill_mod = ret_dict['skillmodtype']
-
-        if worn > 0:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
+        if not result:
+            ret_dict['click_name'] = 'Unknown Spell'
+        else:
+            ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
+    if focus > 0:
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
+        result = query.all()
+        if not result:
+            query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
             result = query.all()
-            if not result:
-                query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
-                result = query.all()
-            ret_dict['worn_name'] = result[0][0]
-        if proc > 0:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
+        if not result:
+            ret_dict['focus_name'] = 'Unknown Spell'
+        else:
+            ret_dict['focus_name'] = result[0][0]
+    if inst > 0:
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
+        result = query.all()
+        if not result:
+            query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
             result = query.all()
-            if not result:
-                query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
-                result = query.all()
-            ret_dict['proc_name'] = result[0][0]
-        if click > 0:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
-            result = query.all()
-            if not result:
-                query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
-                result = query.all()
-
-            if not result:
-                ret_dict['click_name'] = 'Unknown Spell'
-            else:
-                ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
-        if focus > 0:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
-            result = query.all()
-            if not result:
-                query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
-                result = query.all()
-            if not result:
-                ret_dict['focus_name'] = 'Unknown Spell'
-            else:
-                ret_dict['focus_name'] = result[0][0]
-        if inst > 0:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
-            result = query.all()
-            if not result:
-                query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
-                result = query.all()
-            ret_dict['inst_name'] = result[0][0]
-        if banebody > 0:
-            ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)
-            ret_dict['bane_body_amount'] = ret_dict['banedmgamt']
-        if banerace > 0:
-            ret_dict['bane_race_name'] = utils.get_bane_dmg_race(banerace)
-            ret_dict['bane_race_amount'] = ret_dict['banedmgraceamt']
-        if elemtype > 0:
-            ret_dict['elem_dmg_name'] = utils.get_elem_dmg_type(elemtype)
-            ret_dict['elem_dmg_amount'] = ret_dict['elemdmgamt']
-        if aug_slot_1 > 0:
-            ret_dict['aug_slot_1'] = utils.get_aug_type(aug_slot_1)
-        if aug_slot_2 > 0:
-            ret_dict['aug_slot_2'] = utils.get_aug_type(aug_slot_2)
-        if aug_slot_3 > 0:
-            ret_dict['aug_slot_3'] = utils.get_aug_type(aug_slot_3)
-        if aug_slot_4 > 0:
-            ret_dict['aug_slot_4'] = utils.get_aug_type(aug_slot_4)
-        if aug_slot_5 > 0:
-            ret_dict['aug_slot_5'] = utils.get_aug_type(aug_slot_5)
-        if skill_mod > 0:
-            ret_dict['skillmodname'] = utils.parse_skill(int(skill_mod))
+        ret_dict['inst_name'] = result[0][0]
+    if banebody > 0:
+        ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)
+        ret_dict['bane_body_amount'] = ret_dict['banedmgamt']
+    if banerace > 0:
+        ret_dict['bane_race_name'] = utils.get_bane_dmg_race(banerace)
+        ret_dict['bane_race_amount'] = ret_dict['banedmgraceamt']
+    if elemtype > 0:
+        ret_dict['elem_dmg_name'] = utils.get_elem_dmg_type(elemtype)
+        ret_dict['elem_dmg_amount'] = ret_dict['elemdmgamt']
+    if aug_slot_1 > 0:
+        ret_dict['aug_slot_1'] = utils.get_aug_slot_type(aug_slot_1)
+    if aug_slot_2 > 0:
+        ret_dict['aug_slot_2'] = utils.get_aug_slot_type(aug_slot_2)
+    if aug_slot_3 > 0:
+        ret_dict['aug_slot_3'] = utils.get_aug_slot_type(aug_slot_3)
+    if aug_slot_4 > 0:
+        ret_dict['aug_slot_4'] = utils.get_aug_slot_type(aug_slot_4)
+    if aug_slot_5 > 0:
+        ret_dict['aug_slot_5'] = utils.get_aug_slot_type(aug_slot_5)
+    if skill_mod > 0:
+        ret_dict['skillmodname'] = utils.parse_skill(int(skill_mod))
 
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
     ret_dict['type_str'] = utils.get_type_string(ret_dict['itemtype'])
-    ret_dict['thj_enabled'] = False
-    item_id = int(item_id)
-    if item_id < 1000000:
-        # See if Enchanted and Legendary exist
-        with Session(bind=engine) as session:
-            ench = item_id + 1000000
-            lego = item_id + 2000000
-            query = session.query(Item.id).filter(or_(Item.id == ench, Item.id == lego))
-            result = query.all()
-            if len(result) == 2:
-                ret_dict['thj_enabled'] = True
-    elif item_id > 1000000:
-        ret_dict['thj_enabled'] = True
+    if ret_dict['augtype'] > 0:
+        ret_dict['augtype'] = utils.get_aug_types(ret_dict['augtype'])
+        ret_dict['augrestrict'] = utils.get_aug_restrict(ret_dict['augrestrict'])
     if full:
+        ret_dict['thj_enabled'] = False
+        item_id = int(item_id)
+        if item_id < 1000000:
+            # See if Enchanted and Legendary exist
+            with Session(bind=engine) as session:
+                ench = item_id + 1000000
+                lego = item_id + 2000000
+                query = session.query(Item.id).filter(or_(Item.id == ench, Item.id == lego))
+                result = query.all()
+                if len(result) == 2:
+                    ret_dict['thj_enabled'] = True
+        elif item_id > 1000000:
+            ret_dict['thj_enabled'] = True
         # Get mobs that drop this as loot
         droppers = []
         orig_item_id = item_id

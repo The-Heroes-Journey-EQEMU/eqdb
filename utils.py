@@ -484,15 +484,96 @@ def translate_specials(spc):
     return specials
 
 
-def get_aug_type(num):
+def get_aug_restrict(num):
+    if num == 0:
+        return 'No Restrictions'
+    elif num == 1:
+        return 'Armor Only'
+    elif num == 2:
+        return 'Weapons Only'
+    elif num == 3:
+        return 'One-Handed Weapons Only'
+    elif num == 4:
+        return 'Two-Handed Weapons ONly'
+    elif num == 5:
+        return 'One-Handed Slashing Weapons Only'
+    elif num == 6:
+        return 'One-Handed Blunt Weapons Only'
+    elif num == 7:
+        return 'One-Handed Piercing Weapons Only'
+    elif num == 8:
+        return 'Hand-to-Hand Weapons Only'
+    elif num == 9:
+        return 'Two-Handed Slashing Weapons Only'
+    elif num == 10:
+        return 'Two-Handed Blunt Weapons Only'
+    elif num == 11:
+        return 'Two-Handed Piercing Weapons Only'
+    elif num == 12:
+        return 'Ranged Weapons Only'
+    elif num == 13:
+        return 'Shields Only'
+    elif num == 14:
+        return 'One-Handed Slashing Weapons, One-Handed Blunt Weaspons, or Hand-to-Hand Weapons Only'
+    elif num == 15:
+        return 'One-Handed Blunt Weapons or Hand-to-Hand Weapons Only'
+    else:
+        return 'Unknown Restrictions'
+
+
+def get_aug_types(num):
+    out_str = ""
+    while num > 0:
+        if num >= 4096:
+            return 'AUGMENT HIGHER THAN 13, FIX ME'
+        if num >= 2048:
+            num -= 2048
+            out_str += '12 (FIX ME) '
+        if num >= 1024:
+            num -= 1024
+            out_str += '11 (FIX ME) '
+        if num >= 512:
+            num -= 512
+            out_str += '10 (FIX ME) '
+        if num >= 256:
+            num -= 256
+            out_str += '9 (FIX ME) '
+        if num >= 128:
+            num -= 128
+            out_str += '8 (FIX ME) '
+        if num >= 64:
+            num -= 64
+            out_str += '7 (FIX ME) '
+        if num >= 32:
+            num -= 32
+            out_str += '6 (FIX ME) '
+        if num >= 16:
+            num -= 16
+            out_str += '5 (FIX ME) '
+        if num >= 8:
+            num -= 8
+            out_str += '4 (Weapon) '
+        if num >= 4:
+            num -= 4
+            out_str += '3 (Spells) '
+        if num >= 2:
+            num -= 2
+            out_str += '2 (Elite) '
+        if num >= 1:
+            num -= 1
+            out_str += '1 (Stats) '
+    return out_str.strip()
+
+
+def get_aug_slot_type(num):
     if num == 1:
         return '1 (Stats)'
     elif num == 2:
-        return '2 (Worn)'
+        return '2 (Elite)'
     elif num == 3:
         return '3 (Spells)'
     elif num == 4:
-        return '4 (Proc)'
+        return '4 (Weapon)'
     else:
         return 'HEY IDIOT, FIX ME'
 

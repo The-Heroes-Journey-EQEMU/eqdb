@@ -1,11 +1,12 @@
+==2.0.3==
+* Added Aug Type(s) and Aug Restriction(s) to Augments in Item Detail and Item Tooltips
+
 ==2.0.2==
 DEPLOYED: 5/5/2024
 * Added Recourse effects to Spell Detail
 * Introduced an api to query for item data
-  * https://eqdb.net/api/v1/items?id=<item_id> will get you the exact item JSON if the ID exists,
-    or an empty JSON if it does not.
-  * https://eqdb.net/api/v1/items?name=<name even with space> will get you the JSON for the first item it finds,
-    or an empty JSON if it doesn't find anything.
+  * https://eqdb.net/api/v1/items?id=<item_id> will get you the exact item JSON if the ID exists, or an empty JSON if it does not.
+  * https://eqdb.net/api/v1/items?name=<name even with space> will get you the JSON for the first item it finds, or an empty JSON if it doesn't find anything.
 * Fixed a bug with spells that summon items
 
 ==2.0.1==

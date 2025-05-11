@@ -520,6 +520,14 @@
                 </td>
             </tr>
             {% endif %}
+            {% if item.augtype %}
+            <tr>
+                <td nowrap="1" colspan="3"><b>Aug Slot Types:</b> {{item.augtype}}</td>
+            </tr>
+            <tr>
+                <td nowrap="1" colspan="3"><b>Restrictions:</b> {{item.augrestrict}}</td>
+            </tr>
+            {% endif %}
             {% if "bane_body_name" in item %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Bane Dmg:</b> {{item.bane_body_name}} +{{item.bane_body_amount}}</td>
