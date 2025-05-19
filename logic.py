@@ -326,7 +326,7 @@ def get_item_data(item_id, full=False):
         vendors = {}
         with Session(bind=engine) as session:
             query = session.query(NPCTypes.id, NPCTypes.name).filter(MerchantList.item == item_id).\
-                filter(MerchantList.merchantid == NPCTypes.id).\
+                filter(MerchantList.merchantid == NPCTypes.merchant_id).\
                 filter(MerchantList.min_expansion <= expansion)
             result = query.all()
         lookup = {}
@@ -337,6 +337,14 @@ def get_item_data(item_id, full=False):
             else:
                 query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
                 sub_result = query.first()
+                if not sub_result:
+                    query = session.query(Zone.long_name, Zone.expansion).\
+                        filter(SpawnEntry.npcID == entry[0]).\
+                        filter(SpawnEntry.spawngroupID == Spawn2.spawngroupID).\
+                        filter(Zone.short_name == Spawn2.zone)
+                    sub_result = query.first()
+                    if not sub_result:
+                        continue
                 if sub_result[1] > expansion:
                     continue
                 zone_name = sub_result[0]

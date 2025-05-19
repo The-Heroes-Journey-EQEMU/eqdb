@@ -234,6 +234,16 @@ def get_spell_data(spell_id, basic_data=True):
         if result.buffdurationformula > 0:
             base.update({'min_duration': parse_duration(result)}),
             base.update({'max_duration': parse_duration(result, min_val=False)})
+        components = []
+        for idx in range(1, 5):
+            item_id = getattr(result, f'components{idx}')
+            if item_id != -1:
+                item_name = items.get_item_name(item_id)
+                components.append({'item_id': item_id,
+                                   'name': item_name,
+                                   'count': getattr(result, f'component_counts{idx}')})
+        base.update({'components': components})
+
     else:
         base = None
 
@@ -416,13 +426,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Movement Rate
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            if max_val == 0:
-                return f'Decrease Movement Speed by {minimum}%'
+            if max_val == 0 or max_level == 255:
+                return f'Decrease Movement Speed by {max_val}%'
             else:
                 return f'Decrease Movement Speed by {minimum}% (L{min_level}) to {max_val}% (L{max_level})'
         else:
-            if max_val == 0:
-                return f'Increase Movement Speed by {minimum}%'
+            if max_val == 0 or max_level == 255:
+                return f'Increase Movement Speed by {max_val}%'
             else:
                 return f'Increase Movement Speed by {minimum}% (L{min_level}) to {max_val}% (L{max_level})'
     elif spa == 4:

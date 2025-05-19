@@ -1,8 +1,16 @@
+==2.0.4==
+DEPLOYED: 5/19/2025
+* Added component cost to the very rare items that require it
+* Adjustments to SPA 3 (movement speed) parsing
+* Added a fallback NPC search for vendor items.
+* Fixed how the list of Purchased From vendors that items can come from is populated.
+
 ==2.0.3==
+DEPLOYED: 5/10/2025
 * Added Aug Type(s) and Aug Restriction(s) to Augments in Item Detail and Item Tooltips
 
 ==2.0.2==
-DEPLOYED: 5/5/2024
+DEPLOYED: 5/5/2025
 * Added Recourse effects to Spell Detail
 * Introduced an api to query for item data
   * https://eqdb.net/api/v1/items?id=<item_id> will get you the exact item JSON if the ID exists, or an empty JSON if it does not.
@@ -10,7 +18,7 @@ DEPLOYED: 5/5/2024
 * Fixed a bug with spells that summon items
 
 ==2.0.1==
-DEPLOYED: 5/4/2024
+DEPLOYED: 5/4/2025
 * Fixed display of links on class spell listing page
 * Optimized Spell Listing code to speed up returns
     * Spell listing will no longer link to items being summoned, but the spell details for that spell still will.
