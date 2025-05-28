@@ -54,7 +54,7 @@ def get_zone_listing():
 def get_zone_long_name(zone_short_name):
     with Session(bind=engine) as session:
         query = session.query(Zone.zoneidnumber, Zone.long_name).filter(Zone.short_name == zone_short_name)
-        result = query.one()
+        result = query.first()
     return result[0], result[1]
 
 

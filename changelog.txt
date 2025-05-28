@@ -1,3 +1,8 @@
+==2.0.5==
+DEPLOYED: 5/28/2025
+* Fixed a bug preventing druid spells over 51 from being displayed on the class spell listing page.
+* Fixed a bug that prevented certain focus spells from being found when searching for Armor or Weapons
+
 ==2.0.4==
 DEPLOYED: 5/19/2025
 * Added component cost to the very rare items that require it

@@ -136,6 +136,21 @@ def _get_arg_list(tooltip=False):
         arg_list.append(BardSpell.id.label('inst_id'))
         arg_list.append(BardSpell.name.label('inst_name'))
         arg_list.append(BardSpell.effect_base_value1.label('inst_value'))
+        
+        arg_list.append(FocusSpellNew.id.label('new_focus_id'))
+        arg_list.append(FocusSpellNew.name.label('new_focus_spell_name'))
+        arg_list.append(FocusSpellNew.effect_base_value1.label('new_focus_min_val'))
+        arg_list.append(FocusSpellNew.effect_limit_value1.label('new_focus_max_val'))
+        arg_list.append(ClickSpellNew.id.label('new_click_id'))
+        arg_list.append(ClickSpellNew.name.label('new_click_name'))
+        arg_list.append(ProcSpellNew.id.label('new_proc_id'))
+        arg_list.append(ProcSpellNew.name.label('new_proc_name'))
+        arg_list.append(WornSpellNew.id.label('new_worn_id'))
+        arg_list.append(WornSpellNew.name.label('new_worn_name'))
+        arg_list.append(WornSpellNew.effect_base_value1.label('new_worn_value'))
+        arg_list.append(BardSpellNew.id.label('new_inst_id'))
+        arg_list.append(BardSpellNew.name.label('new_inst_name'))
+        arg_list.append(BardSpellNew.effect_base_value1.label('new_inst_value'))
 
     return arg_list
 
@@ -622,6 +637,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             filters.append(Item.banedmgrace == kwargs['banedmgrace'])
         elif 'focus_type' in entry:
             ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNewReference)
+            ids += utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNew)
             for focus_id in ids:
                 focus_or_filters.append(Item.focuseffect == focus_id)
             if kwargs['focus_type'] == 'Melee':
@@ -652,6 +668,11 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
             join(WornSpell, WornSpell.id == Item.worneffect, isouter=True). \
             join(BardSpell, BardSpell.id == Item.bardeffect, isouter=True). \
+            join(FocusSpellNew, FocusSpellNew.id == Item.focuseffect, isouter=True). \
+            join(ClickSpellNew, ClickSpellNew.id == Item.clickeffect, isouter=True). \
+            join(ProcSpellNew, ProcSpellNew.id == Item.proceffect, isouter=True). \
+            join(WornSpellNew, WornSpellNew.id == Item.worneffect, isouter=True). \
+            join(BardSpellNew, BardSpellNew.id == Item.bardeffect, isouter=True). \
             filter(Item.id.in_(session.query(Item.id).filter(item_params))). \
             filter(and_params). \
             filter(focus_or_params). \
@@ -698,6 +719,32 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         entry.w_eff = w_eff
         entry.zone_name = utils.lookup_zone_name(entry.npc_id)
         entry.npc_name = utils.fix_npc_name(entry.npc_name)
+        
+        # Massage spells a bit
+        if entry.new_focus_id is not None and entry.focus_id is None:
+            entry.focus_id = entry.new_focus_id
+            entry.focus_spell_name = entry.new_focus_spell_name
+            entry.focus_min_val = entry.new_focus_min_val
+            entry.focus_max_val = entry.new_focus_max_val
+            
+        if entry.new_click_id is not None and entry.click_id is None:
+            entry.click_id = entry.new_click_id
+            entry.click_name = entry.new_click_name
+
+        if entry.new_proc_id is not None and entry.proc_id is None:
+            entry.proc_id = entry.new_proc_id
+            entry.proc_name = entry.new_proc_name
+            
+        if entry.new_worn_id is not None and entry.worn_id is None:
+            entry.worn_id = entry.new_worn_id
+            entry.worn_name = entry.new_worn_name
+            entry.worn_value = entry.new_worn_value
+            
+        if entry.new_inst_id is not None and entry.inst_id is None:
+            entry.inst_id = entry.new_inst_id
+            entry.inst_name = entry.new_inst_name
+            entry.inst_value = entry.new_inst_value
+
         out_items.append(entry)
 
     out_items.sort(key=operator.attrgetter('weight'), reverse=True)
