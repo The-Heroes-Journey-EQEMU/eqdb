@@ -207,24 +207,24 @@ def get_item_data(item_id, full=False):
     skill_mod = ret_dict['skillmodtype']
 
     if worn > 0:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
         result = query.all()
         if not result:
-            query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
             result = query.all()
         ret_dict['worn_name'] = result[0][0]
     if proc > 0:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
         result = query.all()
         if not result:
-            query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
             result = query.all()
         ret_dict['proc_name'] = result[0][0]
     if click > 0:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
         result = query.all()
         if not result:
-            query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
             result = query.all()
 
         if not result:
@@ -232,20 +232,20 @@ def get_item_data(item_id, full=False):
         else:
             ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
     if focus > 0:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
         result = query.all()
         if not result:
-            query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
             result = query.all()
         if not result:
             ret_dict['focus_name'] = 'Unknown Spell'
         else:
             ret_dict['focus_name'] = result[0][0]
     if inst > 0:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
         result = query.all()
         if not result:
-            query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
             result = query.all()
         ret_dict['inst_name'] = result[0][0]
     if banebody > 0:
@@ -300,7 +300,7 @@ def get_item_data(item_id, full=False):
         known_zones = {}
         skip_zones = []
         with Session(bind=engine) as session:
-            query = session.query(NPCTypes.id, NPCTypes.name).filter(LootDropEntries.item_id == item_id).\
+            query = session.query(NPCTypes.id, NPCTypes.name, LootDropEntries.chance).filter(LootDropEntries.item_id == item_id).\
                 filter(LootDropEntries.lootdrop_id == LootTableEntries.lootdrop_id).\
                 filter(LootTableEntries.loottable_id == NPCTypes.loottable_id)
             result = query.all()
@@ -334,7 +334,9 @@ def get_item_data(item_id, full=False):
                     continue
                 droppers.append({'npc_id': entry[0],
                                  'npc_name': utils.fix_npc_name(entry[1]),
-                                 'zone_name': zone_name})
+                                 'zone_name': zone_name,
+                                 'zone_id': zone_id,
+                                 'chance': entry[2]})
         ret_dict['droppers'] = droppers
 
         # Get vendors that sell this
@@ -498,6 +500,11 @@ def get_era_items(kwargs):
     if 'g_slot' in kwargs:
         slot_value = utils.lookup_slot(kwargs['g_slot'])
         filters.append(Item.slots.op('&')(slot_value) == slot_value)
+    if 'skillmodtype' in kwargs:
+        if kwargs['skillmodtype'] == 'All':
+            filters.append(Item.skillmodtype >= 0)
+        else:
+            filters.append(Item.skillmodtype == kwargs['skillmodtype'])
     if 'i_type' in kwargs:
         if kwargs['i_type'] == 'Any':
             pass
@@ -605,6 +612,8 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     """Returns all items with filters provided"""
     # Get the base items, tradeskill items, and quest items that drop from the zones in the eras requested.
     base_items, tradeskill_items, quest_items = get_era_items(kwargs)
+    if not base_items and not tradeskill_items and not quest_items:
+        return [], False, False, False
 
     # Create the lookup table
     item_ids, lookup_table = create_lookup_table(base_items, tradeskill_items, quest_items)
@@ -614,7 +623,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     focus_or_filters = []
 
     skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
-                    'sympathetic', 'eras', 'w_eff', 'pet_search']
+                    'sympathetic', 'eras', 'w_eff', 'pet_search', 'skillmodtype']
     bane_body = False
     for entry in kwargs:
         if entry in skip_filters:

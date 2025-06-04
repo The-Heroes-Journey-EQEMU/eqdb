@@ -1,3 +1,20 @@
+==2.0.6==
+DEPLOYED: 6/3/2025
+* Ammo slot searches have been moved to Weapon Search
+    * Important: A lot of ammunition if summoned or created through tradeskills.  These will be added as time goes on,
+    but for now they may not be found.
+* Thrown weapons can now be found, using the Ranged slot
+    * Important: A lot of throwing weapons are summoned through spells or created through tradeskills.  These will be
+    added as time goes on, but for now they may be found.
+* Fixed the ordering of the classes on the spell/ability listing page
+* Fixed spa 111 (all resists)
+* Adjusted the spell logic to pull from the correct table first
+* NPC Details page now shows all the faction hits associated with killing that NPC
+* Zone Details page now has a sortable table of all NPCs in that zone
+* Item Details now shows the NPCs that drop the item in a sortable table with the percent chance for that item
+* Armor and Weapon search can now limit search results to items that have a skill modifier in a particular skill
+    * Minimum bonus amount and minimum maximum amount are potentially forthcoming if there is demand.
+
 ==2.0.5==
 DEPLOYED: 5/28/2025
 * Fixed a bug preventing druid spells over 51 from being displayed on the class spell listing page.

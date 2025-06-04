@@ -107,7 +107,7 @@ def get_spells(spell_name):
 
     out_data = []
     known_spells = []
-    for entry in result + result2:
+    for entry in result2 + result:
         spell_id = entry[0]
         if spell_id in known_spells:
             continue
@@ -122,12 +122,12 @@ def get_spells(spell_name):
 
 def get_spell_raw_data(spell_id):
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+        query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
         result = query.first()
 
     if not result:
         with Session(bind=engine) as session:
-            query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
+            query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
             result = query.first()
 
     ret_dict = result.__dict__
@@ -136,44 +136,44 @@ def get_spell_raw_data(spell_id):
 
 
 def get_spells_by_class(class_id, min_level=1, max_level=65):
-    filters = [getattr(SpellsNewReference, f'classes{class_id}') >= min_level,
-               getattr(SpellsNewReference, f'classes{class_id}') <= max_level]
+    filters = [getattr(SpellsNew, f'classes{class_id}') >= min_level,
+               getattr(SpellsNew, f'classes{class_id}') <= max_level]
     params = and_(*filters)
 
     with Session(bind=engine) as session:
-        args = [SpellsNewReference.id, SpellsNewReference.classes1, SpellsNewReference.classes2,
-                SpellsNewReference.classes3, SpellsNewReference.classes4, SpellsNewReference.classes5,
-                SpellsNewReference.classes6, SpellsNewReference.classes7, SpellsNewReference.classes8,
-                SpellsNewReference.classes9, SpellsNewReference.classes10, SpellsNewReference.classes11,
-                SpellsNewReference.classes12, SpellsNewReference.classes13, SpellsNewReference.classes14,
-                SpellsNewReference.classes15, SpellsNewReference.classes16,
-                SpellsNewReference.name, SpellsNewReference.skill, SpellsNewReference.targettype,
-                SpellsNewReference.new_icon, SpellsNewReference.effectid1, SpellsNewReference.effectid2,
-                SpellsNewReference.effectid3, SpellsNewReference.effectid4, SpellsNewReference.effectid5,
-                SpellsNewReference.effectid6, SpellsNewReference.effectid7, SpellsNewReference.effectid8,
-                SpellsNewReference.effectid9, SpellsNewReference.effectid10, SpellsNewReference.effectid11,
-                SpellsNewReference.effectid12, SpellsNewReference.effect_base_value1,
-                SpellsNewReference.effect_base_value2, SpellsNewReference.effect_base_value3,
-                SpellsNewReference.effect_base_value4, SpellsNewReference.effect_base_value5,
-                SpellsNewReference.effect_base_value6, SpellsNewReference.effect_base_value7,
-                SpellsNewReference.effect_base_value8, SpellsNewReference.effect_base_value9,
-                SpellsNewReference.effect_base_value10, SpellsNewReference.effect_base_value11,
-                SpellsNewReference.effect_base_value12, SpellsNewReference.effect_limit_value1,
-                SpellsNewReference.effect_limit_value2, SpellsNewReference.effect_limit_value3,
-                SpellsNewReference.effect_limit_value4, SpellsNewReference.effect_limit_value5,
-                SpellsNewReference.effect_limit_value6, SpellsNewReference.effect_limit_value7,
-                SpellsNewReference.effect_limit_value8, SpellsNewReference.effect_limit_value9,
-                SpellsNewReference.effect_limit_value10, SpellsNewReference.effect_limit_value11,
-                SpellsNewReference.effect_limit_value12, SpellsNewReference.max1, SpellsNewReference.max2,
-                SpellsNewReference.max3, SpellsNewReference.max4, SpellsNewReference.max5,
-                SpellsNewReference.max6, SpellsNewReference.max7, SpellsNewReference.max8,
-                SpellsNewReference.max9, SpellsNewReference.max10, SpellsNewReference.max11,
-                SpellsNewReference.max12, SpellsNewReference.formula1, SpellsNewReference.formula2,
-                SpellsNewReference.formula3, SpellsNewReference.formula4, SpellsNewReference.formula5,
-                SpellsNewReference.formula6, SpellsNewReference.formula7, SpellsNewReference.formula8,
-                SpellsNewReference.formula9, SpellsNewReference.formula10, SpellsNewReference.formula11,
-                SpellsNewReference.formula12, SpellsNewReference.buffduration, SpellsNewReference.teleport_zone,
-                SpellsNewReference.buffduration, SpellsNewReference.buffdurationformula]
+        args = [SpellsNew.id, SpellsNew.classes1, SpellsNew.classes2,
+                SpellsNew.classes3, SpellsNew.classes4, SpellsNew.classes5,
+                SpellsNew.classes6, SpellsNew.classes7, SpellsNew.classes8,
+                SpellsNew.classes9, SpellsNew.classes10, SpellsNew.classes11,
+                SpellsNew.classes12, SpellsNew.classes13, SpellsNew.classes14,
+                SpellsNew.classes15, SpellsNew.classes16,
+                SpellsNew.name, SpellsNew.skill, SpellsNew.targettype,
+                SpellsNew.new_icon, SpellsNew.effectid1, SpellsNew.effectid2,
+                SpellsNew.effectid3, SpellsNew.effectid4, SpellsNew.effectid5,
+                SpellsNew.effectid6, SpellsNew.effectid7, SpellsNew.effectid8,
+                SpellsNew.effectid9, SpellsNew.effectid10, SpellsNew.effectid11,
+                SpellsNew.effectid12, SpellsNew.effect_base_value1,
+                SpellsNew.effect_base_value2, SpellsNew.effect_base_value3,
+                SpellsNew.effect_base_value4, SpellsNew.effect_base_value5,
+                SpellsNew.effect_base_value6, SpellsNew.effect_base_value7,
+                SpellsNew.effect_base_value8, SpellsNew.effect_base_value9,
+                SpellsNew.effect_base_value10, SpellsNew.effect_base_value11,
+                SpellsNew.effect_base_value12, SpellsNew.effect_limit_value1,
+                SpellsNew.effect_limit_value2, SpellsNew.effect_limit_value3,
+                SpellsNew.effect_limit_value4, SpellsNew.effect_limit_value5,
+                SpellsNew.effect_limit_value6, SpellsNew.effect_limit_value7,
+                SpellsNew.effect_limit_value8, SpellsNew.effect_limit_value9,
+                SpellsNew.effect_limit_value10, SpellsNew.effect_limit_value11,
+                SpellsNew.effect_limit_value12, SpellsNew.max1, SpellsNew.max2,
+                SpellsNew.max3, SpellsNew.max4, SpellsNew.max5,
+                SpellsNew.max6, SpellsNew.max7, SpellsNew.max8,
+                SpellsNew.max9, SpellsNew.max10, SpellsNew.max11,
+                SpellsNew.max12, SpellsNew.formula1, SpellsNew.formula2,
+                SpellsNew.formula3, SpellsNew.formula4, SpellsNew.formula5,
+                SpellsNew.formula6, SpellsNew.formula7, SpellsNew.formula8,
+                SpellsNew.formula9, SpellsNew.formula10, SpellsNew.formula11,
+                SpellsNew.formula12, SpellsNew.buffduration, SpellsNew.teleport_zone,
+                SpellsNew.buffduration, SpellsNew.buffdurationformula]
         query = session.query(*args).filter(params)
         result = query.all()
 
@@ -206,11 +206,11 @@ def get_spell_data(spell_id, basic_data=True):
 
     # Get the spell data
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+        query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
         result = query.first()
 
         if not result:
-            query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
+            query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
             result = query.first()
 
             if not result:
@@ -1000,7 +1000,10 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA 110: Unused (tell the EQDB dev to fix me)'
     elif spa == 111:
         # Resistances
-        return f'Increase all resists by {min_val}'
+        if min_val < 0:
+            return f'Decrease all resists by {abs(min_val)}'
+        else:
+            return f'Increase all resists by {min_val}'
     elif spa == 112:
         # Adjust Casting Skill (Fizzles)
         return f'Increase Effective Casting Level by {min_val}'
@@ -2289,11 +2292,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
 
 def get_spell_name(spell_id, engine):
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == spell_id)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
         result = query.first()
 
     if not result:
-        query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
+        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == spell_id)
         result = query.first()
     return result[0]
 

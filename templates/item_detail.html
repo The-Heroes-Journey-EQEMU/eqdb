@@ -1,5 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
+ <script>
+ $(document).ready(function() {
+	 $('#npc_table').DataTable({
+		 "order": [[2, "desc"]],
+		 "pageLength": 25,
+		 searching: false,
+		 paging: false,
+		 info: false,
+		 "dom": '<lfp<t>i>'
+	 });
+ });
+ </script>
 {% if item is none %}
 <h3>Item data not found or item does not exist</h3>
 {% else %}
@@ -614,13 +626,20 @@
             {% if item.droppers %}
             <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="dropper"
                  role="tabpanel" aria-labelledby="dropper-tab">
-                <ul>
+                <table class="mediumfont table table-bordered" id="npc_table">
+                    <thead>
+                    <th>NPC</th>
+                    <th>Zone</th>
+                    <th>% Chance</th>
+                    </thead>
                     {% for entry in item.droppers %}
-                    <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a> ::
-                        {{entry.zone_name}}
-                    </li>
+                    <tr>
+                        <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+                        <td><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a></td>
+                        <td>{{entry.chance}}%</td>
+                    </tr>
                     {% endfor %}
-                </ul>
+                </table>
             </div>
             {% endif %}
             {% if item.vendors %}

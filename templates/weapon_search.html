@@ -241,10 +241,10 @@ function createOption(ddl, text, value) {
 
 {% set classes = ['Bard', 'Beastlord', 'Berserker', 'Cleric', 'Druid', 'Enchanter', 'Magician', 'Monk', 'Necromancer',
 'Paladin', 'Ranger', 'Rogue', 'Shadow Knight', 'Shaman', 'Warrior', 'Wizard'] %}
-{% set slots = ['Primary', 'Range', 'Secondary'] %}
+{% set slots = ['Primary', 'Range', 'Secondary', 'Ammo'] %}
 {% set i_types = ['One Hand Slash', 'One Hand Piercing', 'One Hand Blunt',
 'Hand to Hand', 'Any 1H Weapon', 'Exclude 1H Weapon', 'Two Hand Slash', 'Two Hand Blunt',
-'Two Hand Piercing', 'Any 2H Weapon', 'Exclude 2H Weapon', 'Bow', 'Arrow'] %}
+'Two Hand Piercing', 'Any 2H Weapon', 'Exclude 2H Weapon', 'Bow', 'Arrow', 'Thrown'] %}
 <h4>Weapon Search</h4>
 <form actions="{{ url_for('item_search') }}" method="post" class="add-entry" id="demoForm" target="_blank">
     <table id="searchOpts">
@@ -294,6 +294,17 @@ function createOption(ddl, text, value) {
                         <option value="{{option}}">{{option}}</option>
                         {% endfor %}
                     </select>
+                        </tr>
+                        <tr>
+                            <td>Skill Mod Type:</td>
+                            <td><select name="skillmodtype">
+                            <option value="None" selected="Selected">--N/A--</option>
+                            <option value="All">--Any Skill Mod--</option>
+                            {% for entry in skills %}
+                                {% for key, value in entry.items() %}
+                                    <option value="{{key}}">{{value}}</option>
+                                {% endfor %}
+                                {% endfor %}</select></td>
                         </tr>
                                                 <tr>
                             <td colspan="3">

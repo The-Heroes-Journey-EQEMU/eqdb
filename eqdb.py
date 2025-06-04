@@ -16,6 +16,7 @@ import pets
 import spell
 import tradeskills
 import zones
+import utils
 
 # Application Setup
 here = os.path.dirname(__file__)
@@ -457,6 +458,10 @@ def item_search():
         if len(request.form['item_name']) > 0:
             filters.update({'item_name': request.form['item_name']})
 
+    # Handle Skill Mod
+    if request.form['skillmodtype'] != 'None':
+        filters.update({'skillmodtype': request.form['skillmodtype']})
+
     # Handle Item Type
     if request.form['i_type'] != 'None':
         i_type = request.form['i_type']
@@ -469,8 +474,9 @@ def item_search():
                 return redirect(url_for('error'))
 
             # Handle ranged with other weapon types
-            if ('Bow' not in i_type and 'Any' not in i_type and 'Augment' not in i_type) and 'Range' in g_slot:
-                flash(f'Range slot can only search for "Bow" or "Any"')
+            if (('Bow' not in i_type and 'Any' not in i_type and 'Augment' not in i_type and 'Thrown' not in i_type) and
+                 'Range' in g_slot):
+                flash(f'Range slot can only search for "Thrown", "Bow", or "Any"')
                 return redirect(url_for('error'))
 
             # Handle Shield not in Secondary
@@ -490,7 +496,8 @@ def item_search():
                 return redirect(url_for('error'))
 
             # Handle weapons in non-weapon slots
-            if i_type not in ['Any', 'Shield', 'Bow', 'Augment', 'Arrow'] and g_slot not in ['Primary', 'Secondary']:
+            if (i_type not in ['Any', 'Shield', 'Bow', 'Augment', 'Arrow', 'Thrown'] and
+                g_slot not in ['Primary', 'Secondary']):
                 flash(f'Cannot search for weapons in slot {g_slot}')
                 return redirect(url_for('error'))
 
@@ -671,7 +678,8 @@ def item_search():
 @app.route("/search/weapon", methods=['GET', 'POST'])
 def weapon_search():
     if request.method == 'GET':
-        return render_template('weapon_search.html')
+        skills = utils.get_all_skills()
+        return render_template('weapon_search.html', skills=skills)
     else:
         return redirect(url_for('item_search'), code=307)
 
@@ -679,7 +687,8 @@ def weapon_search():
 @app.route("/search/armor", methods=['GET', 'POST'])
 def armor_search():
     if request.method == 'GET':
-        return render_template('item_search.html')
+        skills = utils.get_all_skills()
+        return render_template('item_search.html', skills=skills)
     else:
         return redirect(url_for('item_search'), code=307)
 

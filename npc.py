@@ -57,16 +57,19 @@ def get_npc_detail(npc_id):
     base_data['class'] = utils.get_class_string(base_data['class'])
     base_data['race'] = utils.get_bane_dmg_race(base_data['race'])
 
-    # Update the faction to the name
+    # Get faction changes for defeating this mob
+    factions = []
     with Session(bind=engine) as session:
-        query = session.query(FactionList.name, FactionList.id).\
+        query = session.query(FactionList.name, FactionList.id, NPCFactionEntries.value).\
             filter(NPCFactionEntries.npc_faction_id == base_data['npc_faction_id']).\
             filter(FactionList.id == NPCFactionEntries.faction_id)
-        sub_result = query.first()
+        sub_result = query.all()
     if sub_result:
-        base_data['faction'] = {'faction_name': sub_result[0], 'faction_id': sub_result[1]}
-    else:
-        base_data['faction'] = {}
+        for entry in sub_result:
+            if int(entry[2]) == 0:
+                continue
+            factions.append({'faction_name': entry[0], 'faction_id': entry[1], 'faction_amt': entry[2]})
+    base_data['faction'] = factions
 
     # Convert special abilities to make sense
     base_data.update({'special_attacks': utils.translate_specials(result.npcspecialattks)})

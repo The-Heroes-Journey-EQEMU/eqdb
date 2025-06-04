@@ -125,7 +125,20 @@ def get_zone_detail(zone_id):
 
     # Get all the NPCs for this zone
     spawn_groups = {}
+    npc_list = []
     with Session(bind=engine) as session:
+        query = session.query(NPCTypes.id, NPCTypes.name, NPCTypes.hp, NPCTypes.race, NPCTypes.level).\
+            filter(NPCTypes.id.like(f'{zone_id}___'))
+        result = query.all()
+        for entry in result:
+            npc_id = entry[0]
+            npc_name = entry[1]
+            npc_hp = entry[2]
+            npc_race = utils.get_bane_dmg_race(entry[3])
+            npc_level = entry[4]
+            npc_list.append({'id': npc_id, 'name': npc_name, 'hp': npc_hp, 'race': npc_race, 'level': npc_level})
+
+        base_data['npcs'] = npc_list
         query = session.query(Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, NPCTypes.name,
                               NPCTypes.id, SpawnEntry.chance, Spawn2.id, Spawn2.spawngroupID).\
             filter(Spawn2.spawngroupID == SpawnGroup.id).\

@@ -131,7 +131,16 @@
         <li>Race: {{data.race}}</li>
         <li>Body Type: {{data.bodytype}}</li>
         {% if data.faction %}
-         <li>Faction: <a href="{{url_for('faction_detail', faction_id=data.faction.faction_id)}}">{{data.faction.faction_name}}</a></li>
+         <li>Faction</li>
+          <ul>
+              {% for entry in data.faction %}
+                {% if entry.faction_amt > 0 %}
+                    <li><a href="{{url_for('faction_detail', faction_id=entry.faction_id)}}">{{entry.faction_name}}</a> <font color="green">{{entry.faction_amt}}</font></li>
+                {% else %}
+                    <li><a href="{{url_for('faction_detail', faction_id=entry.faction_id)}}">{{entry.faction_name}}</a> <font color="red">{{entry.faction_amt}}</font></li>
+                {% endif %}
+              {% endfor %}
+          </ul>
         {% endif %}
         <li>Min Hit: {{data.mindmg}}</li>
         <li>Max Hit: {{data.maxdmg}}</li>
