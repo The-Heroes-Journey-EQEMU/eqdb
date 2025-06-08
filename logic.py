@@ -569,53 +569,56 @@ def get_era_items(kwargs):
         new_item['id'] = new_item['id'] + 2000000
         base_items.append(new_item)
 
-    quest_items = []
-    item_id_filters = []
-    for entry in quest_item_ids:
-        item_id_filters.append(Item.id == entry)
-    item_id_params = or_(*item_id_filters)
-    with Session(bind=engine) as session:
-        query = session.query(Item.id).\
-            filter(item_id_params).\
-            filter(params).\
-            filter(class_or_params).\
-            filter(weapon_or_params).\
-            group_by(Item.id)
-        result = query.all()
-    for entry in result:
-        quest_items.append({'id': entry[0], 'npc_id': -1, 'npc_name': 'Quested'})
+    if quest_item_ids:
+        quest_items = []
+        item_id_filters = []
+        for entry in quest_item_ids:
+            item_id_filters.append(Item.id == entry)
+        item_id_params = or_(*item_id_filters)
+        with Session(bind=engine) as session:
+            query = session.query(Item.id).\
+                filter(item_id_params).\
+                filter(params).\
+                filter(class_or_params).\
+                filter(weapon_or_params).\
+                group_by(Item.id)
+            result = query.all()
+        for entry in result:
+            quest_items.append({'id': entry[0], 'npc_id': -1, 'npc_name': 'Quested'})
 
     special_items = []
-    item_id_filters = []
-    for entry in special_item_ids:
-        item_id_filters.append(Item.id == entry)
-    item_id_params = or_(*item_id_filters)
-    with Session(bind=engine) as session:
-        query = session.query(Item.id).\
-            filter(item_id_params).\
-            filter(params).\
-            filter(class_or_params).\
-            filter(weapon_or_params).\
-            group_by(Item.id)
-        result = query.all()
-    for entry in result:
-        special_items.append({'id': entry[0], 'npc_id': -3, 'npc_name': 'Special Drop'})
+    if special_item_ids:
+        item_id_filters = []
+        for entry in special_item_ids:
+            item_id_filters.append(Item.id == entry)
+        item_id_params = or_(*item_id_filters)
+        with Session(bind=engine) as session:
+            query = session.query(Item.id).\
+                filter(item_id_params).\
+                filter(params).\
+                filter(class_or_params).\
+                filter(weapon_or_params).\
+                group_by(Item.id)
+            result = query.all()
+        for entry in result:
+            special_items.append({'id': entry[0], 'npc_id': -3, 'npc_name': 'Special Drop'})
 
     ts_items = []
-    item_id_filters = []
-    for entry in ts_item_ids:
-        item_id_filters.append(Item.id == entry)
-    item_id_params = or_(*item_id_filters)
-    with Session(bind=engine) as session:
-        query = session.query(Item.id).\
-            filter(item_id_params).\
-            filter(params).\
-            filter(class_or_params).\
-            filter(weapon_or_params).\
-            group_by(Item.id)
-        result = query.all()
-    for entry in result:
-        ts_items.append({'id': entry[0], 'npc_id': -2, 'npc_name': 'Tradeskills'})
+    if ts_item_ids:
+        item_id_filters = []
+        for entry in ts_item_ids:
+            item_id_filters.append(Item.id == entry)
+        item_id_params = or_(*item_id_filters)
+        with Session(bind=engine) as session:
+            query = session.query(Item.id).\
+                filter(item_id_params).\
+                filter(params).\
+                filter(class_or_params).\
+                filter(weapon_or_params).\
+                group_by(Item.id)
+            result = query.all()
+        for entry in result:
+            ts_items.append({'id': entry[0], 'npc_id': -2, 'npc_name': 'Tradeskills'})
     return base_items, special_items, quest_items, ts_items
 
 

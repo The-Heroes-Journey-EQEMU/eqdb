@@ -1,3 +1,7 @@
+==2.0.7.1==
+DEPLOYED: 6/7/2025
+* Fixed searching in expansions that don't have special items.
+
 ==2.0.7==
 DEPLOYED: 6/7/2025
 * The EQDB api has been expanded:
