@@ -31,6 +31,9 @@ def get_zone_listing():
         era_zones = {}
         for entry in result:
             id_num = entry[0]
+            excl_list = utils.get_exclusion_list('zone')
+            if id_num in excl_list:
+                continue
             short_name = entry[1]
             long_name = entry[2]
             zem = entry[3]
@@ -59,6 +62,9 @@ def get_zone_long_name(zone_short_name):
 
 
 def get_zone_detail(zone_id):
+    excl_list = utils.get_exclusion_list('zone')
+    if zone_id in excl_list:
+        return None
     # Get some zone details
     with Session(bind=engine) as session:
         args = [Zone.expansion, Zone.short_name, Zone.long_name, Zone.safe_x, Zone.safe_y, Zone.canbind, Zone.canlevitate,
@@ -191,6 +197,9 @@ def get_zone(name):
 
     out_zones = []
     for entry in result:
+        excl_list = utils.get_exclusion_list('zone')
+        if entry[0] in excl_list:
+            return None
         out_zones.append({'zone_id': entry[0],
                           'zone_name': entry[1]})
     return out_zones

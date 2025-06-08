@@ -1,3 +1,36 @@
+==2.0.7==
+DEPLOYED: 6/7/2025
+* The EQDB api has been expanded:
+   * There is now a limit of 50 responses returned per request.
+    * Items (api/v1/items?)
+         * You can now submit a comma-separated list of IDs to retrieve multiple results at once.
+         * You can now add '&type=base', '&type=ench', '&type=legend', or '&type=all' to get the different versions of an item
+         * Name search now returns all valid results for that partial name
+    * Added spell api
+        * Search by id: https://eqdb.net/api/v1/spells?id=
+        * Search by name: https://eqdb.net/api/v1/spells?name=
+        * Will return the raw data for the spell(s) found
+    * Added NPC api
+        * Search by id: https://eqdb.net/api/v1/npcs?id=
+        * Search by name: https://eqdb.net/api/v1/npcs?name=
+        * Searcy by zone and name: https://eqdb.net/api/v1/npcs?name=&zone=
+            * Zones use the 'short name' of a zone, ie: Greater Faydark is gfaydark
+                * You can find the short name of the zone on the zone listing page.
+        * Will return the raw data for the NPC(s) found
+    * Added Tradeskills api
+       * Search by id: https://eqdb.net/api/v1/trades?id=
+       * Search by name: https://eqdb.net/api/v1/trades?name=
+       * Will return raw tradeskill and tradeskill_entries data
+    * Added Loot api
+       * Search by loottable ID: https://eqdb.net/api/v1/loot?id=
+       * Search by npc: https://eqdb.net/api/v1/loot?npc=
+       * Will return loot table and loot entry data
+* A new category of item source has been added: Special Drop
+    * These are items that do not normally show up as you'd expect (ie: via loot tables, quests, or tradeskills)
+    * Example of items in this category are Seru and Zebuxoruk's augments.
+* Additional work has been done in the background to support THJ development
+* Tradeskills maximum has been set to 999
+
 ==2.0.6==
 DEPLOYED: 6/3/2025
 * Ammo slot searches have been moved to Weapon Search

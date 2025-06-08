@@ -3097,6 +3097,8 @@ def lookup_zone_name(item_id):
         return 'Quest'
     if item_id == -2:
         return 'Tradeskill'
+    if item_id == -3:
+        return 'Special Drop'
     zone_id = int(int(item_id) / 1000)
     with open(os.path.join(here, 'item_files/zonelist.txt'), 'r') as fh:
         zone_list = fh.read()
@@ -3230,3 +3232,9 @@ def get_era_id(name):
         return 999
     else:
         raise Exception(f'Unknown era name {name}')
+
+
+def get_exclusion_list(name):
+    with open(os.path.join(here, 'Exclusion', f'{name}.txt')) as fh:
+        data = fh.read()
+    return data.split('\n')

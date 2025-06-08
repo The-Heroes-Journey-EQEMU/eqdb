@@ -14,6 +14,10 @@ LEVEL_CAP = 65
 
 
 def get_full_spell_data(spell_id):
+    excl_list = utils.get_exclusion_list('spells')
+    item_excl_list = utils.get_exclusion_list('item')
+    if spell_id in excl_list:
+        return None
     spell_data, slots = get_spell_data(spell_id, engine)
     if not spell_data:
         return spell_data, slots
@@ -30,6 +34,8 @@ def get_full_spell_data(spell_id):
         result = query.all()
         for entry in result:
             item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
             item_name = entry[1]
             icon = entry[2]
             procs.append({'item_id': item_id,
@@ -41,6 +47,8 @@ def get_full_spell_data(spell_id):
         result = query.all()
         for entry in result:
             item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
             item_name = entry[1]
             icon = entry[2]
             clicks.append({'item_id': item_id,
@@ -52,6 +60,8 @@ def get_full_spell_data(spell_id):
         result = query.all()
         for entry in result:
             item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
             item_name = entry[1]
             icon = entry[2]
             focus.append({'item_id': item_id,
@@ -63,6 +73,8 @@ def get_full_spell_data(spell_id):
         result = query.all()
         for entry in result:
             item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
             item_name = entry[1]
             icon = entry[2]
             worn.append({'item_id': item_id,
@@ -74,6 +86,8 @@ def get_full_spell_data(spell_id):
         result = query.all()
         for entry in result:
             item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
             item_name = entry[1]
             icon = entry[2]
             bard.append({'item_id': item_id,
@@ -90,6 +104,9 @@ def get_full_spell_data(spell_id):
 
 
 def get_spell_tooltip(spell_id):
+    excl_list = utils.get_exclusion_list('spells')
+    if spell_id in excl_list:
+        return None
     return get_spell_data(spell_id, basic_data=False)
 
 
@@ -109,6 +126,9 @@ def get_spells(spell_name):
     known_spells = []
     for entry in result2 + result:
         spell_id = entry[0]
+        excl_list = utils.get_exclusion_list('spells')
+        if spell_id in excl_list:
+            continue
         if spell_id in known_spells:
             continue
         name = entry[1]
@@ -120,19 +140,33 @@ def get_spells(spell_name):
     return out_data
 
 
-def get_spell_raw_data(spell_id):
+def get_spell_raw_data(spell_id=None, spell_name=None):
+    excl_list = utils.get_exclusion_list('spells')
+    if spell_id in excl_list:
+        return None
     with Session(bind=engine) as session:
-        query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
-        result = query.first()
-
-    if not result:
-        with Session(bind=engine) as session:
-            query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+        if spell_id:
+            query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
             result = query.first()
-
-    ret_dict = result.__dict__
-    ret_dict.pop('_sa_instance_state')
-    return ret_dict
+            if not result:
+                return {}
+            ret_dict = result.__dict__
+            ret_dict.pop('_sa_instance_state')
+            return ret_dict
+        else:
+            ret_list = []
+            name = '%%%s%%' % spell_name
+            query = session.query(SpellsNew).filter(SpellsNew.name.like(name))
+            result = query.limit(50).all()
+            if not result:
+                return []
+            for entry in result:
+                entry = entry.__dict__
+                entry.pop('_sa_instance_state')
+                if entry['id'] in excl_list:
+                    continue
+                ret_list.append(entry)
+            return ret_list
 
 
 def get_spells_by_class(class_id, min_level=1, max_level=65):
@@ -181,6 +215,9 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
     for entry in result:
         entry = entry._mapping
         spell_id = entry.id
+        excl_list = utils.get_exclusion_list('spells')
+        if spell_id in excl_list:
+            continue
         level = getattr(entry, f'classes{class_id}')
         spell_name = entry.name
         skill = utils.parse_skill(entry.skill)
@@ -203,6 +240,9 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
 
 def get_spell_data(spell_id, basic_data=True):
     """Returns human readible spell data."""
+    excl_list = utils.get_exclusion_list('spells')
+    if spell_id in excl_list:
+        return None, None
 
     # Get the spell data
     with Session(bind=engine) as session:
@@ -2291,6 +2331,9 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
 
 
 def get_spell_name(spell_id, engine):
+    excl_list = utils.get_exclusion_list('spells')
+    if spell_id in excl_list:
+        return None
     with Session(bind=engine) as session:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
         result = query.first()

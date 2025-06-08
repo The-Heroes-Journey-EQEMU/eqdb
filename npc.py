@@ -17,6 +17,9 @@ def get_npcs(npc_name):
     out_data = []
     for entry in result:
         npc_id = entry[0]
+        excl_list = utils.get_exclusion_list('npcs')
+        if npc_id in excl_list:
+            continue
         npc_name = entry[1]
         zone_id = int(npc_id/1000)
         level = entry[2]
@@ -42,6 +45,9 @@ def get_npcs(npc_name):
 
 
 def get_npc_detail(npc_id):
+    excl_list = utils.get_exclusion_list('npcs')
+    if npc_id in excl_list:
+        return None
     # Get basic npc details:
     with Session(bind=engine) as session:
         query = session.query(NPCTypes).filter(NPCTypes.id == npc_id)
@@ -233,11 +239,32 @@ def get_npc_detail(npc_id):
     return base_data
 
 
-def get_npc_raw_data(npc_id):
+def get_npc_raw_data(npc_id=None, name=None, zone=None):
+    excl_list = utils.get_exclusion_list('npcs')
+    if npc_id in excl_list:
+        return None
     with Session(bind=engine) as session:
-        query = session.query(NPCTypes).filter(NPCTypes.id == npc_id)
-        result = query.one()
-
-    ret_dict = result.__dict__
-    ret_dict.pop('_sa_instance_state')
-    return ret_dict
+        if npc_id:
+            query = session.query(NPCTypes).filter(NPCTypes.id == npc_id)
+            result = query.one()
+            ret_dict = result.__dict__
+            ret_dict.pop('_sa_instance_state')
+            return ret_dict
+        else:
+            ret_list = []
+            if zone:
+                query = session.query(Zone.zoneidnumber).filter(Zone.short_name == zone)
+                result = query.one()
+                zone_id = result[0]
+                query = session.query(NPCTypes).filter(NPCTypes.id.like(f'{zone_id}___')).\
+                    filter(NPCTypes.name.like('%%%s%%' % name))
+            else:
+                query = session.query(NPCTypes).filter(NPCTypes.name.like('%%%s%%' % name))
+            result = query.limit(50).all()
+            for entry in result:
+                entry = entry.__dict__
+                entry.pop('_sa_instance_state')
+                if entry['id'] in excl_list:
+                    continue
+                ret_list.append(entry)
+            return ret_list

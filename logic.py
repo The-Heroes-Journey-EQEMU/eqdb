@@ -49,6 +49,7 @@ NPCTypes = Base.classes.npc_types
 NPCSpells = Base.classes.npc_spells
 NPCSpellsEntries = Base.classes.npc_spells_entries
 MerchantList = Base.classes.merchantlist
+LootTable = Base.classes.loottable
 LootTableEntries = Base.classes.loottable_entries
 LootDropEntries = Base.classes.lootdrop_entries
 LootDrop = Base.classes.lootdrop
@@ -181,6 +182,9 @@ def all_search(name=None):
 
 def get_item_data(item_id, full=False):
     """Returns the basic data for an item, used for tooltips."""
+    excl_list = utils.get_exclusion_list('item')
+    if item_id in excl_list:
+        return None
 
     with Session(bind=engine) as session:
         # Get the item
@@ -448,6 +452,7 @@ def get_era_items(kwargs):
     zone_or_filters = []
     quest_item_ids = []
     special_item_ids = []
+    ts_item_ids = []
     for era in kwargs['eras']:
         zone_id_list = utils.get_era_zones(era)
         for zone_id in zone_id_list:
@@ -466,13 +471,13 @@ def get_era_items(kwargs):
             if os.path.exists(os.path.join(here, f'item_files/LoY_ts.txt')):
                 with open(os.path.join(here, f'item_files/LoY_ts.txt'), 'r') as fh:
                     file_data = fh.read()
-                special_item_ids += file_data.split('\n')
+                ts_item_ids += file_data.split('\n')
 
         # Certain expansions have tradeskill items at the highest level, add those
         if os.path.exists(os.path.join(here, f'item_files/{era}_ts.txt')):
             with open(os.path.join(here, f'item_files/{era}_ts.txt'), 'r') as fh:
                 file_data = fh.read()
-            special_item_ids += file_data.split('\n')
+            ts_item_ids += file_data.split('\n')
 
         if os.path.exists(os.path.join(here, f'item_files/{era}_special.txt')):
             with open(os.path.join(here, f'item_files/{era}_special.txt'), 'r') as fh:
@@ -594,15 +599,31 @@ def get_era_items(kwargs):
             group_by(Item.id)
         result = query.all()
     for entry in result:
-        special_items.append({'id': entry[0], 'npc_id': -2, 'npc_name': 'Tradeskills'})
-    return base_items, special_items, quest_items
+        special_items.append({'id': entry[0], 'npc_id': -3, 'npc_name': 'Special Drop'})
+
+    ts_items = []
+    item_id_filters = []
+    for entry in ts_item_ids:
+        item_id_filters.append(Item.id == entry)
+    item_id_params = or_(*item_id_filters)
+    with Session(bind=engine) as session:
+        query = session.query(Item.id).\
+            filter(item_id_params).\
+            filter(params).\
+            filter(class_or_params).\
+            filter(weapon_or_params).\
+            group_by(Item.id)
+        result = query.all()
+    for entry in result:
+        ts_items.append({'id': entry[0], 'npc_id': -2, 'npc_name': 'Tradeskills'})
+    return base_items, special_items, quest_items, ts_items
 
 
-def create_lookup_table(base_items, tradeskill_items, quest_items):
+def create_lookup_table(base_items, tradeskill_items, quest_items, special_items):
     """Returns item id filters and an associated lookup table."""
     lookup = {}
     item_ids = []
-    for entry in base_items + tradeskill_items + quest_items:
+    for entry in base_items + tradeskill_items + quest_items + special_items:
         item_ids.append(Item.id == entry['id'])
         lookup.update({entry['id']: {'npc_id': entry['npc_id'], 'npc_name': entry['npc_name']}})
     return item_ids, lookup
@@ -611,12 +632,12 @@ def create_lookup_table(base_items, tradeskill_items, quest_items):
 def get_items_with_filters(weights, ignore_zero, **kwargs):
     """Returns all items with filters provided"""
     # Get the base items, tradeskill items, and quest items that drop from the zones in the eras requested.
-    base_items, tradeskill_items, quest_items = get_era_items(kwargs)
-    if not base_items and not tradeskill_items and not quest_items:
+    base_items, special_items, quest_items, tradeskill_items = get_era_items(kwargs)
+    if not base_items and not tradeskill_items and not quest_items and not special_items:
         return [], False, False, False
 
     # Create the lookup table
-    item_ids, lookup_table = create_lookup_table(base_items, tradeskill_items, quest_items)
+    item_ids, lookup_table = create_lookup_table(base_items, tradeskill_items, quest_items, special_items)
 
     # Set up basic database filters
     filters = []
@@ -696,6 +717,9 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     show_inst = False
     show_focus = False
     for entry in all_items:
+        excl_list = utils.get_exclusion_list('item')
+        if entry.id in excl_list:
+            continue
         entry = utils.ReducedItem((dict(entry._mapping)))
         entry.npc_id = lookup_table[entry.id]['npc_id']
         entry.npc_name = lookup_table[entry.id]['npc_name']
