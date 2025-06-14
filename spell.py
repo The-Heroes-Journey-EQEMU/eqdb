@@ -8,7 +8,7 @@ import items
 import logic
 import utils
 import zones
-from logic import SpellsNewReference, SpellsNew, engine, Item
+from logic import SpellsNew, engine, Item
 
 LEVEL_CAP = 65
 
@@ -113,8 +113,8 @@ def get_spell_tooltip(spell_id):
 def get_spells(spell_name):
     partial = "%%%s%%" % spell_name
     with Session(bind=engine) as session:
-        query = session.query(SpellsNewReference.id, SpellsNewReference.name, SpellsNewReference.new_icon).\
-            filter(SpellsNewReference.name.like(partial)).limit(50)
+        query = session.query(SpellsNew.id, SpellsNew.name, SpellsNew.new_icon).\
+            filter(SpellsNew.name.like(partial)).limit(50)
         result = query.all()
 
     with Session(bind=engine) as session:
@@ -250,7 +250,7 @@ def get_spell_data(spell_id, basic_data=True):
         result = query.first()
 
         if not result:
-            query = session.query(SpellsNewReference).filter(SpellsNewReference.id == spell_id)
+            query = session.query(SpellsNew).filter(SpellsNew.id == spell_id)
             result = query.first()
 
             if not result:
@@ -2339,7 +2339,7 @@ def get_spell_name(spell_id, engine):
         result = query.first()
 
     if not result:
-        query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == spell_id)
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
         result = query.first()
     return result[0]
 

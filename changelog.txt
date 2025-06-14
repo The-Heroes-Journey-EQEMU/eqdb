@@ -1,4 +1,9 @@
+==2.1.0.1==
+DEPLOYED: 6/14/2025
+* Removed all references to "spells_new_reference" since it is in the incorrect table to use for spells.
+
 ==2.1==
+DEPLOYED: 6/14/2025
 * Added README.md to explain project and how to deploy locally.
 * Added configure.py that will create the appropriate configuration files and the local database.
 * Added setup.py to install the necessary python packages

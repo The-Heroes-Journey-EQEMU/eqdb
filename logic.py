@@ -48,18 +48,12 @@ LootTable = Base.classes.loottable
 LootTableEntries = Base.classes.loottable_entries
 LootDropEntries = Base.classes.lootdrop_entries
 LootDrop = Base.classes.lootdrop
-SpellsNewReference = Base.classes.spells_new_reference
 SpellsNew = Base.classes.spells_new
-FocusSpell = aliased(SpellsNewReference)
-FocusSpellNew = aliased(SpellsNew)
-ClickSpell = aliased(SpellsNewReference)
-ClickSpellNew = aliased(SpellsNew)
-ProcSpell = aliased(SpellsNewReference)
-ProcSpellNew = aliased(SpellsNew)
-WornSpell = aliased(SpellsNewReference)
-WornSpellNew = aliased(SpellsNew)
-BardSpell = aliased(SpellsNewReference)
-BardSpellNew = aliased(SpellsNew)
+FocusSpell = aliased(SpellsNew)
+ClickSpell = aliased(SpellsNew)
+ProcSpell = aliased(SpellsNew)
+WornSpell = aliased(SpellsNew)
+BardSpell = aliased(SpellsNew)
 Forage = Base.classes.forage
 GroundSpawns = Base.classes.ground_spawns
 TradeskillRecipe = Base.classes.tradeskill_recipe
@@ -128,21 +122,6 @@ def _get_arg_list(tooltip=False):
         arg_list.append(BardSpell.id.label('inst_id'))
         arg_list.append(BardSpell.name.label('inst_name'))
         arg_list.append(BardSpell.effect_base_value1.label('inst_value'))
-        
-        arg_list.append(FocusSpellNew.id.label('new_focus_id'))
-        arg_list.append(FocusSpellNew.name.label('new_focus_spell_name'))
-        arg_list.append(FocusSpellNew.effect_base_value1.label('new_focus_min_val'))
-        arg_list.append(FocusSpellNew.effect_limit_value1.label('new_focus_max_val'))
-        arg_list.append(ClickSpellNew.id.label('new_click_id'))
-        arg_list.append(ClickSpellNew.name.label('new_click_name'))
-        arg_list.append(ProcSpellNew.id.label('new_proc_id'))
-        arg_list.append(ProcSpellNew.name.label('new_proc_name'))
-        arg_list.append(WornSpellNew.id.label('new_worn_id'))
-        arg_list.append(WornSpellNew.name.label('new_worn_name'))
-        arg_list.append(WornSpellNew.effect_base_value1.label('new_worn_value'))
-        arg_list.append(BardSpellNew.id.label('new_inst_id'))
-        arg_list.append(BardSpellNew.name.label('new_inst_name'))
-        arg_list.append(BardSpellNew.effect_base_value1.label('new_inst_value'))
 
     return arg_list
 
@@ -205,44 +184,22 @@ def get_item_data(item_id, full=False):
     if worn > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
         result = query.all()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == worn)
-            result = query.all()
         ret_dict['worn_name'] = result[0][0]
     if proc > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == proc)
         result = query.all()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == proc)
-            result = query.all()
         ret_dict['proc_name'] = result[0][0]
     if click > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == click)
         result = query.all()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == click)
-            result = query.all()
-
-        if not result:
-            ret_dict['click_name'] = 'Unknown Spell'
-        else:
-            ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
+        ret_dict['click_name'] = utils.check_sympathetic(result[0][0])
     if focus > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == focus)
         result = query.all()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == focus)
-            result = query.all()
-        if not result:
-            ret_dict['focus_name'] = 'Unknown Spell'
-        else:
-            ret_dict['focus_name'] = result[0][0]
+        ret_dict['focus_name'] = result[0][0]
     if inst > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == inst)
         result = query.all()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == inst)
-            result = query.all()
         ret_dict['inst_name'] = result[0][0]
     if banebody > 0:
         ret_dict['bane_body_name'] = utils.get_bane_dmg_body(banebody)
@@ -268,9 +225,6 @@ def get_item_data(item_id, full=False):
     if scrolleffect > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == scrolleffect)
         result = query.first()
-        if not result:
-            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == scrolleffect)
-            result = query.first()
         ret_dict['scrolleffectname'] = result[0]
 
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
@@ -672,8 +626,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             bane_body = False
             filters.append(Item.banedmgrace == kwargs['banedmgrace'])
         elif 'focus_type' in entry:
-            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNewReference)
-            ids += utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNew)
+            ids = utils.get_focus_values(kwargs['focus_type'], kwargs['sub_type'], engine, SpellsNew)
             for focus_id in ids:
                 focus_or_filters.append(Item.focuseffect == focus_id)
             if kwargs['focus_type'] == 'Melee':
@@ -704,11 +657,6 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
             join(ProcSpell, ProcSpell.id == Item.proceffect, isouter=True). \
             join(WornSpell, WornSpell.id == Item.worneffect, isouter=True). \
             join(BardSpell, BardSpell.id == Item.bardeffect, isouter=True). \
-            join(FocusSpellNew, FocusSpellNew.id == Item.focuseffect, isouter=True). \
-            join(ClickSpellNew, ClickSpellNew.id == Item.clickeffect, isouter=True). \
-            join(ProcSpellNew, ProcSpellNew.id == Item.proceffect, isouter=True). \
-            join(WornSpellNew, WornSpellNew.id == Item.worneffect, isouter=True). \
-            join(BardSpellNew, BardSpellNew.id == Item.bardeffect, isouter=True). \
             filter(Item.id.in_(session.query(Item.id).filter(item_params))). \
             filter(and_params). \
             filter(focus_or_params). \
@@ -759,31 +707,6 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         entry.zone_name = utils.lookup_zone_name(entry.npc_id)
         entry.npc_name = utils.fix_npc_name(entry.npc_name)
         
-        # Massage spells a bit
-        if entry.new_focus_id is not None and entry.focus_id is None:
-            entry.focus_id = entry.new_focus_id
-            entry.focus_spell_name = entry.new_focus_spell_name
-            entry.focus_min_val = entry.new_focus_min_val
-            entry.focus_max_val = entry.new_focus_max_val
-            
-        if entry.new_click_id is not None and entry.click_id is None:
-            entry.click_id = entry.new_click_id
-            entry.click_name = entry.new_click_name
-
-        if entry.new_proc_id is not None and entry.proc_id is None:
-            entry.proc_id = entry.new_proc_id
-            entry.proc_name = entry.new_proc_name
-            
-        if entry.new_worn_id is not None and entry.worn_id is None:
-            entry.worn_id = entry.new_worn_id
-            entry.worn_name = entry.new_worn_name
-            entry.worn_value = entry.new_worn_value
-            
-        if entry.new_inst_id is not None and entry.inst_id is None:
-            entry.inst_id = entry.new_inst_id
-            entry.inst_name = entry.new_inst_name
-            entry.inst_value = entry.new_inst_value
-
         out_items.append(entry)
 
     out_items.sort(key=operator.attrgetter('weight'), reverse=True)

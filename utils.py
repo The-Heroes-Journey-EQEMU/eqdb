@@ -2337,45 +2337,45 @@ def lookup_slot(name):
         raise Exception(f'Unknown slot name: {name}.')
 
 
-def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
+def get_focus_values(focus_type, sub_type, engine, SpellsNew):
     with Session(bind=engine) as session:
         ret_ids = []
         # "All" queries
         ignore_effects = []
         for i in range(2, 13):
-            ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([137, 138]))
+            ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([137, 138]))
         ignore_params = and_(*ignore_effects)
-        all_haste_query = session.query(SpellsNewReference.id). \
-            filter(SpellsNewReference.effectid1 == 127). \
-            filter(SpellsNewReference.effect_base_value1 > 0). \
+        all_haste_query = session.query(SpellsNew.id). \
+            filter(SpellsNew.effectid1 == 127). \
+            filter(SpellsNew.effect_base_value1 > 0). \
             filter(ignore_params). \
-            order_by(SpellsNewReference.id)
+            order_by(SpellsNew.id)
 
-        all_range_query = session.query(SpellsNewReference.id). \
-            filter(SpellsNewReference.effectid1 == 129). \
-            filter(SpellsNewReference.effect_base_value1 > 0). \
+        all_range_query = session.query(SpellsNew.id). \
+            filter(SpellsNew.effectid1 == 129). \
+            filter(SpellsNew.effect_base_value1 > 0). \
             filter(ignore_params). \
-            order_by(SpellsNewReference.id)
+            order_by(SpellsNew.id)
 
         add_effects = []
         ignore_effects = []
         for i in range(2, 13):
-            add_effects.append(getattr(SpellsNewReference, f'effectid{i}').in_([139]))
-            ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([138]))
+            add_effects.append(getattr(SpellsNew, f'effectid{i}').in_([139]))
+            ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([138]))
         add_params = or_(*add_effects)
         ignore_params = and_(*ignore_effects)
-        all_pres_query = session.query(SpellsNewReference.id). \
-            filter(SpellsNewReference.effectid1 == 132). \
-            filter(SpellsNewReference.effect_base_value1 > 0). \
+        all_pres_query = session.query(SpellsNew.id). \
+            filter(SpellsNew.effectid1 == 132). \
+            filter(SpellsNew.effect_base_value1 > 0). \
             filter(ignore_params). \
             filter(add_params). \
-            order_by(SpellsNewReference.id)
+            order_by(SpellsNew.id)
 
         if focus_type == 'Beneficial':
             add_effects = []
             for i in range(2, 13):
-                add_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 138,
-                                        getattr(SpellsNewReference, f'effect_base_value{i}') == 1))
+                add_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 138,
+                                        getattr(SpellsNew, f'effect_base_value{i}') == 1))
             add_params = or_(*add_effects)
 
             if sub_type == 'Preservation':
@@ -2383,11 +2383,11 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 for entry in all_ids:
                     ret_ids.append(entry[0])
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 132). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 132). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2397,11 +2397,11 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 for entry in all_ids:
                     ret_ids.append(entry[0])
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 129). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 129). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2411,31 +2411,31 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 for entry in all_ids:
                     ret_ids.append(entry[0])
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 127). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 127). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
                 return ret_ids
             elif sub_type == 'Duration':
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 128). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 128). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
                 return ret_ids
             elif sub_type == 'Healing':
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 125). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 125). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2445,8 +2445,8 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
         elif focus_type == 'Detrimental':
             add_effects = []
             for i in range(2, 13):
-                add_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 138,
-                                        getattr(SpellsNewReference, f'effect_base_value{i}') == 0))
+                add_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 138,
+                                        getattr(SpellsNew, f'effect_base_value{i}') == 0))
             add_params = or_(*add_effects)
             if sub_type == 'Preservation':
                 all_ids = all_pres_query.all()
@@ -2455,15 +2455,15 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
 
                 ignore_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([138]))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([138]))
                 ignore_params = and_(*ignore_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 132). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 132). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2473,11 +2473,11 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 for entry in all_ids:
                     ret_ids.append(entry[0])
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 129). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 129). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2487,21 +2487,21 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 for entry in all_ids:
                     ret_ids.append(entry[0])
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 127). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 127). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
                 return ret_ids
             elif sub_type == 'Duration':
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 128). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 128). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2509,15 +2509,15 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Damage (All)':
                 ignore_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([135, 140]))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([135, 140]))
                 ignore_params = and_(*ignore_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2526,19 +2526,19 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 ignore_effects = []
                 type_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 2))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 135,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 2))
                 ignore_params = and_(*ignore_effects)
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2547,19 +2547,19 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 ignore_effects = []
                 type_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 3))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 135,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 3))
                 ignore_params = and_(*ignore_effects)
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2568,19 +2568,19 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 ignore_effects = []
                 type_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 1))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 135,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 1))
                 ignore_params = and_(*ignore_effects)
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2589,19 +2589,19 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 ignore_effects = []
                 type_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 4))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 135,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 4))
                 ignore_params = and_(*ignore_effects)
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2610,19 +2610,19 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 ignore_effects = []
                 type_effects = []
                 for i in range(2, 13):
-                    ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([140]))
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 135,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 5))
+                    ignore_effects.append(getattr(SpellsNew, f'effectid{i}').not_in([140]))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 135,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 5))
                 ignore_params = and_(*ignore_effects)
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(ignore_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2630,16 +2630,16 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Damage (DoT)':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 140,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') >= 4))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 140,
+                                             getattr(SpellsNew, f'effect_base_value{i}') >= 4))
                 type_effects = or_(*type_effects)
 
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 124). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 124). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(add_params). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2648,10 +2648,10 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
                 raise f'Unknown subtype: {sub_type}'
         elif focus_type == 'Pet':
             if sub_type == 'Pet Power':
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 167). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
-                    order_by(SpellsNewReference.id)
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 167). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2675,14 +2675,14 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             if sub_type == 'Wind':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 54))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 414,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 54))
                 type_effects = or_(*type_effects)
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 413). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 413). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2690,14 +2690,14 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Stringed':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 49))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 414,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 49))
                 type_effects = or_(*type_effects)
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 413). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 413). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2705,14 +2705,14 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Brass':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 12))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 414,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 12))
                 type_effects = or_(*type_effects)
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 413). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 413). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2720,14 +2720,14 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Percussion':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 70))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 414,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 70))
                 type_effects = or_(*type_effects)
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 413). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 413). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
@@ -2735,14 +2735,14 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             elif sub_type == 'Singing':
                 type_effects = []
                 for i in range(2, 13):
-                    type_effects.append(and_(getattr(SpellsNewReference, f'effectid{i}') == 414,
-                                             getattr(SpellsNewReference, f'effect_base_value{i}') == 41))
+                    type_effects.append(and_(getattr(SpellsNew, f'effectid{i}') == 414,
+                                             getattr(SpellsNew, f'effect_base_value{i}') == 41))
                 type_effects = or_(*type_effects)
-                query = session.query(SpellsNewReference.id). \
-                    filter(SpellsNewReference.effectid1 == 413). \
-                    filter(SpellsNewReference.effect_base_value1 > 0). \
+                query = session.query(SpellsNew.id). \
+                    filter(SpellsNew.effectid1 == 413). \
+                    filter(SpellsNew.effect_base_value1 > 0). \
                     filter(type_effects). \
-                    order_by(SpellsNewReference.id)
+                    order_by(SpellsNew.id)
                 ids = query.all()
                 for entry in ids:
                     ret_ids.append(entry[0])
