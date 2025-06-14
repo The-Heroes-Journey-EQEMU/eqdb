@@ -607,10 +607,8 @@ def tester():
 
 @app.route("/item/detail/<int:item_id>")
 def item_detail(item_id):
-    user = discord.fetch_user()
     data = logic.get_item_data(item_id, full=True)
-    gearlists = local.get_gear_lists(user)
-    return render_template('item_detail.html', item=data, gear=gearlists, item_id=item_id)
+    return render_template('item_detail.html', item=data, item_id=item_id)
 
 
 @app.route("/item/raw/<int:item_id>")
