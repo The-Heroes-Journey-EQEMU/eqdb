@@ -1782,6 +1782,7 @@ def get_elem_dmg_type(num):
     else:
         raise Exception(f'Unknown elemental type: {num}')
 
+
 def translate_specials(spc):
     specials = []
     if 'E' in spc:
@@ -2344,16 +2345,16 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
         for i in range(2, 13):
             ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([137, 138]))
         ignore_params = and_(*ignore_effects)
-        all_haste_query = session.query(SpellsNewReference.id).\
-            filter(SpellsNewReference.effectid1 == 127).\
-            filter(SpellsNewReference.effect_base_value1 > 0).\
-            filter(ignore_params).\
+        all_haste_query = session.query(SpellsNewReference.id). \
+            filter(SpellsNewReference.effectid1 == 127). \
+            filter(SpellsNewReference.effect_base_value1 > 0). \
+            filter(ignore_params). \
             order_by(SpellsNewReference.id)
 
-        all_range_query = session.query(SpellsNewReference.id).\
-            filter(SpellsNewReference.effectid1 == 129).\
-            filter(SpellsNewReference.effect_base_value1 > 0).\
-            filter(ignore_params).\
+        all_range_query = session.query(SpellsNewReference.id). \
+            filter(SpellsNewReference.effectid1 == 129). \
+            filter(SpellsNewReference.effect_base_value1 > 0). \
+            filter(ignore_params). \
             order_by(SpellsNewReference.id)
 
         add_effects = []
@@ -2363,11 +2364,11 @@ def get_focus_values(focus_type, sub_type, engine, SpellsNewReference):
             ignore_effects.append(getattr(SpellsNewReference, f'effectid{i}').not_in([138]))
         add_params = or_(*add_effects)
         ignore_params = and_(*ignore_effects)
-        all_pres_query = session.query(SpellsNewReference.id).\
-            filter(SpellsNewReference.effectid1 == 132).\
-            filter(SpellsNewReference.effect_base_value1 > 0).\
-            filter(ignore_params).\
-            filter(add_params).\
+        all_pres_query = session.query(SpellsNewReference.id). \
+            filter(SpellsNewReference.effectid1 == 132). \
+            filter(SpellsNewReference.effect_base_value1 > 0). \
+            filter(ignore_params). \
+            filter(add_params). \
             order_by(SpellsNewReference.id)
 
         if focus_type == 'Beneficial':
@@ -3108,11 +3109,12 @@ def lookup_zone_name(item_id):
 
 
 def check_sympathetic(name):
-    if 'Sympathetic Strike' in name:
+    if 'Sympathetic Strike of Flames' in name:
         split_name = name.split('of Flames')
         return f'{split_name[0]}{split_name[1]}'
-    elif 'Sympathetic Healing' in name:
+    elif 'Sympathetic Healing Burst' in name:
         split_name = name.split('Burst')
+        print(split_name)
         return f'{split_name[0]}{split_name[1]}'
     else:
         return name
@@ -3238,3 +3240,147 @@ def get_exclusion_list(name):
     with open(os.path.join(here, 'Exclusion', f'{name}.txt')) as fh:
         data = fh.read()
     return data.split('\n')
+
+
+def get_stat_name(stat):
+    if stat == 'hp':
+        return 'Hit Points'
+    elif stat == 'mana':
+        return 'Mana'
+    elif stat == 'endur':
+        return 'Endurance'
+    elif stat == 'ac':
+        return 'Armor Class'
+    elif stat == 'aagi':
+        return 'Agility'
+    elif stat == 'acha':
+        return 'Charisma'
+    elif stat == 'adex':
+        return 'Dexterity'
+    elif stat == 'aint':
+        return 'Intelligence'
+    elif stat == 'asta':
+        return 'Stamina'
+    elif stat == 'astr':
+        return 'Strength'
+    elif stat == 'awis':
+        return 'Wisdom'
+    elif stat == 'heroic_agi':
+        return 'Heroic Agility'
+    elif stat == 'heroic_cha':
+        return 'Heroic Charisma'
+    elif stat == 'heroic_dex':
+        return 'Heroic Dexterity'
+    elif stat == 'heroic_int':
+        return 'Heroic Intelligence'
+    elif stat == 'heroic_sta':
+        return 'Heroic Stamina'
+    elif stat == 'heroic_str':
+        return 'Heroic Strength'
+    elif stat == 'heroic_wis':
+        return 'Heroic Wisdom'
+    elif stat == 'cr':
+        return 'Resist Cold'
+    elif stat == 'dr':
+        return 'Disease Resist'
+    elif stat == 'fr':
+        return 'Fire Resist'
+    elif stat == 'mr':
+        return 'Magic Resist'
+    elif stat == 'pr':
+        return 'Poison Resist'
+    elif stat == 'attack':
+        return 'Attack'
+    elif stat == 'haste':
+        return 'Haste'
+    elif stat == 'regen':
+        return 'HP Regeneration'
+    elif stat == 'manaregen':
+        return 'Mana Regeneration'
+    elif stat == 'enduranceregen':
+        return 'Endurance Regeneration'
+    elif stat == 'healamt':
+        return 'Healing Amount'
+    elif stat == 'spelldmg':
+        return 'Spell Damage'
+    elif stat == 'accuracy':
+        return 'Accuracy'
+    elif stat == 'avoidance':
+        return 'Avoidance'
+    elif stat == 'combateffects':
+        return 'Combat Effects'
+    elif stat == 'damageshield':
+        return 'Damage Shielding'
+    elif stat == 'dotshielding':
+        return 'DoT Shield'
+    elif stat == 'shielding':
+        return 'Shielding'
+    elif stat == 'spellshield':
+        return 'Spellshield'
+    elif stat == 'strikethrough':
+        return 'Strikethrough'
+    elif stat == 'stunresist':
+        return 'Stun Resist'
+    else:
+        return 'None'
+
+
+def get_stats_of_interest():
+    return [
+        'aagi', 'ac', 'accuracy', 'acha', 'adex', 'aint', 'asta', 'astr', 'attack',
+        'avoidance', 'awis', 'combateffects', 'cr', 'damageshield', 'dotshielding',
+        'dr', 'endur', 'focuseffect', 'fr', 'hp', 'regen', 'mana', 'manaregen',
+        'enduranceregen', 'mr', 'pr', 'shielding', 'clickeffect', 'spellshield',
+        'strikethrough', 'stunresist', 'proceffect', 'worneffect', 'focustype',
+        'dsmitigation', 'heroic_str', 'heroic_int', 'heroic_wis', 'heroic_agi',
+        'heroic_dex', 'heroic_sta', 'heroic_cha', 'heroic_pr', 'heroic_dr',
+        'heroic_fr', 'heroic_cr', 'heroic_mr', 'healamt', 'spelldmg', 'bardeffect'
+    ]
+
+
+def get_stat_translations():
+    return {'aagi': 'Agility',
+            'ac': 'AC',
+            'accuracy': 'Accuracy',
+            'acha': 'Charisma',
+            'adex': 'Dexterity',
+            'aint': 'Intelligence',
+            'asta': 'Stamina',
+            'astr': 'Strength',
+            'avoidance': 'Avoidance',
+            'awis': 'Wisdom',
+            'combateffects': 'Combat Effects',
+            'cr': 'Cold Resist',
+            'damageshield': 'Damage Shielding',
+            'dotshielding': 'DoT Shielding',
+            'dr': 'Disease Resist',
+            'endur': 'Endurance',
+            'fr': 'Fire Resist',
+            'hp': 'HP',
+            'regen': 'HP Regeneration',
+            'mana': 'Mana',
+            'manaregen': 'Mana Regeneration',
+            'enduranceregen': 'Endurance Regeneration',
+            'mr': 'Magic Resist',
+            'pr': 'Poison Resist',
+            'shielding': 'Shielding',
+            'spellshield': 'Spell Shielding',
+            'strikethrough': 'Strikethrough',
+            'stunresist': 'Stun Resist',
+            'dsmitigation': 'Damage Shield Mitigation',
+            'heroic_str': 'Heroic Strength',
+            'heroic_int': 'Heroic Intelligence',
+            'heroic_wis': 'Heroic Wisdom',
+            'heroic_agi': 'Heroic Agility',
+            'heroic_dex': 'Heroic Dexterity',
+            'heroic_sta': 'Heroic Stamina',
+            'heroic_cha': 'Heroic Charisma',
+            'heroic_pr': 'Heroic Poison Resist',
+            'heroic_dr': 'Heroic Disease Resist',
+            'heroic_fr': 'Heroic Fire Resist',
+            'heroic_cr': 'Heroic Cold Resist',
+            'heroic_mr': 'Heroic Magic Resist',
+            'healamt': 'Healing Amount',
+            'spelldmg': 'Spell Damage',
+            'attack': 'Attack'
+            }

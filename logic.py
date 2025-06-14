@@ -24,11 +24,7 @@ host = site_config.get('database', 'host')
 port = site_config.get('database', 'port')
 
 engine = create_engine(f'{driver}{user}:{password}@{host}:{port}/{database}')
-local_database = site_config.get('local_database', 'connection')
-local_engine = create_engine(local_database)
-
 Base = automap_base()
-LocalBase = automap_base()
 
 
 class ItemRedirection(Base):
@@ -37,7 +33,6 @@ class ItemRedirection(Base):
 
 
 Base.prepare(autoload_with=engine)
-LocalBase.prepare(autoload_with=local_engine)
 
 Zone = Base.classes.zone
 ZonePoints = Base.classes.zone_points
@@ -74,10 +69,6 @@ FactionList = Base.classes.faction_list
 Pets = Base.classes.pets
 
 
-IdentifiedItems = LocalBase.classes.identified_items
-IDEntry = LocalBase.classes.id_entry
-Contributor = LocalBase.classes.contributor
-
 # Important that these goes here to stop circular import
 import spell
 import factions
@@ -111,7 +102,7 @@ def _get_arg_list(tooltip=False):
                 Item.banedmgraceamt, Item.elemdmgamt, Item.elemdmgtype, Item.clicklevel2, Item.proclevel2,
                 Item.backstabdmg, Item.bardeffect, Item.worneffect, Item.procrate, Item.lore, Item.bagtype,
                 Item.bagslots, Item.bagwr, Item.bagsize, Item.skillmodvalue, Item.skillmodmax, Item.skillmodtype,
-                Item.icon, Item.casttime, Item.maxcharges, Item.augtype, Item.augrestrict]
+                Item.icon, Item.casttime, Item.maxcharges, Item.augtype, Item.augrestrict, Item.color, Item.scrolleffect]
     if tooltip:
         arg_list.append(Item.classes)
         arg_list.append(Item.slots)
@@ -209,6 +200,7 @@ def get_item_data(item_id, full=False):
     aug_slot_4 = ret_dict['augslot4type']
     aug_slot_5 = ret_dict['augslot5type']
     skill_mod = ret_dict['skillmodtype']
+    scrolleffect = ret_dict['scrolleffect']
 
     if worn > 0:
         query = session.query(SpellsNew.name).filter(SpellsNew.id == worn)
@@ -273,6 +265,13 @@ def get_item_data(item_id, full=False):
         ret_dict['aug_slot_5'] = utils.get_aug_slot_type(aug_slot_5)
     if skill_mod > 0:
         ret_dict['skillmodname'] = utils.parse_skill(int(skill_mod))
+    if scrolleffect > 0:
+        query = session.query(SpellsNew.name).filter(SpellsNew.id == scrolleffect)
+        result = query.first()
+        if not result:
+            query = session.query(SpellsNewReference.name).filter(SpellsNewReference.id == scrolleffect)
+            result = query.first()
+        ret_dict['scrolleffectname'] = result[0]
 
     ret_dict['class_str'] = utils.get_class_string(ret_dict['classes'])
     ret_dict['slot_str'] = utils.get_slot_string(ret_dict['slots'])
@@ -281,6 +280,10 @@ def get_item_data(item_id, full=False):
         ret_dict['augtype'] = utils.get_aug_types(ret_dict['augtype'])
         ret_dict['augrestrict'] = utils.get_aug_restrict(ret_dict['augrestrict'])
     if full:
+        ret_dict['red'] = (int(ret_dict['color']) & 0x00FF0000) >> 16
+        ret_dict['green'] = (int(ret_dict['color']) & 0x0000FF00) >> 8
+        ret_dict['blue'] = (int(ret_dict['color']) & 0x000000FF)
+
         ret_dict['thj_enabled'] = False
         item_id = int(item_id)
         if item_id < 1000000:

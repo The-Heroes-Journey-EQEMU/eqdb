@@ -285,7 +285,7 @@ def get_spell_data(spell_id, basic_data=True):
         base.update({'components': components})
 
     else:
-        base = None
+        base = {}
 
     slots = {}
     for idx in range(1, 13):

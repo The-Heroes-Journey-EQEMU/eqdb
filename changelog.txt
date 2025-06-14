@@ -1,3 +1,26 @@
+==2.1==
+* Added README.md to explain project and how to deploy locally.
+* Added configure.py that will create the appropriate configuration files and the local database.
+* Added setup.py to install the necessary python packages
+* Added User Page
+* Added the ability to create and modify a set of item restrictions
+    * Users can have up to 10 item restriction requirements
+    * Users can modify and delete restrictions from the user page
+    * When item restrictions are supplied and settings are set on the armor/weapon search page, the new settings will take precedence, but will not overwrite the settings.
+* Added the ability to create and modify a set of item weights
+    * Users can have up to 10 item weight sets
+    * Users can modify and delete item weight sets from the user page
+    * When item weights are supplied and settings are set on the armor/weapon search page, the new settings will take precedence, but will not overwrite the settings.
+* Added enhanced Armor and Weapon search from the user page
+    * These versions can utilize item restriction and item weight sets.
+    * This is done to not force people to login in order to use the armor/weapon search tool
+      * Technical details: The discord package being used does not have the ability to check if the user is logged in, if they're not it will force them to log in.
+      * This may be corrected in the future.
+* Added Tint to item detail
+* Fixed a bug with items with Sympathetic clicks occasionally not rendering tooltips correctly.
+* Fixed a bug with spells with a Recourse spell occasionally not rendering tooltips correctly.
+* Added "Teaches" field to spell scrolls and skill tome item details.
+
 ==2.0.7.1==
 DEPLOYED: 6/7/2025
 * Fixed searching in expansions that don't have special items.

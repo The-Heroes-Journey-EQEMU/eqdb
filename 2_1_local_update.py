@@ -2,40 +2,16 @@
 import configparser
 import os
 
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, or_, and_
+from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
+import utils
 
 local_engine = create_engine('sqlite:///local_db.db')
+
 LocalBase = declarative_base()
-
-
-class IdentifiedItems(LocalBase):
-    __tablename__ = 'identified_items'
-    iiid = Column(Integer, primary_key=True)
-    item_id = Column(Integer, unique=True)
-    expansion = Column(Integer)
-    source = Column(String)
-    zone_id = Column(Integer)
-
-
-class Contributor(LocalBase):
-    __tablename__ = 'contributor'
-    cid = Column(Integer, primary_key=True)
-    name = Column(String)
-    id = Column(Integer, unique=True)
-    contributed = Column(Integer)
-
-
-class IDEntry(LocalBase):
-    __tablename__ = 'id_entry'
-    ideid = Column(Integer, primary_key=True)
-    item_id = Column(Integer)
-    cid = Column(Integer)
-    expansion = Column(Integer)
-    source = Column(String)
-    zone_id = Column(Integer)
 
 
 class Weights(LocalBase):
@@ -87,21 +63,8 @@ class GearListEntry(LocalBase):
 
 def main():
     """Main execution"""
-
-    # Destroy the current database, if it's there
-    if os.path.exists(os.path.join('.', 'local_db.db')):
-        os.unlink(os.path.join('.', 'local_db.db'))
-
     # Create the database anew
     LocalBase.metadata.create_all(local_engine)
-
-    # Create the anonymous contributor
-    with Session(bind=local_engine) as session:
-        anon_contrib = Contributor(name='Anonymous',
-                                   id=-1,
-                                   contributed=1)
-        session.add(anon_contrib)
-        session.commit()
     print('Job done!')
 
 

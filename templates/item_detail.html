@@ -555,6 +555,12 @@
                 <td nowrap="1" colspan='3'><b>Proc Rate:</b> {{item.procrate}}</td>
             </tr>
             {% endif %}
+            {% if item.scrolleffect > 0 %}
+            <tr>
+                <td nowrap="1" colspan="3"><b>Teaches:</b> <a href="{{url_for('spell_detail', spell_id=item.scrolleffect)}}" data-url="{{item.scrolleffect}}"
+                        class="spell-tooltip-link">{{item.scrolleffectname}}</a></td>
+            </tr>
+            {% endif %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Item Lore:</b> {{item.lore}}</td>
             </tr>
@@ -562,6 +568,53 @@
         </table>
     </div>
 </div>
+<!-- NOTE: THIS FEATURE IS CURRENTLY DARK AS IT IS BEING CONSIDERED ON WHETHER IT IS APPROPRIATE FOR EQDB OR NOT -->
+<!--
+{% if gear %}
+<h4>Add item to gear list</h4>
+<form action="{{ url_for('update_gear_list', item_id=item.id) }}" method="post" class="add-entry" id="demoForm">
+    <select name="glid">
+        <option value="None" selected="selected">--Select Gear List--</option>
+        {% for entry in gear %}
+          <option value="{{gear[entry]}}">{{entry}}</option>
+        {% endfor %}
+    </select><br>
+    <select name="slot">
+        <option value="None" selected="selected">--Select Slot--</option>
+        <option value="Arms">Arms</option>
+        <option value="Back">Back</option>
+        <option value="Charm">Charm</option>
+        <option value="Chest">Chest</option>
+        <option value="Ear 1">Ear 1</option>
+        <option value="Ear 2">Ear 2</option>
+        <option value="Face">Face</option>
+        <option value="Feet">Feet</option>
+        <option value="Finger 1">Finger 1</option>
+        <option value="Finger 2">Finger 2</option>
+        <option value="Hands">Hands</option>
+        <option value="Head">Head</option>
+        <option value="Legs">Legs</option>
+        <option value="Neck">Neck</option>
+        <option value="Primary">Primary</option>
+        <option value="Range">Range</option>
+        <option value="Ammo">Ammo</option>
+        <option value="Secondary">Secondary</option>
+        <option value="Shoulder">Shoulder</option>
+        <option value="Waist">Waist</option>
+        <option value="Wrist 1">Wrist 1</option>
+        <option value="Wrist 2">Wrist 2</option>
+    </select>
+    <select name="augslot">
+        <option value="None" selected="selected">--N/A--</option>
+        <option value="slot 1">Slot 1</option>
+        <option value="slot 2">Slot 2</option>
+        <option value="slot 3">Slot 3</option>
+        <option value="slot 4">Slot 4</option>
+    </select>
+    <input type="submit" value="Submit">
+</form>
+{% endif %}
+-->
 <div style="display: flex; justify-content: center;">
     <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width: 750px;" id="item_links">
         <ul class="nav nav-tabs" id="myTabs" role="tablist">
@@ -609,6 +662,7 @@
         <div class="tab-content" id="myTabsContent">
             <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary show active" id="basic"
                  role="tabpanel" aria-labelledby="basic-tab">
+                <b>Item Tint:</b> <div class="box" style="background-color:rgb({{item.red}}, {{item.green}}, {{item.blue}});"></div>
                 {% if item.thj_enabled %}
                 {% if item.id < 1000000 %}
                 <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
