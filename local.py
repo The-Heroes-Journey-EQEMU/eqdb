@@ -5,8 +5,7 @@ import random
 
 from sqlalchemy import and_, create_engine, or_
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.automap import automap_base
-
+from sqlalchemy.ext.declarative import declarative_base
 
 from logic import engine, Item, get_item_data, SpellsNew, LootDropEntries, NPCTypes, LootTableEntries, Zone, \
     TradeskillRecipeEntries
@@ -18,19 +17,10 @@ ini_path = os.path.join(here, 'configuration.ini')
 site_config.read_file(open(ini_path))
 local_database = site_config.get('local_database', 'connection')
 local_engine = create_engine(local_database)
-LocalBase = automap_base()
-LocalBase.prepare(autoload_with=local_engine)
+LocalBase = declarative_base()
 
-
-IdentifiedItems = LocalBase.classes.identified_items
-IDEntry = LocalBase.classes.id_entry
-Contributor = LocalBase.classes.contributor
-GearList = LocalBase.classes.gear_list
-GearListEntry = LocalBase.classes.gear_list_entry
-Restricts = LocalBase.classes.restricts
-RestrictEntry = LocalBase.classes.restrict_entry
-Weights = LocalBase.classes.weights
-WeightEntry = LocalBase.classes.weight_entry
+# Import the models from create_local_db.py
+from create_local_db import IdentifiedItems, IDEntry, Contributor, GearList, GearListEntry, Restricts, RestrictEntry, Weights, WeightEntry
 
 
 def get_gear_lists(user):
