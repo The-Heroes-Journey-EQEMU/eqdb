@@ -8,4 +8,6 @@ setup(name='EQDB',
           'flask',
           'Flask-Discord',
           'mysqldb',
+          'pymysql',
+          'flask-restx',
         ])

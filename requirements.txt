@@ -1,0 +1,5 @@
+flask>=2.0.0
+flask-discord>=0.1.55
+sqlalchemy>=1.4.0
+pymysql>=1.0.0
+flask-restx>=1.0.0 
