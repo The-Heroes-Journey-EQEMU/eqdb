@@ -148,3 +148,48 @@ For detailed frontend development information, see:
 - [Frontend README](fe/README.md) - Complete frontend documentation
 - [API Integration Guide](fe/API_INTEGRATION.md) - API-driven development approach
 - [Implementation Plan](fe/IMPLEMENTATION_PLAN.md) - Development roadmap
+
+## Map Conversion System
+
+EQDB includes an advanced map conversion system that transforms Brewall mapping format files into interactive 3D models for Babylon.js rendering.
+
+### Overview
+The map conversion system converts EverQuest zone maps from the Brewall mapping format into 3D glTF models that can be viewed in a web browser using Babylon.js. This provides an immersive way to explore game zones with full 3D navigation.
+
+### Features
+- **3D Zone Visualization**: Convert 2D map files to interactive 3D models
+- **Interactive Navigation**: Arc Rotate Camera with zoom, pan, and rotate controls
+- **Label System**: Display NPCs, merchants, zones, and points of interest
+- **Color Preservation**: Maintain original map colors and styling
+- **Performance Optimized**: Efficient rendering with geometry batching and LOD systems
+
+### File Format Support
+- **Main Geometry**: Line segments representing terrain, walls, and boundaries
+- **Labels**: Point markers with text labels for NPCs and locations
+- **Secondary Elements**: UI elements, compass markers, and overlays
+
+### Development Status
+- **Phase 1**: Foundation & Analysis - File parsing and data structure design
+- **Phase 2**: Core Conversion Engine - Geometry generation and glTF export
+- **Phase 3**: Proof of Concept - Overthere zone conversion and Babylon.js integration
+- **Phase 4**: Enhanced Features - Performance optimization and interactive features
+- **Phase 5**: Multi-Zone Support - Batch processing and database integration
+- **Phase 6**: Production Deployment - Quality assurance and web integration
+
+### Technical Stack
+- **Python**: Core conversion logic with pygltflib for glTF generation
+- **Babylon.js**: 3D rendering engine for web-based visualization
+- **glTF**: Standard 3D format for efficient web delivery
+- **NumPy**: Coordinate processing and mathematical operations
+
+### Getting Started
+The map conversion system is currently in development. For detailed information about the project plan and implementation, see:
+- [Map Conversion Plan](maps/MAP_CONVERSION_PLAN.md) - Comprehensive development roadmap
+- [Brewall Mapping Standards](https://www.eqmaps.info/eq-map-files/mapping-standards/) - Original format documentation
+
+### Future Enhancements
+- **Real-time Updates**: Live zone data integration
+- **User Annotations**: Personal notes and markers
+- **Pathfinding**: Visual navigation between points
+- **Mobile Support**: Responsive design for mobile devices
+- **VR/AR Support**: Virtual and augmented reality viewing

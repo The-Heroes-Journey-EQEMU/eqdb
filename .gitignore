@@ -7,7 +7,7 @@ __pycache__
 /gather_item_ids.py
 local_db.db
 expansion_items.db
-maps
+maps/brewall/
 /static/item_icons/
 /static/spell_icons/
 /static/monograms/
