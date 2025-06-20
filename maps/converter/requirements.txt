@@ -1,0 +1,15 @@
+# Core dependencies for map conversion
+pygltflib>=1.15.0
+numpy>=1.21.0
+click>=8.0.0
+sqlalchemy>=1.4.0  # Required for utils module
+
+# Optional dependencies for advanced features
+trimesh>=3.9.0  # For advanced geometry processing
+pillow>=8.0.0   # For texture processing
+scipy>=1.7.0    # For mathematical operations
+
+# Development dependencies
+pytest>=6.0.0   # For testing
+black>=21.0.0   # For code formatting
+flake8>=3.8.0   # For linting 

@@ -3,6 +3,11 @@ Examples of renderings from it: https://www.eqmaps.info/map-comparisons/
 
 Using the maps in maps/ directory. We want to generate 3d geometry that can be fed into babylon.js for viewing.
 
+**Storage Architecture:**
+- 3D geometry (glTF) files are stored in the filesystem (or CDN) for fast serving and browser/CDN caching.
+- Only metadata (zone info, file path, stats, waypoints) is stored in the database for fast queries and relationships.
+- This hybrid approach is the recommended and implemented strategy for the map conversion system, ensuring both performance and flexibility.
+
 Initial Stage:
 Proof of concept, single map (overthere). 
  1) Analyze files based on mapping standards

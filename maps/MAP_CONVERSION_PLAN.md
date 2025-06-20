@@ -90,39 +90,39 @@ The project already has basic map functionality that should be integrated:
 **Goal**: Establish the basic framework and understand the data structure
 
 #### Task 1.1: Project Structure Setup
-- [ ] Create `maps/converter/` directory structure
-- [ ] Set up Python virtual environment
-- [ ] Install required dependencies:
-  - `pygltflib` for glTF generation
-  - `numpy` for coordinate processing
-  - `click` for CLI interface
-  - `logging` for verbose output
-- [ ] Update `.gitignore` to exclude `maps/brewall/*` but include `maps/output/` and `maps/viewer/`
+- [x] Create `maps/converter/` directory structure
+- [x] Set up Python virtual environment
+- [x] Install required dependencies:
+  - [x] `pygltflib` for glTF generation
+  - [x] `numpy` for coordinate processing
+  - [x] `click` for CLI interface
+  - [x] `logging` for verbose output
+- [x] Update `.gitignore` to exclude `maps/brewall/*` but include `maps/output/` and `maps/viewer/`
 
 #### Task 1.2: Enhanced File Parser Development
-- [ ] Create `MapParser` class to handle Brewall format
-- [ ] Enhance existing `get_map_data()` and `get_map_poi()` functions for 3D conversion
-- [ ] Implement line segment parsing (`L` records) with color preservation
-- [ ] Implement point label parsing (`P` records) with color preservation
-- [ ] Add coordinate system validation
-- [ ] Add color value validation according to mapping standards
-- [ ] Implement verbose logging for debugging
-- [ ] **NEW**: Integrate `get_zone_waypoint()` data as special teleport markers
+- [x] Create `MapParser` class to handle Brewall format
+- [x] Enhance existing `get_map_data()` and `get_map_poi()` functions for 3D conversion
+- [x] Implement line segment parsing (`L` records) with color preservation
+- [x] Implement point label parsing (`P` records) with color preservation
+- [x] Add coordinate system validation
+- [x] Add color value validation according to mapping standards
+- [x] Implement verbose logging for debugging
+- [x] **NEW**: Integrate `get_zone_waypoint()` data as special teleport markers (now all waypoints are type 'waypoint', field removed)
 
 #### Task 1.3: Data Structure Design
-- [ ] Define `LineSegment` class with coordinates and colors
-- [ ] Define `Label` class with position, color, size, and text
-- [ ] Define `Waypoint` class for teleport locations (special handling)
-- [ ] Define `MapData` class to hold all parsed elements
-- [ ] Implement data validation and error handling
-- [ ] **NEW**: Create unified interface that supports both 2D and 3D rendering
+- [x] Define `LineSegment` class with coordinates and colors
+- [x] Define `Label` class with position, color, size, and text
+- [x] Define `Waypoint` class for teleport locations (special handling, no type field)
+- [x] Define `MapData` class to hold all parsed elements
+- [x] Implement data validation and error handling
+- [x] **NEW**: Create unified interface that supports both 2D and 3D rendering
 
 #### Task 1.4: Coordinate System Analysis
-- [ ] Analyze coordinate ranges and scales
-- [ ] Determine appropriate scaling factors for 3D rendering
-- [ ] Identify coordinate system transformations needed
-- [ ] Document coordinate system conventions
-- [ ] **NEW**: Map waypoint coordinates to 3D space
+- [x] Analyze coordinate ranges and scales
+- [x] Determine appropriate scaling factors for 3D rendering
+- [x] Identify coordinate system transformations needed
+- [x] Document coordinate system conventions
+- [x] **NEW**: Map waypoint coordinates to 3D space
 
 ### Phase 2: Core Conversion Engine (Week 2)
 **Goal**: Build the core conversion logic from parsed data to 3D geometry

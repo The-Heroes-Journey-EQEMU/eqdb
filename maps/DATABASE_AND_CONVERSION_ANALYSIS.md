@@ -5,6 +5,11 @@
 ### Overview
 This document analyzes the optimal database storage strategy for 3D zone geometry data and provides a detailed explanation of the conversion process from Brewall mapping format to Babylon.js rendering.
 
+**Update:**
+- The hybrid approach is the recommended and implemented solution: glTF files are stored in the filesystem (or CDN) for fast serving, and only metadata (zone info, file path, stats, waypoints) is stored in the database for queries and relationships.
+- 3D geometry is never stored as rows in the database—only as files.
+- All waypoints are now of type 'waypoint'.
+
 ## Database Storage Strategy
 
 ### Option 1: File-Based Storage (Recommended for Initial Implementation)
