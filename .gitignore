@@ -14,3 +14,16 @@ maps
 error_list.txt
 *.egg-info/
 *.log
+
+# Frontend (React/Node) ignores
+fe/node_modules/
+fe/dist/
+fe/build/
+fe/.env
+fe/.DS_Store
+fe/npm-debug.log*
+fe/yarn-debug.log*
+fe/yarn-error.log*
+fe/.next/
+fe/.cache/
+fe/.turbo/

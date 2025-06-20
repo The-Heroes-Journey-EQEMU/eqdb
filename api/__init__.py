@@ -1,8 +1,10 @@
 from flask import Flask
 from flask_restx import Api, Namespace
+from flask_jwt_extended import JWTManager
 import json
 from decimal import Decimal
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -25,6 +27,12 @@ api = Api(
             'type': 'apiKey',
             'in': 'header',
             'name': 'X-API-KEY'
+        },
+        'bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT Bearer token'
         }
     },
     security='apikey',
@@ -66,6 +74,14 @@ def output_json(data, code, headers=None):
 def init_api(app):
     """Initialize the API with the Flask app"""
     logger.info("Initializing API")
+    
+    # Initialize JWT
+    jwt = JWTManager(app)
+    
+    # Set JWT configuration
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False  # For development, set to timedelta(hours=1) for production
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = False  # For development, set to timedelta(days=30) for production
     
     # Set custom JSON encoder for Flask-RESTX
     api.representations = {

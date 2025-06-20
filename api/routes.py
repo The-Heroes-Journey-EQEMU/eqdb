@@ -11,6 +11,9 @@ from db.tradeskill import TradeskillDB
 from db.quest import QuestDB
 from db.expansion import ExpansionDB
 from db.expansion_items import ExpansionItemsDB
+from .auth import auth
+from .auth_routes import auth_ns
+from .middleware import optional_auth, write_auth_required, admin_required
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -271,6 +274,7 @@ def format_zone_response(zone_data, all_keys=None):
 # Define all resource classes
 @v1.route('/items')
 class ItemResource(Resource):
+    @optional_auth
     @v1.doc('get_items',
         params={
             'id': {'description': 'Search items by item ID', 'type': 'integer', 'example': 12345},
@@ -285,49 +289,43 @@ class ItemResource(Resource):
         security='apikey'
     )
     def get(self):
-        """Get item data by ID, name, or type
+        """Get items
         
-        Search for items using various parameters:
-        * id: Exact item ID match
-        * name: Partial name match (case-insensitive)
-        * type: Filter by item type
+        Get items using the following parameters:
+        * id: Search items by item ID (optional)
+        * name: Search items by partial name (optional, 50 results maximum)
+        * type: Filter items by type (optional)
         
-        Returns a list of items matching the criteria, limited to 50 results.
+        Returns a list of items matching the criteria.
         """
-        item_id = request.args.get('id')
+        try:
+            item_id = request.args.get('id', type=int)
         name = request.args.get('name')
         item_type = request.args.get('type')
-        logger.debug(f"Received request for /items with params: id={item_id}, name={name}, type={item_type}")
-        
-        if item_id:
-            item_data = item_db.get_item_raw_data(item_id=item_id)
-            if not item_data:
-                logger.warning(f"No item found with ID {item_id}")
-                return {"error": "Item not found"}, 404
-            logger.debug(f"Retrieved item data for ID {item_id}")
-            return format_item_response(item_data)
-        elif name:
-            items_data = item_db.get_item_raw_data(name=name)
-            if not items_data:
-                logger.warning(f"No items found with name {name}")
-                return {"error": "Items not found"}, 404
-            logger.debug(f"Retrieved {len(items_data)} items with name {name}")
-            results = [format_item_response(item) for item in items_data[:50]]
-            return results
-        elif item_type:
-            items_data = item_db.get_item_raw_data(item_type=item_type)
-            if not items_data:
-                logger.warning(f"No items found with type {item_type}")
-                return {"error": "Items not found"}, 404
-            logger.debug(f"Retrieved {len(items_data)} items with type {item_type}")
-            results = [format_item_response(item) for item in items_data[:50]]
-            return results
+            
+            # Get items from database
+            items = item_db.get_item_raw_data(item_id=item_id, name=name, item_type=item_type)
+            
+            if not items:
+                v1.abort(404, "No items found")
+            
+            # Format response
+            if isinstance(items, list):
+                formatted_items = []
+                for item in items:
+                    formatted_item = format_item_response(item)
+                    formatted_items.append(formatted_item)
+                return formatted_items
         else:
-            logger.warning("No parameters provided for /items")
-            return {"error": "No parameters provided"}, 400
+                # Single item
+                return format_item_response(items)
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving items: {str(e)}")
 
 @v1.route('/spells')
 class SpellResource(Resource):
+    @optional_auth
     @v1.doc('get_spells',
         params={
             'id': {'description': 'Search spells by spell ID', 'type': 'integer', 'example': 12345},
@@ -342,41 +340,43 @@ class SpellResource(Resource):
         security='apikey'
     )
     def get(self):
-        """Search for spells by ID, name, or class
+        """Get spells
         
-        Search for spells using various parameters:
-        * id: Exact spell ID match
-        * name: Partial name match (case-insensitive)
-        * class: Filter by spell class
+        Get spells using the following parameters:
+        * id: Search spells by spell ID (optional)
+        * name: Search spells by partial name (optional, 50 results maximum)
+        * class: Filter spells by class (optional)
         
-        Returns a list of spells matching the criteria, limited to 50 results.
+        Returns a list of spells matching the criteria.
         """
-        spell_id = request.args.get('id')
+        try:
+            spell_id = request.args.get('id', type=int)
         name = request.args.get('name')
         spell_class = request.args.get('class')
         
-        if spell_id:
-            data = spell_db.get_spell_raw_data(spell_id=spell_id)
-            if not data:
-                v1.abort(404, "Spell not found")
-            all_keys = set().union(*(d.keys() for d in [data]))
-            results = [format_spell_response(data, all_keys)]
-            return results
-        elif name:
-            data = spell_db.get_spell_raw_data(spell_name=name)
-            all_keys = set().union(*(d.keys() for d in data))
-            results = [format_spell_response(d, all_keys) for d in data]
-            return results[:50]  # Enforce 50 result limit
-        elif spell_class:
-            data = spell_db.get_spell_raw_data(spell_class=spell_class)
-            all_keys = set().union(*(d.keys() for d in data))
-            results = [format_spell_response(d, all_keys) for d in data]
-            return results[:50]
+            # Get spells from database
+            spells = spell_db.get_spell_raw_data(spell_id=spell_id, spell_name=name, spell_class=spell_class)
+            
+            if not spells:
+                v1.abort(404, "No spells found")
+            
+            # Format response
+            if isinstance(spells, list):
+                formatted_spells = []
+                for spell in spells:
+                    formatted_spell = format_spell_response(spell)
+                    formatted_spells.append(formatted_spell)
+                return formatted_spells
         else:
-            v1.abort(400, "No parameters provided")
+                # Single spell
+                return format_spell_response(spells)
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving spells: {str(e)}")
 
 @v1.route('/npcs')
 class NPCResource(Resource):
+    @optional_auth
     @v1.doc('get_npcs',
         params={
             'id': {'description': 'Search NPCs by NPC ID', 'type': 'integer', 'example': 12345},
@@ -391,36 +391,43 @@ class NPCResource(Resource):
         security='apikey'
     )
     def get(self):
-        """Search for NPCs by ID, name, or zone
+        """Get NPCs
         
-        Search for NPCs using various parameters:
-        * id: Exact NPC ID match
-        * name: Partial name match (case-insensitive)
-        * zone: Filter by zone shortname
+        Get NPCs using the following parameters:
+        * id: Search NPCs by NPC ID (optional)
+        * name: Search NPCs by partial name (optional, 50 results maximum)
+        * zone: Filter NPCs by zone shortname (optional)
         
-        Returns a list of NPCs matching the criteria, limited to 50 results.
+        Returns a list of NPCs matching the criteria.
         """
-        npc_id = request.args.get('id')
+        try:
+            npc_id = request.args.get('id', type=int)
         name = request.args.get('name')
         zone = request.args.get('zone')
         
-        if npc_id:
-            data = npc_db.get_npc_raw_data(npc_id=npc_id)
-            if not data:
-                v1.abort(404, "NPC not found")
-            all_keys = set().union(*(d.keys() for d in [data]))
-            results = [format_npc_response(data, all_keys)]
-            return results
-        elif name:
-            data = npc_db.get_npc_raw_data(name=name, zone=zone)
-            all_keys = set().union(*(d.keys() for d in data))
-            results = [format_npc_response(d, all_keys) for d in data]
-            return results[:50]
+            # Get NPCs from database
+            npcs = npc_db.get_npc_raw_data(npc_id=npc_id, name=name, zone=zone)
+            
+            if not npcs:
+                v1.abort(404, "No NPCs found")
+            
+            # Format response
+            if isinstance(npcs, list):
+                formatted_npcs = []
+                for npc in npcs:
+                    formatted_npc = format_npc_response(npc)
+                    formatted_npcs.append(formatted_npc)
+                return formatted_npcs
         else:
-            v1.abort(400, "No parameters provided")
+                # Single NPC
+                return format_npc_response(npcs)
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving NPCs: {str(e)}")
 
 @v1.route('/zones')
 class ZoneResource(Resource):
+    @optional_auth
     @v1.doc('get_zones',
         params={
             'name': {'description': 'Search zones by partial name (50 results maximum)', 'type': 'string', 'example': 'qeynos'}
@@ -433,27 +440,39 @@ class ZoneResource(Resource):
         security='apikey'
     )
     def get(self):
-        """Search for zones by name
+        """Get zones
         
-        Search for zones using the name parameter:
-        * name: Partial name match (case-insensitive)
+        Get zones using the following parameters:
+        * name: Search zones by partial name (optional, 50 results maximum)
         
-        Returns a list of zones matching the criteria, limited to 50 results.
+        Returns a list of zones matching the criteria.
         """
+        try:
         name = request.args.get('name')
         
-        if name:
-            data = zone_db.get_zone_raw_data(name=name)
-            if not data:
-                v1.abort(404, "Zone not found")
-            all_keys = set().union(*(d.keys() for d in data))
-            results = [format_zone_response(d, all_keys) for d in data]
-            return results[:50]
+            # Get zones from database
+            zones = zone_db.get_zone_raw_data(name=name)
+            
+            if not zones:
+                v1.abort(404, "No zones found")
+            
+            # Format response
+            if isinstance(zones, list):
+                formatted_zones = []
+                for zone in zones:
+                    formatted_zone = format_zone_response(zone)
+                    formatted_zones.append(formatted_zone)
+                return formatted_zones
         else:
-            v1.abort(400, "No parameters provided")
+                # Single zone
+                return format_zone_response(zones)
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving zones: {str(e)}")
 
 @v1.route('/tradeskills')
 class TradeskillResource(Resource):
+    @optional_auth
     @v1.doc('get_tradeskills',
         params={
             'id': {'description': 'Search tradeskills by ID', 'type': 'integer', 'example': 59},
@@ -467,29 +486,32 @@ class TradeskillResource(Resource):
         security='apikey'
     )
     def get(self):
-        """Search for tradeskills by ID or name
+        """Get tradeskills
         
-        Search for tradeskills using various parameters:
-        * id: Exact tradeskill ID match
-        * name: Partial name match (case-insensitive)
+        Get tradeskills using the following parameters:
+        * id: Search tradeskills by ID (optional)
+        * name: Search tradeskills by partial name (optional, 50 results maximum)
         
-        Returns a list of tradeskills matching the criteria, limited to 50 results.
+        Returns a list of tradeskills matching the criteria.
         """
-        tradeskill_id = request.args.get('id')
+        try:
+            tradeskill_id = request.args.get('id', type=int)
         name = request.args.get('name')
         
-        if tradeskill_id:
-            data = tradeskill_db.get_tradeskill_raw_data(tradeskill_id=tradeskill_id)
-            if not data:
-                v1.abort(404, "Tradeskill not found")
-            return data
-        elif name:
-            data = tradeskill_db.get_tradeskill_raw_data(name=name)
-            if not data:
-                v1.abort(404, "Tradeskill not found")
-            return data[:50]  # Enforce 50 result limit
+            # Get tradeskills from database
+            tradeskills = tradeskill_db.get_tradeskill_raw_data(tradeskill_id=tradeskill_id, name=name)
+            
+            if not tradeskills:
+                v1.abort(404, "No tradeskills found")
+            
+            # Format response
+            if isinstance(tradeskills, list):
+                return tradeskills[:50]  # Enforce 50 result limit
         else:
-            v1.abort(400, "No parameters provided")
+                return [tradeskills]
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving tradeskills: {str(e)}")
 
 @v1.route('/recipes')
 class RecipeResource(Resource):
@@ -953,6 +975,7 @@ class ExpansionItemsSummaryResource(Resource):
 
 @v1.route('/expansion-items/custom')
 class CustomItemsResource(Resource):
+    @optional_auth
     @v1.doc('get_custom_items',
         params={
             'expansion_id': {'description': 'Filter by expansion ID', 'type': 'integer', 'example': 0}
@@ -993,6 +1016,7 @@ class CustomItemsResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving custom items: {str(e)}")
     
+    @write_auth_required
     @v1.doc('add_custom_item',
         params={
             'item_id': {'description': 'Item ID', 'type': 'integer', 'required': True, 'example': 12345},
@@ -1059,6 +1083,7 @@ class CustomItemsResource(Resource):
 
 @v1.route('/expansion-items/custom/<int:item_id>/<int:expansion_id>')
 class CustomItemResource(Resource):
+    @write_auth_required
     @v1.doc('remove_custom_item',
         params={
             'item_id': {'description': 'Item ID', 'type': 'integer', 'in': 'path', 'example': 12345},
@@ -1092,6 +1117,7 @@ class CustomItemResource(Resource):
 
 @v1.route('/expansion-items/import')
 class ImportItemsResource(Resource):
+    @write_auth_required
     @v1.doc('import_item_files',
         responses={
             200: ('Success', import_result_model),
@@ -1126,5 +1152,11 @@ class ImportItemsResource(Resource):
 def init_routes(api):
     """Initialize all routes"""
     logger.info("Initializing API routes")
-    # Routes are automatically registered through the decorators
+    
+    # Add authentication namespace
+    api.add_namespace(auth_ns, path='/api/v1/auth')
+    
+    # Create default admin user
+    auth.create_default_admin()
+    
     logger.info("API routes initialization complete") 

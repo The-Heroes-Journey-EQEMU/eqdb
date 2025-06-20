@@ -1,6 +1,17 @@
 ==2.1.0.1==
 DEPLOYED: 6/14/2025
 * Removed all references to "spells_new_reference" since it is in the incorrect table to use for spells.
+* **Frontend Theming System**: Implemented comprehensive dark theme using CSS variables
+  * Default dark theme with proper contrast and accessibility
+  * All components updated to use theme variables for consistency
+  * Color palette: Background #212529, Content Box rgb(43 48 53), Borders #495057
+* **Header & Navigation Updates**: Header now matches live EQDB site structure
+  * Integrated official EQDB logo (eqdb_alt_4.png)
+  * Added Tools dropdown with all categories: Armor Search, Weapon Search, Waypoint List, Class Spell Listing, Pet Listing
+  * Navigation structure: Spells, Items, Zones, NPCs, Tradeskills, Factions
+  * User links: User Area, Identify Items, About, Changelog
+  * Full mobile responsive navigation
+* **Component Improvements**: Enhanced input, button, search, and card components with consistent theming
 
 ==2.1==
 DEPLOYED: 6/14/2025

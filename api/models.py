@@ -11,6 +11,67 @@ def create_models(api, v1):
         'per_page': fields.Integer
     })
 
+    # User models
+    user_model = v1.model('User', {
+        'id': fields.Integer(description='User ID'),
+        'email': fields.String(description='User email'),
+        'is_admin': fields.Boolean(description='Admin status'),
+        'created_at': fields.DateTime(description='Account creation date'),
+        'last_login': fields.DateTime(description='Last login date'),
+        'preferences': fields.Raw(description='User preferences')
+    })
+
+    user_create_model = v1.model('UserCreate', {
+        'email': fields.String(required=True, description='User email'),
+        'password': fields.String(required=True, description='User password'),
+        'is_admin': fields.Boolean(description='Admin status', default=False)
+    })
+
+    user_login_model = v1.model('UserLogin', {
+        'email': fields.String(required=True, description='User email'),
+        'password': fields.String(required=True, description='User password')
+    })
+
+    user_update_model = v1.model('UserUpdate', {
+        'email': fields.String(description='User email'),
+        'is_admin': fields.Boolean(description='Admin status')
+    })
+
+    password_change_model = v1.model('PasswordChange', {
+        'current_password': fields.String(required=True, description='Current password'),
+        'new_password': fields.String(required=True, description='New password')
+    })
+
+    # API Key models
+    api_key_model = v1.model('ApiKey', {
+        'id': fields.Integer(description='API Key ID'),
+        'name': fields.String(description='API Key name'),
+        'key_prefix': fields.String(description='API Key prefix'),
+        'created_at': fields.DateTime(description='Creation date'),
+        'last_used': fields.DateTime(description='Last usage date'),
+        'is_active': fields.Boolean(description='Active status')
+    })
+
+    api_key_create_model = v1.model('ApiKeyCreate', {
+        'name': fields.String(required=True, description='API Key name')
+    })
+
+    api_key_response_model = v1.model('ApiKeyResponse', {
+        'id': fields.Integer(description='API Key ID'),
+        'name': fields.String(description='API Key name'),
+        'key_prefix': fields.String(description='API Key prefix'),
+        'full_key': fields.String(description='Full API Key (only shown once)'),
+        'created_at': fields.DateTime(description='Creation date'),
+        'is_active': fields.Boolean(description='Active status')
+    })
+
+    # Authentication response models
+    login_response_model = v1.model('LoginResponse', {
+        'access_token': fields.String(description='JWT access token'),
+        'refresh_token': fields.String(description='JWT refresh token'),
+        'user': fields.Nested(user_model, description='User information')
+    })
+
     # Item response model - using Raw to allow all fields from the database
     item_model = v1.model('Item', {
         'id': fields.Integer(description='Item ID'),
@@ -197,7 +258,16 @@ def create_models(api, v1):
         'spell_model': spell_model,
         'tradeskill_model': tradeskill_model,
         'loot_model': loot_model,
-        'paginated_model': paginated_model
+        'paginated_model': paginated_model,
+        'user_model': user_model,
+        'user_create_model': user_create_model,
+        'user_login_model': user_login_model,
+        'user_update_model': user_update_model,
+        'password_change_model': password_change_model,
+        'api_key_model': api_key_model,
+        'api_key_create_model': api_key_create_model,
+        'api_key_response_model': api_key_response_model,
+        'login_response_model': login_response_model
     }
 
     return models

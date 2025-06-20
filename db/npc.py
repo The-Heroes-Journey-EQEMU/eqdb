@@ -21,8 +21,10 @@ class NPCDB:
         with self.engine.connect() as conn:
             if npc_id:
                 query = text("""
-                    SELECT * FROM npc_types 
-                    WHERE id = :npc_id
+                    SELECT n.*, z.short_name as zone_name, z.long_name as zone_long_name, z.expansion as zone_expansion
+                    FROM npc_types n
+                    LEFT JOIN zone z ON z.zoneidnumber = FLOOR(n.id / 1000)
+                    WHERE n.id = :npc_id
                 """)
                 result = conn.execute(query, {"npc_id": npc_id}).fetchone()
                 if result:
@@ -30,9 +32,12 @@ class NPCDB:
                 return None
             elif name:
                 query = text("""
-                    SELECT * FROM npc_types 
-                    WHERE name LIKE :name
-                    AND (:zone IS NULL OR zone = :zone)
+                    SELECT n.*, z.short_name as zone_name, z.long_name as zone_long_name, z.expansion as zone_expansion
+                    FROM npc_types n
+                    LEFT JOIN zone z ON z.zoneidnumber = FLOOR(n.id / 1000)
+                    WHERE n.name LIKE :name
+                    AND (:zone IS NULL OR z.short_name = :zone)
+                    ORDER BY n.name
                     LIMIT 50
                 """)
                 results = conn.execute(query, {"name": f"%{name}%", "zone": zone}).fetchall()
