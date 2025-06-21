@@ -25,37 +25,25 @@ def test_parser():
     print(f"Zone: {map_data.zone_name}")
     print(f"Line segments: {len(map_data.line_segments)}")
     print(f"Labels: {len(map_data.labels)}")
-    print(f"Secondary segments: {len(map_data.secondary_segments)}")
     print(f"Waypoints: {len(map_data.waypoints)}")
     
-    # Show first few examples of each type
+    # Display sample line segments
     if map_data.line_segments:
-        print(f"\n=== First 3 Line Segments ===")
+        print("\nSample line segments:")
         for i, segment in enumerate(map_data.line_segments[:3]):
-            print(f"  {i+1}. ({segment.x1:.1f}, {segment.y1:.1f}, {segment.z1:.1f}) -> "
-                  f"({segment.x2:.1f}, {segment.y2:.1f}, {segment.z2:.1f}) "
-                  f"RGB({segment.r}, {segment.g}, {segment.b})")
+            print(f"  {i+1}. ({segment.x1}, {segment.y1}, {segment.z1}) to ({segment.x2}, {segment.y2}, {segment.z2}) - RGB({segment.r}, {segment.g}, {segment.b}) - Layer: {segment.layer}")
     
+    # Display sample labels
     if map_data.labels:
-        print(f"\n=== First 3 Labels ===")
+        print("\nSample labels:")
         for i, label in enumerate(map_data.labels[:3]):
-            print(f"  {i+1}. ({label.x:.1f}, {label.y:.1f}, {label.z:.1f}) "
-                  f"RGB({label.r}, {label.g}, {label.b}) "
-                  f"Size: {label.size} Text: '{label.text}'")
+            print(f"  {i+1}. '{label.text}' at ({label.x}, {label.y}, {label.z}) - Size: {label.size} - RGB({label.r}, {label.g}, {label.b})")
     
-    if map_data.secondary_segments:
-        print(f"\n=== First 3 Secondary Segments ===")
-        for i, segment in enumerate(map_data.secondary_segments[:3]):
-            print(f"  {i+1}. ({segment.x1:.1f}, {segment.y1:.1f}, {segment.z1:.1f}) -> "
-                  f"({segment.x2:.1f}, {segment.y2:.1f}, {segment.z2:.1f}) "
-                  f"RGB({segment.r}, {segment.g}, {segment.b})")
-    
+    # Display waypoints
     if map_data.waypoints:
-        print(f"\n=== Waypoints ===")
+        print("\nWaypoints:")
         for i, waypoint in enumerate(map_data.waypoints):
-            print(f"  {i+1}. ({waypoint.x:.1f}, {waypoint.y:.1f}, {waypoint.z:.1f}) "
-                  f"Type: {waypoint.waypoint_type} "
-                  f"Description: {waypoint.description}")
+            print(f"  {i+1}. ({waypoint.x}, {waypoint.y}, {waypoint.z}) - {waypoint.description}")
     
     # Show coordinate ranges
     print(f"\n=== Coordinate Analysis ===")

@@ -68,7 +68,6 @@ class MapDatabase:
                     line_segment_count INTEGER DEFAULT 0,    -- Count of line segments
                     label_count INTEGER DEFAULT 0,           -- Count of labels
                     waypoint_count INTEGER DEFAULT 0,        -- Count of waypoints
-                    secondary_segment_count INTEGER DEFAULT 0, -- Count of secondary segments
                     parse_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (zone_short_name) REFERENCES zone_geometry_metadata(zone_short_name)
                 )
@@ -117,15 +116,14 @@ class MapDatabase:
                 cursor.execute('''
                     INSERT OR REPLACE INTO parsed_data_cache 
                     (zone_short_name, data_hash, line_segment_count, label_count, 
-                     waypoint_count, secondary_segment_count)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                     waypoint_count)
+                    VALUES (?, ?, ?, ?, ?)
                 ''', (
                     map_data.zone_name,
                     data_hash,
                     len(map_data.line_segments),
                     len(map_data.labels),
-                    len(map_data.waypoints),
-                    len(map_data.secondary_segments)
+                    len(map_data.waypoints)
                 ))
                 
                 conn.commit()
@@ -290,7 +288,7 @@ class MapDatabase:
         import hashlib
         
         # Create a string representation of the data counts and basic info
-        data_str = f"{len(map_data.line_segments)}:{len(map_data.labels)}:{len(map_data.waypoints)}:{len(map_data.secondary_segments)}"
+        data_str = f"{len(map_data.line_segments)}:{len(map_data.labels)}:{len(map_data.waypoints)}"
         
         # Add some sample data for better hash uniqueness
         if map_data.line_segments:

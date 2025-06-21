@@ -49,7 +49,6 @@ class MapData:
     line_segments: List[LineSegment] = field(default_factory=list)
     labels: List[Label] = field(default_factory=list)
     waypoints: List[Waypoint] = field(default_factory=list)
-    secondary_segments: List[LineSegment] = field(default_factory=list)
 
 class MapParser:
     def __init__(self, maps_dir: str = "../../maps/brewall", verbose: bool = True):
@@ -67,8 +66,6 @@ class MapParser:
         map_data.line_segments = self.parse_line_segments(zone_name)
         # Parse labels
         map_data.labels = self.parse_labels(zone_name)
-        # Parse secondary geometry
-        map_data.secondary_segments = self.parse_secondary_segments(zone_name)
         # Parse waypoints
         map_data.waypoints = self.parse_waypoints(zone_name)
         return map_data
@@ -137,35 +134,6 @@ class MapParser:
                         self.logger.error(f"Error parsing label: {line.strip()} - {e}")
         self.logger.info(f"Parsed {len(labels)} labels from {file_path}")
         return labels
-
-    def parse_secondary_segments(self, zone_name: str) -> List[LineSegment]:
-        """Parse L records from secondary geometry file (_2.txt)."""
-        segments = []
-        file_path = os.path.join(self.maps_dir, f"{zone_name}_2.txt")
-        if not os.path.exists(file_path):
-            self.logger.info(f"No secondary geometry file for: {zone_name}")
-            return segments
-        with open(file_path, 'r') as f:
-            for line in f:
-                if line.startswith('L'):
-                    parts = line.split()
-                    try:
-                        segment = LineSegment(
-                            x1=float(parts[1].strip(',')),
-                            y1=float(parts[2].strip(',')),
-                            z1=float(parts[3].strip(',')),
-                            x2=float(parts[4].strip(',')),
-                            y2=float(parts[5].strip(',')),
-                            z2=float(parts[6].strip(',')),
-                            r=int(parts[7].strip(',')),
-                            g=int(parts[8].strip(',')),
-                            b=int(parts[9].strip(','))
-                        )
-                        segments.append(segment)
-                    except Exception as e:
-                        self.logger.error(f"Error parsing secondary segment: {line.strip()} - {e}")
-        self.logger.info(f"Parsed {len(segments)} secondary segments from {file_path}")
-        return segments
 
     def parse_waypoints(self, zone_name: str) -> List[Waypoint]:
         """Parse waypoint data using existing utils.get_zone_waypoint() function."""

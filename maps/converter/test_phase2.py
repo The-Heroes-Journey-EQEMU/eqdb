@@ -44,7 +44,6 @@ def test_complete_phase2_workflow():
         print(f"   ✓ Parsed {len(map_data.line_segments)} line segments")
         print(f"   ✓ Parsed {len(map_data.labels)} labels")
         print(f"   ✓ Parsed {len(map_data.waypoints)} waypoints")
-        print(f"   ✓ Parsed {len(map_data.secondary_segments)} secondary segments")
     except Exception as e:
         print(f"   ✗ Error parsing overthere zone: {e}")
         return

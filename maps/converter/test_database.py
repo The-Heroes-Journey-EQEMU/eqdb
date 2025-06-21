@@ -38,21 +38,19 @@ def test_hybrid_storage_approach():
     # Test 1: Store parsed data metadata (not raw geometry)
     print("1. Testing parsed data metadata storage...")
     
-    # Create sample parsed data
-    parser = MapParser(verbose=False)
+    # Create test map data
     map_data = MapData(
         zone_name="testzone",
         line_segments=[
-            LineSegment(1, 2, 3, 4, 5, 6, 255, 0, 0),  # Red line
-            LineSegment(10, 20, 30, 40, 50, 60, 0, 255, 0),  # Green line
+            LineSegment(100, 100, 0, 200, 100, 0, 255, 0, 0, "walls"),
+            LineSegment(200, 100, 0, 200, 200, 0, 255, 0, 0, "walls"),
         ],
         labels=[
-            Label(100, 200, 300, 0, 0, 255, 12, "Test Label"),  # Blue label
+            Label(150, 150, 0, 255, 255, 255, 10, "Test Zone"),
         ],
         waypoints=[
-            Waypoint(500, 600, 700, "testzone", "wizard", True, "Test Waypoint"),
-        ],
-        secondary_segments=[]
+            Waypoint(150, 150, 0, "testzone", True, "Test Waypoint"),
+        ]
     )
     
     # Store metadata (not raw geometry data)

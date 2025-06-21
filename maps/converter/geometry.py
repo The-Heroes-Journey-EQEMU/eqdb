@@ -256,7 +256,6 @@ class GeometryGenerator:
             self.logger.info(f"  Line segments: {len(map_data.line_segments)}")
             self.logger.info(f"  Labels: {len(map_data.labels)}")
             self.logger.info(f"  Waypoints: {len(map_data.waypoints)}")
-            self.logger.info(f"  Secondary segments: {len(map_data.secondary_segments)}")
         
         # Generate line segment meshes
         for i, segment in enumerate(map_data.line_segments):
@@ -274,14 +273,6 @@ class GeometryGenerator:
         for i, waypoint in enumerate(map_data.waypoints):
             mesh = self.generate_waypoint_mesh(waypoint)
             if mesh:
-                meshes.append(mesh)
-        
-        # Generate secondary segment meshes (same as line segments)
-        for i, segment in enumerate(map_data.secondary_segments):
-            mesh = self.generate_line_mesh(segment)
-            if mesh:
-                mesh.name = f"secondary_{mesh.name}"
-                mesh.mesh_type = "secondary"
                 meshes.append(mesh)
         
         if self.verbose:
