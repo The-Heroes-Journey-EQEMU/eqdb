@@ -189,8 +189,11 @@ def test_semantic_layer_mapping():
         "brewall_standards_compliant": True
     }
     
-    db.store_zone_metadata(map_data.zone_name, metadata)
-    db.store_gltf_file_info(map_data.zone_name, str(output_path), stats)
+    # Store parsed data metadata
+    db.store_parsed_data(map_data, "Test Zone", 0)  # expansion_id 0 for Classic
+    
+    # Store glTF file metadata
+    db.store_gltf_file(map_data.zone_name, str(output_path), stats)
     
     logger.info("Stored metadata in database")
     
