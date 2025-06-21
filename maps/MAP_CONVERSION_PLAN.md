@@ -157,7 +157,14 @@ The project already has basic map functionality that should be integrated:
 - [x] Add metadata and asset information
 - [x] **NEW**: Include waypoint metadata in glTF
 
-# Phase 2 is now fully complete: All geometry, material, and glTF export tasks are implemented and tested.
+#### Task 2.5: Brewall Standards Layer Mapping (COMPLETED ✅)
+- [x] Create a mapping table from Brewall standard RGB colors to semantic layer/type names (e.g., wall, door, water, lava, zone_line, etc.)
+- [x] Expand `MaterialLibrary` to include a material for each Brewall semantic layer/type, with correct color, transparency, and properties
+- [x] Update the parser to tag each line segment with its semantic type (if the color matches a known standard)
+- [x] Update the `MaterialAssigner` to assign materials by semantic type, not just by color
+- [x] Ensure all Brewall mapping standard layers are visually and semantically represented in the 3D output
+
+**Phase 2.5 Summary**: Successfully implemented comprehensive semantic layer material mapping system with 43+ Brewall standard materials, enhanced geometry generation with semantic layer preservation, and standards-compliant material assignment. All Brewall mapping standard layers are now properly represented with appropriate materials for accurate 3D visualization.
 
 ### Phase 3: Proof of Concept - Overthere Zone (Week 3)
 **Goal**: Complete end-to-end conversion of the overthere zone

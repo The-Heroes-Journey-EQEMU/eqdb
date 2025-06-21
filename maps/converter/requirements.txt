@@ -1,15 +1,28 @@
-# Core dependencies for map conversion
-pygltflib>=1.15.0
+# EQDB Map Converter Dependencies
+# Core dependencies for 3D map conversion system
+
+# glTF export library
+pygltflib>=1.16.0
+
+# Numerical computing and array operations
 numpy>=1.21.0
+
+# Command line interface (for future CLI tools)
 click>=8.0.0
-sqlalchemy>=1.4.0  # Required for utils module
 
-# Optional dependencies for advanced features
-trimesh>=3.9.0  # For advanced geometry processing
-pillow>=8.0.0   # For texture processing
-scipy>=1.7.0    # For mathematical operations
+# Database operations (SQLite is built-in, but listed for clarity)
+# sqlite3 is part of Python standard library
 
-# Development dependencies
-pytest>=6.0.0   # For testing
-black>=21.0.0   # For code formatting
-flake8>=3.8.0   # For linting 
+# Logging (built-in, but listed for clarity)
+# logging is part of Python standard library
+
+# Type hints support
+typing-extensions>=4.0.0
+
+# Path handling
+pathlib2>=2.3.0; python_version < "3.4"
+
+# Development dependencies (optional)
+# pytest>=6.0.0  # For running tests
+# black>=21.0.0  # For code formatting
+# flake8>=3.8.0  # For linting 

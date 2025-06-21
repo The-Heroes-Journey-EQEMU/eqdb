@@ -3,6 +3,7 @@ import logging
 import sys
 from typing import List, Optional
 from dataclasses import dataclass, field
+from materials import BREWALL_LAYER_COLOR_MAP
 
 # Add the parent directory to the path to import utils
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -20,6 +21,7 @@ class LineSegment:
     r: int
     g: int
     b: int
+    layer: str = None  # Brewall semantic type/layer
 
 @dataclass
 class Label:
@@ -83,6 +85,11 @@ class MapParser:
                 if line.startswith('L'):
                     parts = line.split()
                     try:
+                        r = int(parts[7].strip(','))
+                        g = int(parts[8].strip(','))
+                        b = int(parts[9].strip(','))
+                        color_tuple = (r, g, b)
+                        layer = BREWALL_LAYER_COLOR_MAP.get(color_tuple, None)
                         segment = LineSegment(
                             x1=float(parts[1].strip(',')),
                             y1=float(parts[2].strip(',')),
@@ -90,9 +97,10 @@ class MapParser:
                             x2=float(parts[4].strip(',')),
                             y2=float(parts[5].strip(',')),
                             z2=float(parts[6].strip(',')),
-                            r=int(parts[7].strip(',')),
-                            g=int(parts[8].strip(',')),
-                            b=int(parts[9].strip(','))
+                            r=r,
+                            g=g,
+                            b=b,
+                            layer=layer
                         )
                         segments.append(segment)
                     except Exception as e:
