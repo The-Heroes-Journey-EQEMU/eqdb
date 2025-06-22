@@ -8,6 +8,7 @@ __pycache__
 local_db.db
 expansion_items.db
 maps/brewall/
+maps/converter/output/
 /static/item_icons/
 /static/spell_icons/
 /static/monograms/

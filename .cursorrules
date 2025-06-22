@@ -65,6 +65,7 @@ Follow these steps for each interaction:
      b) lesson.json: Error-related lessons and solutions
    - Be aware of automatic file splitting at 1000 lines
    - Maintain proper file type assignment for entities
+   - When running any commands, or generating them, check current directory before you do anything.
 
 7. Quality Guidelines:
    For Lessons:
