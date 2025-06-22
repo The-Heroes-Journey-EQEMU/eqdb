@@ -142,52 +142,139 @@ class GeometryGenerator:
     
     def generate_label_mesh(self, label: Label) -> Optional[MeshData]:
         """
-        Generate a 3D mesh for a label.
+        Generate a 3D mesh for a label with proper text rendering and billboarding.
         
-        Creates a billboard quad that faces the camera.
+        Creates a billboard quad that faces the camera with proper text treatment.
         """
         # Transform coordinates
         x, y, z = self.transform_coordinates(label.x, label.y, label.z)
         
-        # Create a simple quad facing the camera
-        size = label.size * 10  # Scale based on label size
+        # Determine label type and visual treatment
+        label_type = self._classify_label(label.text)
+        size_multiplier = self._get_label_size_multiplier(label_type, label.size)
         
+        # Create a billboard quad that faces the camera
+        # Size based on label type and text length
+        base_size = label.size * size_multiplier
+        text_length = len(label.text)
+        width = base_size * (text_length * 0.6 + 1.0)  # Adjust width based on text length
+        height = base_size * 1.2  # Fixed height ratio
+        
+        # Create quad vertices (facing camera)
         vertices = np.array([
-            [-size/2, -size/2, 0],
-            [size/2, -size/2, 0],
-            [size/2, size/2, 0],
-            [-size/2, size/2, 0]
+            [-width/2, -height/2, 0],
+            [width/2, -height/2, 0],
+            [width/2, height/2, 0],
+            [-width/2, height/2, 0]
         ])
         
         # Apply position offset
         vertices += np.array([x, y, z])
         
+        # Create faces (two triangles)
         faces = np.array([[0, 1, 2], [0, 2, 3]])
         
-        # Convert color to normalized RGB
-        color = np.array([label.r / 255.0, label.g / 255.0, label.b / 255.0])
+        # Determine color based on label type
+        if label_type == "waypoint":
+            # Waypoints get special red color
+            color = np.array([1.0, 0.0, 0.0])  # Bright red
+        elif label_type == "zone":
+            # Zone names get blue color
+            color = np.array([0.0, 0.5, 1.0])  # Blue
+        elif label_type == "npc":
+            # NPC names get green color
+            color = np.array([0.0, 1.0, 0.0])  # Green
+        elif label_type == "item":
+            # Item names get yellow color
+            color = np.array([1.0, 1.0, 0.0])  # Yellow
+        else:
+            # Default: use label's original color
+            color = np.array([label.r / 255.0, label.g / 255.0, label.b / 255.0])
         
         return MeshData(
             vertices=vertices,
             faces=faces,
             colors=np.tile(color, (len(vertices), 1)),
-            name=f"label_{label.text}_{x}_{y}",
+            name=f"label_{label_type}_{label.text}_{x}_{y}",
             mesh_type="label",
-            semantic_layer=getattr(label, 'semantic_layer', None)
+            semantic_layer=f"labels_{label_type}"
         )
+    
+    def _classify_label(self, text: str) -> str:
+        """
+        Classify label text to determine visual treatment.
+        
+        Args:
+            text: Label text to classify
+            
+        Returns:
+            Label type: 'waypoint', 'zone', 'npc', 'item', or 'general'
+        """
+        text_lower = text.lower().strip()
+        
+        # Waypoint indicators
+        if any(keyword in text_lower for keyword in ['waypoint', 'bind', 'bind point', 'safe spot']):
+            return "waypoint"
+        
+        # Zone names (typically capitalized, no spaces, or specific patterns)
+        if (text.isupper() or 
+            any(keyword in text_lower for keyword in ['zone', 'plane', 'temple', 'tower', 'keep', 'fortress'])):
+            return "zone"
+        
+        # NPC names (typically proper nouns, often with titles)
+        if any(keyword in text_lower for keyword in ['lord', 'king', 'queen', 'guard', 'merchant', 'trainer', 'npc']):
+            return "npc"
+        
+        # Item names (often in quotes or specific patterns)
+        if text.startswith('"') and text.endswith('"'):
+            return "item"
+        
+        # Default classification
+        return "general"
+    
+    def _get_label_size_multiplier(self, label_type: str, base_size: int) -> float:
+        """
+        Get size multiplier based on label type and base size.
+        
+        Args:
+            label_type: Type of label
+            base_size: Base size from Brewall file
+            
+        Returns:
+            Size multiplier for visual scaling
+        """
+        # Base multipliers by type
+        type_multipliers = {
+            "waypoint": 15.0,  # Waypoints should be very visible
+            "zone": 12.0,      # Zone names should be prominent
+            "npc": 8.0,        # NPC names moderately visible
+            "item": 6.0,       # Items smaller
+            "general": 10.0    # Default size
+        }
+        
+        base_multiplier = type_multipliers.get(label_type, 10.0)
+        
+        # Adjust based on base size
+        if base_size <= 5:
+            return base_multiplier * 0.8
+        elif base_size >= 15:
+            return base_multiplier * 1.2
+        else:
+            return base_multiplier
     
     def generate_waypoint_mesh(self, waypoint: Waypoint) -> Optional[MeshData]:
         """
         Generate a distinctive 3D mesh for a waypoint.
         
-        Creates a cylinder marker to make waypoints easily identifiable.
+        Creates a distinctive marker with multiple visual elements to make waypoints easily identifiable.
         """
         # Transform coordinates
         x, y, z = self.transform_coordinates(waypoint.x, waypoint.y, waypoint.z)
         
-        # Create a distinctive marker (cylinder)
-        radius = 20.0
-        height = 40.0
+        # Create a distinctive marker with multiple elements
+        # Main cylinder
+        radius = 25.0
+        height = 50.0
         
         # Generate cylinder vertices
         vertices = []
@@ -203,13 +290,26 @@ class GeometryGenerator:
             # Top circle
             vertices.append([vx, vy, height/2])
         
+        # Add a top cone for better visibility
+        cone_height = 30.0
+        cone_radius = 15.0
+        for i in range(segments):
+            angle = 2 * np.pi * i / segments
+            vx = cone_radius * np.cos(angle)
+            vy = cone_radius * np.sin(angle)
+            
+            # Cone base (same as cylinder top)
+            vertices.append([vx, vy, height/2])
+            # Cone tip
+            vertices.append([0, 0, height/2 + cone_height])
+        
         # Apply position offset
         vertices = np.array(vertices) + np.array([x, y, z])
         
         # Generate faces
         faces = []
         
-        # Side faces
+        # Cylinder side faces
         for i in range(segments):
             next_i = (i + 1) % segments
             faces.extend([
@@ -217,18 +317,28 @@ class GeometryGenerator:
                 [i*2, next_i*2+1, i*2+1]
             ])
         
-        # Top and bottom faces
+        # Cylinder top and bottom faces
         for i in range(1, segments-1):
             faces.extend([
                 [0, i*2, (i+1)*2],  # Bottom
                 [1, (i+1)*2+1, i*2+1]  # Top
             ])
         
-        # Waypoint color (red for special visual, gray otherwise)
+        # Cone faces
+        cone_base_start = segments * 2
+        for i in range(segments):
+            next_i = (i + 1) % segments
+            # Cone side faces
+            faces.extend([
+                [cone_base_start + i*2, cone_base_start + next_i*2, cone_base_start + next_i*2+1],
+                [cone_base_start + i*2, cone_base_start + next_i*2+1, cone_base_start + i*2+1]
+            ])
+        
+        # Waypoint color - bright red for high visibility
         if waypoint.special_visual:
-            color = np.array([1.0, 0.0, 0.0])  # Red
+            color = np.array([1.0, 0.0, 0.0])  # Bright red
         else:
-            color = np.array([0.5, 0.5, 0.5])  # Gray
+            color = np.array([0.8, 0.2, 0.2])  # Darker red
         
         return MeshData(
             vertices=vertices,

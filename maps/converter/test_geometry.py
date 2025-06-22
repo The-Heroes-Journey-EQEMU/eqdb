@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from parser import MapParser
 from geometry import GeometryGenerator, MeshData
+from error_handler import ErrorHandler, PerformanceMonitor, ProcessingStage
 
 def setup_logging():
     """Set up logging for the test."""
@@ -28,19 +29,23 @@ def test_geometry_generation():
     """Test the geometry generation functionality."""
     print("=== Testing Geometry Generation ===")
     print()
+    error_handler = ErrorHandler(verbose=True)
+    perf_monitor = PerformanceMonitor(verbose=True)
     
     # Initialize parser and parse overthere zone
     parser = MapParser(verbose=False)
     print("1. Parsing overthere zone...")
-    
-    try:
-        map_data = parser.parse_zone("overthere")
-        print(f"   ✓ Parsed {len(map_data.line_segments)} line segments")
-        print(f"   ✓ Parsed {len(map_data.labels)} labels")
-        print(f"   ✓ Parsed {len(map_data.waypoints)} waypoints")
-    except Exception as e:
-        print(f"   ✗ Error parsing overthere zone: {e}")
-        return
+    map_data = None
+    with perf_monitor.monitor_stage(ProcessingStage.PARSING):
+        try:
+            map_data = parser.parse_zone("overthere")
+            print(f"   ✓ Parsed {len(map_data.line_segments)} line segments")
+            print(f"   ✓ Parsed {len(map_data.labels)} labels")
+            print(f"   ✓ Parsed {len(map_data.waypoints)} waypoints")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.PARSING, f"Error parsing overthere zone: {e}", exception=e)
+            print(f"   ✗ Error parsing overthere zone: {e}")
+            return
     
     # Initialize geometry generator
     print("\n2. Initializing geometry generator...")
@@ -56,8 +61,15 @@ def test_geometry_generation():
     
     # Generate all geometry
     print("\n3. Generating 3D geometry...")
-    meshes = generator.generate_all_geometry(map_data)
-    print(f"   ✓ Generated {len(meshes)} meshes")
+    meshes = []
+    with perf_monitor.monitor_stage(ProcessingStage.GEOMETRY_GENERATION):
+        try:
+            meshes = generator.generate_all_geometry(map_data)
+            print(f"   ✓ Generated {len(meshes)} meshes")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.GEOMETRY_GENERATION, f"Error generating geometry: {e}", exception=e)
+            print(f"   ✗ Error generating geometry: {e}")
+            return
     
     # Analyze mesh types
     mesh_types = {}
@@ -83,10 +95,12 @@ def test_geometry_generation():
     # Test coordinate transformation
     print("\n4. Testing coordinate transformation...")
     original_coords = (1000.0, 2000.0, 100.0)
-    transformed = generator.transform_coordinates(*original_coords)
-    print(f"   Original: {original_coords}")
-    print(f"   Transformed: {transformed}")
-    print(f"   Scale factor applied: {transformed[0] / original_coords[0]:.3f}")
+    try:
+        tx, ty, tz = generator.transform_coordinates(*original_coords)
+        print(f"   ✓ Transformed {original_coords} -> ({tx:.1f}, {ty:.1f}, {tz:.1f})")
+    except Exception as e:
+        error_handler.handle_error(ProcessingStage.GEOMETRY_GENERATION, f"Error in coordinate transformation: {e}", exception=e)
+        print(f"   ✗ Error in coordinate transformation: {e}")
     
     # Test individual mesh generation
     print("\n5. Testing individual mesh generation...")
@@ -162,6 +176,10 @@ def test_geometry_generation():
     print(f"   With offset: {len(offset_meshes)} meshes")
     
     print("\n=== Geometry Generation Test Complete ===")
+    print("\nError Summary:")
+    print(error_handler.get_error_summary())
+    print("\nPerformance Summary:")
+    print(perf_monitor.get_performance_summary())
 
 def test_mesh_data_structure():
     """Test the MeshData structure and basic operations."""

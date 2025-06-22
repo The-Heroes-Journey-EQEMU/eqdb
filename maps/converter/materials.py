@@ -59,98 +59,23 @@ class MaterialLibrary:
         self._create_brewall_layer_materials()
     
     def _create_default_materials(self):
-        """Create the default material set."""
+        """Create default materials for the library."""
         
-        # Standard line materials
+        # Line materials
         self.materials["line_default"] = Material(
             name="line_default",
             material_type=MaterialType.LINE,
-            base_color=(0.5, 0.5, 0.5, 1.0),
-            roughness_factor=0.9
-        )
-        
-        # Water materials (transparent)
-        self.materials["water_shallow"] = Material(
-            name="water_shallow",
-            material_type=MaterialType.WATER,
-            base_color=(0.0, 0.5, 1.0, 0.6),
-            roughness_factor=0.1,
-            alpha_mode="BLEND"
-        )
-        
-        self.materials["water_deep"] = Material(
-            name="water_deep",
-            material_type=MaterialType.WATER,
-            base_color=(0.0, 0.2, 0.8, 0.8),
-            roughness_factor=0.05,
-            alpha_mode="BLEND"
-        )
-        
-        # Air/void materials (very transparent)
-        self.materials["air"] = Material(
-            name="air",
-            material_type=MaterialType.AIR,
-            base_color=(0.8, 0.8, 1.0, 0.2),
-            roughness_factor=0.3,
-            alpha_mode="BLEND"
-        )
-        
-        # Terrain materials
-        self.materials["terrain_ground"] = Material(
-            name="terrain_ground",
-            material_type=MaterialType.TERRAIN,
-            base_color=(0.4, 0.3, 0.2, 1.0),
-            roughness_factor=1.0
-        )
-        
-        self.materials["terrain_rock"] = Material(
-            name="terrain_rock",
-            material_type=MaterialType.TERRAIN,
-            base_color=(0.3, 0.3, 0.3, 1.0),
+            base_color=(0.8, 0.8, 0.8, 1.0),
             roughness_factor=0.8
         )
         
-        # UI elements
-        self.materials["ui_compass"] = Material(
-            name="ui_compass",
-            material_type=MaterialType.UI,
-            base_color=(1.0, 1.0, 0.0, 0.8),
-            roughness_factor=0.5,
-            alpha_mode="BLEND",
-            emissive_factor=(0.2, 0.2, 0.0)
-        )
-        
-        # Waypoint materials (special visual treatment)
-        self.materials["waypoint_wizard"] = Material(
-            name="waypoint_wizard",
-            material_type=MaterialType.WAYPOINT,
-            base_color=(1.0, 0.0, 0.0, 1.0),  # Red
-            roughness_factor=0.3,
-            emissive_factor=(0.3, 0.0, 0.0)
-        )
-        
-        self.materials["waypoint_druid"] = Material(
-            name="waypoint_druid",
-            material_type=MaterialType.WAYPOINT,
-            base_color=(0.0, 1.0, 0.0, 1.0),  # Green
-            roughness_factor=0.3,
-            emissive_factor=(0.0, 0.3, 0.0)
-        )
-        
-        self.materials["waypoint_general"] = Material(
-            name="waypoint_general",
-            material_type=MaterialType.WAYPOINT,
-            base_color=(1.0, 1.0, 0.0, 1.0),  # Yellow
-            roughness_factor=0.3,
-            emissive_factor=(0.3, 0.3, 0.0)
-        )
-        
         # Label materials
-        self.materials["label_default"] = Material(
-            name="label_default",
+        self.materials["label_standard"] = Material(
+            name="label_standard",
             material_type=MaterialType.LABEL,
             base_color=(1.0, 1.0, 1.0, 1.0),
-            roughness_factor=0.5
+            roughness_factor=0.5,
+            emissive_factor=(0.1, 0.1, 0.1)
         )
         
         self.materials["label_important"] = Material(
@@ -159,6 +84,114 @@ class MaterialLibrary:
             base_color=(1.0, 1.0, 0.0, 1.0),
             roughness_factor=0.3,
             emissive_factor=(0.2, 0.2, 0.0)
+        )
+        
+        # New label type materials
+        self.materials["label_waypoint"] = Material(
+            name="label_waypoint",
+            material_type=MaterialType.LABEL,
+            base_color=(1.0, 0.0, 0.0, 1.0),
+            roughness_factor=0.2,
+            emissive_factor=(0.3, 0.0, 0.0)
+        )
+        
+        self.materials["label_zone"] = Material(
+            name="label_zone",
+            material_type=MaterialType.LABEL,
+            base_color=(0.0, 0.5, 1.0, 1.0),
+            roughness_factor=0.3,
+            emissive_factor=(0.0, 0.1, 0.2)
+        )
+        
+        self.materials["label_npc"] = Material(
+            name="label_npc",
+            material_type=MaterialType.LABEL,
+            base_color=(0.0, 1.0, 0.0, 1.0),
+            roughness_factor=0.4,
+            emissive_factor=(0.0, 0.2, 0.0)
+        )
+        
+        self.materials["label_item"] = Material(
+            name="label_item",
+            material_type=MaterialType.LABEL,
+            base_color=(1.0, 1.0, 0.0, 1.0),
+            roughness_factor=0.5,
+            emissive_factor=(0.2, 0.2, 0.0)
+        )
+        
+        # Waypoint materials
+        self.materials["waypoint_general"] = Material(
+            name="waypoint_general",
+            material_type=MaterialType.WAYPOINT,
+            base_color=(1.0, 0.0, 0.0, 1.0),
+            roughness_factor=0.2,
+            emissive_factor=(0.3, 0.0, 0.0)
+        )
+        
+        self.materials["waypoint_wizard"] = Material(
+            name="waypoint_wizard",
+            material_type=MaterialType.WAYPOINT,
+            base_color=(0.5, 0.0, 1.0, 1.0),
+            roughness_factor=0.2,
+            emissive_factor=(0.2, 0.0, 0.3)
+        )
+        
+        self.materials["waypoint_druid"] = Material(
+            name="waypoint_druid",
+            material_type=MaterialType.WAYPOINT,
+            base_color=(0.0, 0.8, 0.0, 1.0),
+            roughness_factor=0.2,
+            emissive_factor=(0.0, 0.2, 0.0)
+        )
+        
+        # Water materials
+        self.materials["water_shallow"] = Material(
+            name="water_shallow",
+            material_type=MaterialType.WATER,
+            base_color=(0.4, 0.6, 1.0, 0.7),
+            roughness_factor=0.1,
+            alpha_mode="BLEND"
+        )
+        
+        self.materials["water_deep"] = Material(
+            name="water_deep",
+            material_type=MaterialType.WATER,
+            base_color=(0.1, 0.3, 0.8, 0.9),
+            roughness_factor=0.05,
+            alpha_mode="BLEND"
+        )
+        
+        # Air materials
+        self.materials["air"] = Material(
+            name="air",
+            material_type=MaterialType.AIR,
+            base_color=(0.8, 0.9, 1.0, 0.3),
+            roughness_factor=0.9,
+            alpha_mode="BLEND"
+        )
+        
+        # Terrain materials
+        self.materials["terrain_ground"] = Material(
+            name="terrain_ground",
+            material_type=MaterialType.TERRAIN,
+            base_color=(0.6, 0.4, 0.2, 1.0),
+            roughness_factor=0.9
+        )
+        
+        self.materials["terrain_rock"] = Material(
+            name="terrain_rock",
+            material_type=MaterialType.TERRAIN,
+            base_color=(0.5, 0.5, 0.5, 1.0),
+            roughness_factor=0.8
+        )
+        
+        # UI materials
+        self.materials["ui_compass"] = Material(
+            name="ui_compass",
+            material_type=MaterialType.UI,
+            base_color=(1.0, 1.0, 1.0, 0.8),
+            roughness_factor=0.5,
+            alpha_mode="BLEND"
         )
     
     def _create_brewall_layer_materials(self):
@@ -251,6 +284,14 @@ class MaterialAssigner:
         material = self.library.get_material_by_layer(semantic_layer)
         if material:
             return material
+        
+        # Handle new label type semantic layers
+        if semantic_layer.startswith("labels_"):
+            label_type = semantic_layer.replace("labels_", "")
+            material_name = f"label_{label_type}"
+            material = self.library.get_material(material_name)
+            if material:
+                return material
         
         # Fallback mappings for common semantic layers
         layer_mappings = {

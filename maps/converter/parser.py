@@ -40,6 +40,7 @@ class Waypoint:
     y: float
     z: float
     zone_name: str
+    waypoint_type: str = "waypoint"  # 'waypoint', 'wizard', 'druid', 'zone_entry', etc.
     special_visual: bool = True
     description: Optional[str] = None
 

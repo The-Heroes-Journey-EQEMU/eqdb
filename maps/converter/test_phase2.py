@@ -21,6 +21,7 @@ from parser import MapParser
 from geometry import GeometryGenerator
 from materials import MaterialLibrary, MaterialAssigner
 from exporter import GLTFExporter
+from error_handler import ErrorHandler, PerformanceMonitor, ProgressTracker, ProcessingStage
 
 def setup_logging():
     """Set up logging for the test."""
@@ -35,18 +36,23 @@ def test_complete_phase2_workflow():
     print("Testing: Parse → Geometry → Materials → glTF Export")
     print()
     
+    error_handler = ErrorHandler(verbose=True)
+    perf_monitor = PerformanceMonitor(verbose=True)
+
     # Step 1: Parse the overthere zone
     print("1. Parsing overthere zone...")
     parser = MapParser(verbose=False)
-    
-    try:
-        map_data = parser.parse_zone("overthere")
-        print(f"   ✓ Parsed {len(map_data.line_segments)} line segments")
-        print(f"   ✓ Parsed {len(map_data.labels)} labels")
-        print(f"   ✓ Parsed {len(map_data.waypoints)} waypoints")
-    except Exception as e:
-        print(f"   ✗ Error parsing overthere zone: {e}")
-        return
+    map_data = None
+    with perf_monitor.monitor_stage(ProcessingStage.PARSING):
+        try:
+            map_data = parser.parse_zone("overthere")
+            print(f"   ✓ Parsed {len(map_data.line_segments)} line segments")
+            print(f"   ✓ Parsed {len(map_data.labels)} labels")
+            print(f"   ✓ Parsed {len(map_data.waypoints)} waypoints")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.PARSING, f"Error parsing overthere zone: {e}", exception=e)
+            print(f"   ✗ Error parsing overthere zone: {e}")
+            return
     
     # Step 2: Generate 3D geometry
     print("\n2. Generating 3D geometry...")
@@ -56,37 +62,59 @@ def test_complete_phase2_workflow():
         verbose=True
     )
     
-    meshes = generator.generate_all_geometry(map_data)
-    print(f"   ✓ Generated {len(meshes)} meshes")
+    meshes = []
+    with perf_monitor.monitor_stage(ProcessingStage.GEOMETRY_GENERATION):
+        try:
+            meshes = generator.generate_all_geometry(map_data)
+            print(f"   ✓ Generated {len(meshes)} meshes")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.GEOMETRY_GENERATION, f"Error generating geometry: {e}", exception=e)
+            print(f"   ✗ Error generating geometry: {e}")
+            return
     
     # Optimize geometry
-    optimized_meshes = generator.optimize_geometry(meshes)
-    print(f"   ✓ Optimized to {len(optimized_meshes)} meshes")
+    with perf_monitor.monitor_stage(ProcessingStage.OPTIMIZATION):
+        try:
+            optimized_meshes = generator.optimize_geometry(meshes)
+            print(f"   ✓ Optimized to {len(optimized_meshes)} meshes")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.OPTIMIZATION, f"Error optimizing geometry: {e}", exception=e)
+            print(f"   ✗ Error optimizing geometry: {e}")
+            return
     
     # Calculate bounding box
-    bbox = generator.calculate_bounding_box(optimized_meshes)
-    print(f"   ✓ Bounding box: X({bbox['min_x']:.1f} to {bbox['max_x']:.1f}), "
-          f"Y({bbox['min_y']:.1f} to {bbox['max_y']:.1f}), "
-          f"Z({bbox['min_z']:.1f} to {bbox['max_z']:.1f})")
+    try:
+        bbox = generator.calculate_bounding_box(optimized_meshes)
+        print(f"   ✓ Bounding box: X({bbox['min_x']:.1f} to {bbox['max_x']:.1f}), "
+              f"Y({bbox['min_y']:.1f} to {bbox['max_y']:.1f}), "
+              f"Z({bbox['min_z']:.1f} to {bbox['max_z']:.1f})")
+    except Exception as e:
+        error_handler.handle_error(ProcessingStage.OPTIMIZATION, f"Error calculating bounding box: {e}", exception=e)
+        print(f"   ✗ Error calculating bounding box: {e}")
     
     # Step 3: Set up material system
     print("\n3. Setting up material system...")
-    material_library = MaterialLibrary()
-    material_assigner = MaterialAssigner(material_library)
-    
-    print(f"   ✓ Created material library with {len(material_library.get_all_materials())} materials")
-    
-    # Show available material types
-    material_types = {}
-    for material in material_library.get_all_materials():
-        mat_type = material.material_type.value
-        if mat_type not in material_types:
-            material_types[mat_type] = 0
-        material_types[mat_type] += 1
-    
-    print("   Available material types:")
-    for mat_type, count in material_types.items():
-        print(f"     - {mat_type}: {count} materials")
+    with perf_monitor.monitor_stage(ProcessingStage.MATERIAL_ASSIGNMENT):
+        try:
+            material_library = MaterialLibrary()
+            material_assigner = MaterialAssigner(material_library)
+            print(f"   ✓ Created material library with {len(material_library.get_all_materials())} materials")
+            
+            # Show available material types
+            material_types = {}
+            for material in material_library.get_all_materials():
+                mat_type = material.material_type.value
+                if mat_type not in material_types:
+                    material_types[mat_type] = 0
+                material_types[mat_type] += 1
+            
+            print("   Available material types:")
+            for mat_type, count in material_types.items():
+                print(f"     - {mat_type}: {count} materials")
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.MATERIAL_ASSIGNMENT, f"Error setting up material system: {e}", exception=e)
+            print(f"   ✗ Error setting up material system: {e}")
+            return
     
     # Step 4: Export to glTF
     print("\n4. Exporting to glTF format...")
@@ -98,25 +126,27 @@ def test_complete_phase2_workflow():
     
     output_path = f"{output_dir}/overthere.gltf"
     
-    try:
-        # Export with automatic material assignment
-        stats = exporter.export_with_materials(
-            optimized_meshes,
-            material_assigner,
-            output_path,
-            "overthere"
-        )
-        
-        print(f"   ✓ Exported to {output_path}")
-        print(f"   ✓ File size: {stats['file_size']:,} bytes")
-        print(f"   ✓ Total vertices: {stats['total_vertices']:,}")
-        print(f"   ✓ Total faces: {stats['total_faces']:,}")
-        print(f"   ✓ Mesh count: {stats['mesh_count']}")
-        print(f"   ✓ Material count: {stats['material_count']}")
-        
-    except Exception as e:
-        print(f"   ✗ Error exporting glTF: {e}")
-        return
+    with perf_monitor.monitor_stage(ProcessingStage.EXPORT):
+        try:
+            # Export with automatic material assignment
+            stats = exporter.export_with_materials(
+                optimized_meshes,
+                material_assigner,
+                output_path,
+                "overthere"
+            )
+            
+            print(f"   ✓ Exported to {output_path}")
+            print(f"   ✓ File size: {stats['file_size']:,} bytes")
+            print(f"   ✓ Total vertices: {stats['total_vertices']:,}")
+            print(f"   ✓ Total faces: {stats['total_faces']:,}")
+            print(f"   ✓ Mesh count: {stats['mesh_count']}")
+            print(f"   ✓ Material count: {stats['material_count']}")
+            
+        except Exception as e:
+            error_handler.handle_error(ProcessingStage.EXPORT, f"Error exporting glTF: {e}", exception=e)
+            print(f"   ✗ Error exporting glTF: {e}")
+            return
     
     # Step 5: Export with waypoint metadata
     print("\n5. Adding waypoint metadata...")
@@ -155,6 +185,7 @@ def test_complete_phase2_workflow():
         print(f"   ✓ Waypoint count: {waypoint_metadata['waypoint_count']}")
         
     except Exception as e:
+        error_handler.handle_error(ProcessingStage.EXPORT, f"Error adding metadata: {e}", exception=e)
         print(f"   ✗ Error adding metadata: {e}")
     
     # Step 6: Validate glTF files
@@ -195,9 +226,15 @@ def test_complete_phase2_workflow():
         print(f"   ✓ glTF materials: {len(materials)}")
         
     except Exception as e:
+        error_handler.handle_error(ProcessingStage.EXPORT, f"Error validating glTF: {e}", exception=e)
         print(f"   ✗ Error validating glTF: {e}")
     
     print("\n=== Phase 2 Workflow Test Complete ===")
+    # Print error summary and performance summary
+    print("\nError Summary:")
+    print(error_handler.get_error_summary())
+    print("\nPerformance Summary:")
+    print(perf_monitor.get_performance_summary())
     print(f"Generated files:")
     print(f"  - {output_path}")
     print(f"  - {metadata_path}")
