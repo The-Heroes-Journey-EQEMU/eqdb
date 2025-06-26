@@ -437,19 +437,13 @@ def pet_detail(pet_sum_name):
     return render_template('pet_detail.html', data=data)
 
 
-@app.route("/spell/listing", methods=['GET', 'POST'])
+@app.route("/spell/listing", methods=['GET'])
 def spell_listing():
-    if request.method == 'GET':
+    class_id = request.args.get('class_id')
+    if not class_id:
         return render_template('spell_listing.html')
     else:
-        class_id = request.form.get('class_id')
-        if class_id == 'None':
-            flash("You must select a class")
-            return redirect(url_for('spell_listing'))
-        min_level = request.form.get('min_level')
-        max_level = request.form.get('max_level')
-
-        data = spell.get_spells_by_class(class_id, min_level=min_level, max_level=max_level)
+        data = spell.get_spells_by_class(class_id, min_level=1, max_level=65)
         return render_template('spell_listing_result.html', data=data)
 
 
@@ -959,32 +953,18 @@ def item_search():
 
 @app.route("/search/weapon", methods=['GET', 'POST'])
 def weapon_search():
-    if request.method == 'GET':
-        skills = utils.get_all_skills()
-        return render_template('weapon_search.html',
-                               skills=skills)
+    if discord.is_user_logged_in():
+        user = discord.fetch_user()
     else:
-        return redirect(url_for('item_search'), code=307)
-
-
-@app.route("/search/armor", methods=['GET', 'POST'])
-def armor_search():
+        user = None
     if request.method == 'GET':
         skills = utils.get_all_skills()
-        return render_template('item_search.html',
-                               skills=skills)
-    else:
-        return redirect(url_for('item_search'), code=307)
-
-
-@app.route("/user/search/weapon", methods=['GET', 'POST'])
-@requires_authorization
-def weapon_search_authorized():
-    user = discord.fetch_user()
-    if request.method == 'GET':
-        skills = utils.get_all_skills()
-        restricts = local.get_restrict_sets(user)
-        weights = local.get_weights_sets(user)
+        if user:
+            restricts = local.get_restrict_sets(user)
+            weights = local.get_weights_sets(user)
+        else:
+            restricts = []
+            weights = []
         return render_template('weapon_search.html',
                                skills=skills,
                                restricts=restricts,
@@ -995,14 +975,20 @@ def weapon_search_authorized():
         return redirect(url_for('item_search'), code=307)
 
 
-@app.route("/user/search/armor", methods=['GET', 'POST'])
-@requires_authorization
-def armor_search_authorized():
-    user = discord.fetch_user()
+@app.route("/search/armor", methods=['GET', 'POST'])
+def armor_search():
+    if discord.is_user_logged_in():
+        user = discord.fetch_user()
+    else:
+        user = None
     if request.method == 'GET':
         skills = utils.get_all_skills()
-        restricts = local.get_restrict_sets(user)
-        weights = local.get_weights_sets(user)
+        if user:
+            restricts = local.get_restrict_sets(user)
+            weights = local.get_weights_sets(user)
+        else:
+            restricts = []
+            weights = []
         return render_template('item_search.html',
                                skills=skills,
                                restricts=restricts,

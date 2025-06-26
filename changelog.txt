@@ -1,3 +1,34 @@
+==2.1.1==
+* Added a search button to the top of the Armor/Weapon search form
+* Added (E) and (L) links on items returned when searching from the top navbar to link to Enchanted and Legendary versions of the items.
+  * Enchanted and Legendary items that do not exist will just display that they don't exist.
+* Reorganized the main navbar
+  * Tools dropdown has been removed
+  * Items has been made the first entry and is now a drop-down with Item Search, Armor Search, and Weapon Search
+  * Spells has been made into a drop-down with Spell Search and Class Spells
+  * Zones has been made into a drop-down with Zone Listing and Waypoints
+  * Pets have been moved to their own top level navbar entry
+* Added a search box to the main page
+* Removed the splash image on the main page
+* Links to other versions of an item on the item detail page now have tooltips hooked up
+* Reworked the class spell listing page
+  * Top page now shows all classes with their monograms
+  * Clicking a class now shows all of their spells from level 1 to 65
+* Fixed a display issue with SPA 374 (chance to triger spell) link display bleeding into other lines.
+* Reworded the "Search for Pet Items" to be "Bypass Search Requirements" and added a warning that it might be slow on the Armor and Weapon search pages.
+* Defaulted item weight and item restrict filters to 1 instead of 0 on Armor and Weapon search pages.
+* Removed Weapon Search and Armor Search (with filters) from User Area
+* Armor Search and Weapon Search will now detect if you're already logged in and will retrieve filter sets.
+* Added a link to log in from the Weapon and Armor search pages
+* NPC and All search now excludes NPCs from inaccessible zones (ex: Plane of Hate 1.0)
+* Detail pages (NPC, Spell, Item, Pet, Zone, Tradeskill, and Faction) now use a page/tab title that displays the detail type and name (ex: EQDB :: NPC :: Rallos Zek the Warlord)
+* Fixed Sympathetic Click Effect filtering on Armor Search
+  * Reminder: You can still find weapons on the armor search page, there are just no weapon-specific filters like Ratio, Damage, etc on there!
+* Spell Recourses have been added to the class spell listing to help show spells that have a recourse effect
+* Spell types of Instant, Buff, Debuff, and DoT have been added to class spell listing to show their duration and help differentiate DDs and DoTs.
+* Fixed a large number of SPA parsing issues.
+* Respawn time on NPC and Zone detail pages has been changed from seconds to 'human readible' days, hours, minutes, and seconds.
+
 ==2.1.0.1==
 DEPLOYED: 6/14/2025
 * Removed all references to "spells_new_reference" since it is in the incorrect table to use for spells.

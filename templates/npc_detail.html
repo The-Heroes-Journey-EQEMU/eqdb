@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
-{% block body %}
 {% if data is none %}
 <h3>NPC data not found or does not exist</h3>
 {% else %}
+{% block title %}
+EQDB :: NPC :: {{data.name}}
+{% endblock %}
+{% block body %}
 <center><h3>{{data.name}}</h3></center>
 <div style="display: flex; justify-content: center;">
 <div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
@@ -222,7 +225,7 @@
         {% if data['spawn_groups'] %}
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="spawns" role="tabpanel" aria-labelledby="spawns-tab">
             {% for entry in data['spawn_groups'] %}
-              <li>{{entry.name}}:: {{entry.x * -1}}, {{entry.y * -1}}, {{entry.z}} :: {{entry.respawn}}s respawn :: <abbr title="spawngroupID: {{entry.group_id}}, spawn2ID: {{entry.spawn_id}}">Spawn Info</abbr></li>
+              <li>{{entry.name}}:: {{entry.x * -1}}, {{entry.y * -1}}, {{entry.z}} :: {{entry.respawn}} respawn :: <abbr title="spawngroupID: {{entry.group_id}}, spawn2ID: {{entry.spawn_id}}">Spawn Info</abbr></li>
               <ul>
               {% for subentry in entry.spawn_npcs  %}
                   <li><a href="{{url_for('npc_detail', npc_id=subentry.npc_id)}}">{{subentry.npc_name}}</a> ({{subentry.chance}}% chance)</li>
@@ -233,5 +236,5 @@
         {% endif %}
     </div>
 </div></div>
-{% endif %}
 {% endblock %}
+{% endif %}

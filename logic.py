@@ -444,6 +444,7 @@ def get_era_items(kwargs):
     filters = []
     class_or_filters = []
     weapon_or_filters = []
+    symp_or_filters = []
     aug_search = False
     no_rent = False
     # Now, add the filters that can be applied at all levels to save time.
@@ -509,6 +510,7 @@ def get_era_items(kwargs):
     params = and_(*filters)
     class_or_params = or_(*class_or_filters)
     weapon_or_params = or_(*weapon_or_filters)
+    symp_or_params = or_(*symp_or_filters)
 
     base_items = []
     with Session(bind=engine) as session:
@@ -518,6 +520,7 @@ def get_era_items(kwargs):
             filter(params).\
             filter(class_or_params).\
             filter(weapon_or_params).\
+            filter(symp_or_params).\
             group_by(Item.id)
         result = query.all()
 
@@ -675,6 +678,16 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         if entry.id in excl_list:
             continue
         entry = utils.ReducedItem((dict(entry._mapping)))
+        if 'sympathetic' in kwargs:
+            if kwargs['sympathetic'] == 'all_strike':
+                if entry.clickeffect < 24356 or entry.clickeffect > 24365:
+                    continue
+            elif kwargs['sympathetic'] == 'all_heal':
+                if entry.clickeffect < 24434 or entry.clickeffect > 24443:
+                    continue
+            else:
+                if entry.clickeffect != int(kwargs['sympathetic']):
+                    continue
         entry.npc_id = lookup_table[entry.id]['npc_id']
         entry.npc_name = lookup_table[entry.id]['npc_name']
         entry.focus_type = kwargs.get('focus_type')

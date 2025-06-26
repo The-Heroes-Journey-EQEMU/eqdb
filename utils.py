@@ -13,6 +13,54 @@ class ReducedItem:
             setattr(self, k, v)
 
 
+def convert_time(seconds):
+    # Translate this into human readible
+    hours = 0
+    minutes = 0
+    days = 0
+    if seconds > 86400:
+        days = int(seconds / 86400)
+        seconds = seconds - (days * 86400)
+    if seconds > 3600:
+        hours = int(seconds / 3600)
+        seconds = seconds - (hours * 3600)
+
+    if seconds > 60:
+        minutes = int(seconds / 60)
+        seconds = seconds - (minutes * 60)
+
+    if days > 0 and hours > 0 and minutes > 0 and seconds > 0:
+        return f'{days} days, {hours} hours, {minutes} minutes, {seconds} seconds'
+    elif days > 0 and hours > 0 and minutes > 0:
+        return f'{days} days, {hours} hours, {minutes} minutes'
+    elif days > 0 and hours > 0 and seconds > 0:
+        return f'{days} days, {hours} hours, {seconds} seconds'
+    elif days > 0 and minutes > 0 and seconds > 0:
+        return f'{days} days, {minutes} minutes, {seconds} seconds'
+    elif days > 0 and hours > 0:
+        return f'{days} days, {hours} hours'
+    elif days > 0 and minutes > 0:
+        return f'{days} days, {minutes} minutes'
+    elif days > 0 and seconds > 0:
+        return f'{days} days, {seconds} seconds'
+    elif days > 0:
+        return f'{days} days'
+    elif hours > 0 and minutes > 0 and seconds > 0:
+        return f'{hours} hours, {minutes} minutes, {seconds} seconds'
+    elif hours > 0 and minutes > 0:
+        return f'{hours} hours, {minutes} minutes'
+    elif hours > 0 and seconds > 0:
+        return f'{hours} hours, {seconds} seconds'
+    elif hours > 0:
+        return f'{hours} hours'
+    elif minutes > 0 and seconds > 0:
+        return f'{minutes} minutes, {seconds} seconds'
+    elif minutes > 0:
+        return f'{minutes} minutes'
+    else:
+        return f'{seconds} seconds'
+
+
 def get_spell_class(class_num):
     if class_num == 1:
         return 'Warrior'
@@ -3114,7 +3162,6 @@ def check_sympathetic(name):
         return f'{split_name[0]}{split_name[1]}'
     elif 'Sympathetic Healing Burst' in name:
         split_name = name.split('Burst')
-        print(split_name)
         return f'{split_name[0]}{split_name[1]}'
     else:
         return name

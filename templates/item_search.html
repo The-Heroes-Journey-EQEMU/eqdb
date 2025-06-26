@@ -213,7 +213,7 @@ $(document).ready(function() {
 		  <option value=\"stunresist\">Stun Resist</option> \
 		</select> \
 	  </td> \
-	  <td><input name=\"stat_val_" + filterId + "\" size=\"3\" value=\"0\"></td> \
+	  <td><input name=\"stat_val_" + filterId + "\" size=\"3\" value=\"1\"></td> \
 	  <td> \
 	    <input type=\"button\" class=\"removerow\" value=\"-\"> \
 	  </td> \
@@ -277,7 +277,7 @@ $(document).ready(function() {
 	</select> \
   </td> \
   <td> \
-    <input name=\"stat_weight_" + weightId + "\" size=\"3\" value=\"0\"> \
+    <input name=\"stat_weight_" + weightId + "\" size=\"3\" value=\"1\"> \
   </td> \
   <td> \
     <input type=\"button\" class=\"removerow\" value=\"-\"> \
@@ -423,6 +423,10 @@ function createOption(ddl, text, value) {
 {% set i_types = ['Augment', 'Shield'] %}
 <h4>Armor Search</h4>
 <form actions="{{ url_for('item_search') }}" method="post" class="add-entry" id="demoForm" target="_blank">
+    {% if not restricts and not weights %}
+      Don't see your restrict or weight sets? <a href="{{url_for('user_home')}}">Login</a> here!<br>
+    {% endif %}
+    <input type="submit" value="Search"><br>
     <table id="searchOpts">
         <tr>
             <td>
@@ -620,8 +624,8 @@ function createOption(ddl, text, value) {
                         <td><input type="checkbox" name="ignore_zero" value="True"></td>
                     </tr>
                     <tr>
-                        <td><abbr title="Allows you to search without providing classes or slot and includes no rent items.">
-                                Search for Pet items:
+                        <td><abbr title="Allows you to search without providing classes or slot and includes no rent items.  WARNING: This may be slow!">
+                                Bypass Search Requirements:
                                 </abbr></td>
                         <td><input type="checkbox" name="pet_search" value="True"></td>
                     </tr>

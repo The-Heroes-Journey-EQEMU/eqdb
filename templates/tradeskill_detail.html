@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
-{% block body %}
 {% if data is none %}
 <h3>Tradeskill data not found or does not exist</h3>
 {% else %}
+{% block title %}
+EQDB :: Recipe :: {{data.name}}
+{% endblock %}
+{% block body %}
 <div style="display: flex; justify-content: center;">
 <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" id="basicstats">
     <center><h5>Tradeskill Information</h5></center>
@@ -100,5 +103,5 @@
     </table>
 </div>
 </div>
-{% endif %}
 {% endblock %}
+{% endif %}

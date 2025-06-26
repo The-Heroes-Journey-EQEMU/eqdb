@@ -169,6 +169,35 @@ def get_spell_raw_data(spell_id=None, spell_name=None):
             return ret_list
 
 
+def translate_result(entry):
+    entry = entry._mapping
+    spell_id = entry.id
+    excl_list = utils.get_exclusion_list('spells')
+    if spell_id in excl_list:
+        return None
+    spell_name = entry.name
+    skill = utils.parse_skill(entry.skill)
+    target = parse_target_type(int(entry.targettype))
+    icon = entry.new_icon
+    slots = {}
+    dot = False
+    for idx in range(1, 13):
+        if getattr(entry, f'effectid{idx}') != 254:
+            slots.update({f'slot_{idx}': parse_slot_data(idx, entry, no_item_links=True)})
+            if getattr(entry, f'effectid{idx}') == 0:
+                dot = True
+    if entry.buffduration > 0:
+        instant = False
+    else:
+        instant = True
+    if entry.goodEffect == 1:
+        beneficial = True
+    else:
+        beneficial = False
+    return {'spell_id': spell_id, 'skill': skill, 'spell_name': spell_name, 'dot': dot,
+            'target': target, 'slots': slots, 'icon': icon, 'instant': instant, 'beneficial': beneficial}
+
+
 def get_spells_by_class(class_id, min_level=1, max_level=65):
     filters = [getattr(SpellsNew, f'classes{class_id}') >= min_level,
                getattr(SpellsNew, f'classes{class_id}') <= max_level]
@@ -207,32 +236,28 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
                 SpellsNew.formula6, SpellsNew.formula7, SpellsNew.formula8,
                 SpellsNew.formula9, SpellsNew.formula10, SpellsNew.formula11,
                 SpellsNew.formula12, SpellsNew.buffduration, SpellsNew.teleport_zone,
-                SpellsNew.buffduration, SpellsNew.buffdurationformula]
+                SpellsNew.buffduration, SpellsNew.buffdurationformula, SpellsNew.RecourseLink,
+                SpellsNew.goodEffect]
         query = session.query(*args).filter(params)
         result = query.all()
 
     data = {'game_class': utils.get_spell_class(int(class_id))}
     for entry in result:
-        entry = entry._mapping
-        spell_id = entry.id
-        excl_list = utils.get_exclusion_list('spells')
-        if spell_id in excl_list:
-            continue
         level = getattr(entry, f'classes{class_id}')
-        spell_name = entry.name
-        skill = utils.parse_skill(entry.skill)
-        target = parse_target_type(int(entry.targettype))
-        icon = entry.new_icon
-        slots = {}
-        for idx in range(1, 13):
-            if getattr(entry, f'effectid{idx}') != 254:
-                slots.update({f'slot_{idx}': parse_slot_data(idx, entry, no_item_links=True)})
         if level in data:
             level_list = data[level]
         else:
             level_list = []
-        level_list.append({'spell_id': spell_id, 'spell_name': spell_name, 'skill': skill,
-                           'target': target, 'slots': slots, 'icon': icon})
+        parsed = translate_result(entry)
+        level_list.append(parsed)
+
+        if entry.RecourseLink > 0:
+            with Session(bind=engine) as session:
+                query = session.query(*args).filter(SpellsNew.id == entry.RecourseLink)
+                sub_result = query.one()
+            parsed = translate_result(sub_result)
+            level_list.append(parsed)
+
         data.update({level: level_list})
 
     return data
@@ -416,13 +441,13 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         else:
             minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level, ignore_max=False)
         if min_val < 0:
-            if min_level == max_level:
-                return f'Decrease Hitpoints by {minimum}'
+            if (min_level == max_level) or min_level == 255:
+                return f'Decrease Hitpoints by {max_val}'
             else:
                 return f'Decrease Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            if min_level == max_level:
-                return f'Increase Hitpoints by {minimum}'
+            if (min_level == max_level) or min_level == 255:
+                return f'Increase Hitpoints by {max_val}'
             else:
                 return f'Increase Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 1:
@@ -433,7 +458,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
             int_max = int(round(max_val / 3))  # This is correct
             reg_min = int(round(minimum / 4))
             reg_max = int(round(max_val / 4))  # This is correct
-            if min_level == 255:
+            if min_level == 255 or (min_level == max_level):
                 return f'Decrease AC for cloth_casters by {int_min}, everyone else by {reg_min}'
             else:
                 return (f'Decrease AC for cloth casters by {int_min} (L{min_level}) to {int_max} (L{max_level}), '
@@ -444,7 +469,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
             int_max = int(round(max_val / 3))  # This is correct
             reg_min = int(round(minimum / 4))
             reg_max = int(round(max_val / 4))  # This is correct
-            if min_level == 255:
+            if min_level == 255 or (min_level == max_level):
                 return f'Increase AC for cloth casters by {int_min}, everyone else by {reg_min}'
             else:
                 return (f'Increase AC for cloth casters by {int_min} (L{min_level}) to {int_max} (L{max_level}), '
@@ -453,12 +478,12 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Attack Power
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            if min_level == 255:
+            if min_level == 255 or (max_level == min_level):
                 return f'Decrease ATK by {minimum}'
             else:
                 return f'Decrease ATK by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            if min_level == 255:
+            if min_level == 255 or (max_level == min_level):
                 return f'Increase ATK by {minimum}'
             else:
                 return f'Increase ATK by {minimum} (L{min_level}) to {max_val} (L{max_level})'
@@ -574,14 +599,14 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Melee Speed
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0 or (min_level == 255 and max_val - 100 < 0):
-            if min_level == 255:
-                return f'Decrease Attack Speed by {abs(max_val - 100)}%'
+            if min_level == 255 or (max_level == min_level):
+                return f'Decrease Attack Speed by {abs(min_val - 100)}%'
             else:
                 return (f'Decrease Attack Speed by {abs(minimum - 100)}% (L{min_level}) to '
                         f'{abs(max_val - 100)}% (L{max_level})')
         else:
-            if min_level == 255:
-                return f'Increase Attack Speed by {max_val - 100}%'
+            if min_level == 255 or (max_level == min_level):
+                return f'Increase Attack Speed by {min_val - 100}%'
             else:
                 return f'Increase Attack Speed by {minimum - 100}% (L{min_level}) to {max_val - 100}% (L{max_level})'
     elif spa == 12:
@@ -723,66 +748,121 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
     elif spa == 46:
         # Resist Fire
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_level == min_level:
+            min_level = 255
+
         if min_val < 0:
             if min_level == 255:
-                return f'Decrease Fire Resist by {max_val}'
+                if abs(min_val) > max_val:
+                    d_value = abs(min_val)
+                else:
+                    d_value = max_val
+                return f'Decrease Fire Resist by {d_value}'
             else:
                 return f'Decrease Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             if min_level == 255:
-                return f'Increase Fire Resist by {max_val}'
+                if min_val > max_val:
+                    d_value = min_val
+                else:
+                    d_value = max_val
+                return f'Increase Fire Resist by {d_value}'
             else:
                 return f'Increase Fire Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 47:
         # Resist Cold
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_level == min_level:
+            min_level = 255
+
         if min_val < 0:
             if min_level == 255:
-                return f'Decrease Cold Resist by {max_val}'
+                if abs(min_val) > max_val:
+                    d_value = abs(min_val)
+                else:
+                    d_value = max_val
+                return f'Decrease Cold Resist by {d_value}'
             else:
                 return f'Decrease Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             if min_level == 255:
-                return f'Increase Cold Resist by {max_val}'
+                if min_val > max_val:
+                    d_value = min_val
+                else:
+                    d_value = max_val
+                return f'Increase Cold Resist by {d_value}'
             else:
                 return f'Increase Cold Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 48:
         # Resist Poison
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_level == min_level:
+            min_level = 255
+
         if min_val < 0:
             if min_level == 255:
-                return f'Decrease Poison Resist by {max_val}'
+                if abs(min_val) > max_val:
+                    d_value = abs(min_val)
+                else:
+                    d_value = max_val
+                return f'Decrease Poison Resist by {d_value}'
             else:
                 return f'Decrease Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             if min_level == 255:
-                return f'Increase Poison Resist by {max_val}'
+                if min_val > max_val:
+                    d_value = min_val
+                else:
+                    d_value = max_val
+                return f'Increase Poison Resist by {d_value}'
             else:
                 return f'Increase Poison Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 49:
         # Resist Disease
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_level == min_level:
+            min_level = 255
+
         if min_val < 0:
             if min_level == 255:
-                return f'Decrease Disease Resist by {max_val}'
+                if abs(min_val) > max_val:
+                    d_value = abs(min_val)
+                else:
+                    d_value = max_val
+                return f'Decrease Disease Resist by {d_value}'
             else:
                 return f'Decrease Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             if min_level == 255:
-                return f'Increase Disease Resist by {max_val}'
+                if min_val > max_val:
+                    d_value = min_val
+                else:
+                    d_value = max_val
+                return f'Increase Disease Resist by {d_value}'
             else:
                 return f'Increase Disease Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 50:
         # Resist Magic
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
+        if max_level == min_level:
+            min_level = 255
+
         if min_val < 0:
             if min_level == 255:
-                return f'Decrease Magic Resist by {max_val}'
+                if abs(min_val) > max_val:
+                    d_value = abs(min_val)
+                else:
+                    d_value = max_val
+                return f'Decrease Magic Resist by {d_value}'
             else:
                 return f'Decrease Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
             if min_level == 255:
-                return f'Increase Magic Resist by {max_val}'
+                if min_val > max_val:
+                    d_value = min_val
+                else:
+                    d_value = max_val
+                return f'Increase Magic Resist by {d_value}'
             else:
                 return f'Increase Magic Resist by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 51:
@@ -852,9 +932,15 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Maximum HP
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            return f'Decrease Max Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if max_level == min_level:
+                return f'Decrease Max Hitpoints by {minimum}'
+            else:
+                return f'Decrease Max Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            return f'Increase Max Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
+            if max_level == min_level:
+                return f'Increase Max Hitpoints by {minimum}'
+            else:
+                return f'Increase Max Hitpoints by {minimum} (L{min_level}) to {max_val} (L{max_level})'
     elif spa == 70:
         # Corpsebomb
         return f'SPA 70: Unused (tell the EQDB dev to fix me)'
@@ -886,12 +972,12 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         # Instant HP
         minimum, max_level = do_formula(abs(min_val), formula, max_val, level=min_level)
         if min_val < 0:
-            if min_level == 255:
+            if min_level == 255 or (min_level == max_level):
                 return f'Decrease Hitpoints when cast by {minimum}'
             else:
                 return f'Decrease Hitpoints when cast by {minimum} (L{min_level}) to {max_val} (L{max_level})'
         else:
-            if min_level == 255:
+            if min_level == 255 or (min_level == max_level):
                 return f'Increase Hitpoints when cast by {minimum}'
             else:
                 return f'Increase Hitpoints when cast by {minimum} (L{min_level}) to {max_val} (L{max_level})'
@@ -916,7 +1002,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Toss up by {abs(min_val)}'
     elif spa == 85:
         # Contact Ability (Melee Proc)
-        spell_name = get_spell_name(min_val, engine)
+        spell_name = get_spell_name(min_val)
         return f'Add Melee Proc: <a href="/spell/detail/{min_val}">{spell_name}</a>'
     elif spa == 86:
         # NPC-Help-Radius
@@ -1165,7 +1251,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
             return 'Limit: Detrimental Spells Only'
     elif spa == 139:
         # Focus: Which Spell ID?
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         if min_val >= 0:
             return f"Limit: Only Spell <a href='/spell/detail/{abs(min_val)}'>{spell_name}</a>"
         else:
@@ -1736,7 +1822,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 289:
         # Doom Effect
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f"Cast on Fade: <a href='/spell/detail/{abs(min_val)}'>{spell_name}</a>"
     elif spa == 290:
         # Increase Movement Cap
@@ -1761,7 +1847,10 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 296:
         # Focus: Spell Damage % Incoming
-        return f'Increase Spell Damage Taken by {min_val}% to {limit_val}%'
+        if min_val == limit_val:
+            return f'Increase Spell Damage Taken by {limit_val}%'
+        else:
+            return f'Increase Spell Damage Taken by {min_val}% to {limit_val}%'
     elif spa == 297:
         # Focus: Spell Damage Amt Incoming
         return f'Increase Spell Damage Taken by {min_val}'
@@ -1853,7 +1942,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Teleport to Origin city'
     elif spa == 323:
         # Defensive Proc
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f"Enable Defensive Proc: <a href='/spell/detail/{abs(min_val)}'>{spell_name}</a>"
     elif spa == 324:
         # HP for Mana
@@ -1909,11 +1998,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Summon and Ressurect ({min_val}%) all corpses'
     elif spa == 339:
         # Focus: Proc on Cast
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return f"{min_val}% chance to trigger on spell cast: <a href='/spell/detail/{abs(limit_val)}'>{spell_name}</a>"
     elif spa == 340:
         # Chance Spell
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return f"{min_val}% chance to trigger on song cast: <a href='/spell/detail/{abs(limit_val)}'>{spell_name}</a>"
     elif spa == 341:
         # Worn Attack Cap
@@ -1975,12 +2064,12 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 360:
         # Proc on Kill Shot
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return (f'{min_val}% Chance to Proc Effect on Kill Shot: '
                 f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 361:
         # Proc on Death
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return f'{min_val}% chance to proc effect on death: <a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>'
     elif spa == 362:
         # Potion Belt
@@ -1996,7 +2085,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
             return f'Decrease triple attack chance by {min_val}%'
     elif spa == 365:
         # Proc On Spell Kill Shot
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return (f'{min_val}% chance to proc effect on spell kill shot: '
                 f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 366:
@@ -2030,12 +2119,12 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 373:
         # Doom Always
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger on Fade: <a href="/spell/detail/{abs(min_val)}">{spell_name}</a>'
     elif spa == 374:
         # Trigger Spell
-        spell_name = get_spell_name(abs(limit_val), engine)
-        return f'{min_val}% chance to trigger: <a href="/spell/detail/{abs(limit_val)}">{spell_name}'
+        spell_name = get_spell_name(abs(limit_val))
+        return f'{min_val}% chance to trigger: <a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>'
     elif spa == 375:
         # Critical DoT Damage Mod %
         return f'Increase DoT Critical Damage by {min_val}%'
@@ -2044,7 +2133,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 377:
         # Doom Entity
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Cast on fade if not dispelled: <a href="/spell/detail/{abs(min_val)}">{spell_name}</a>'
     elif spa == 378:
         # Resist other SPA
@@ -2065,7 +2154,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Negate {spa_name} effects'
     elif spa == 383:
         # Focus: Cast Proc Normalized
-        spell_name = get_spell_name(abs(limit_val), engine)
+        spell_name = get_spell_name(abs(limit_val))
         return (f'{min_val}% chance to proc on successful cast: '
                 f'<a href="/spell/detail/{abs(limit_val)}">{spell_name}</a>')
     elif spa == 384:
@@ -2073,15 +2162,15 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Fling Caster to Target'
     elif spa == 385:
         # Focus: Which Spell Group?
-        spell_name = get_spell_name(abs(min_val), engine)
-        return f'Limit: Spell Group <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> Only'
+        spell_id, spell_name = get_spell_group_name(abs(min_val))
+        return f'Limit: Spell Group <a href="/spell/detail/{spell_id}">{spell_name}</a> Only'
     elif spa == 386:
         # Doom Dispeller
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger on Dispeller: <a href="/spell/detail/{abs(min_val)}">{spell_name}</a>'
     elif spa == 387:
         # Doom Dispellee
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger on Dispel: <a href="/spell/detail/{abs(min_val)}">{spell_name}</a>'
     elif spa == 388:
         # Summon All Corpses
@@ -2145,11 +2234,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 406:
         # Doom Limit Use
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Cast <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> when maximum hits reached'
     elif spa == 407:
         # Doom Focus Used
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Cast <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> when focus triggered'
     elif spa == 408:
         # Limit HP
@@ -2191,7 +2280,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
             return f'Increase skill damage amount 2 by {min_val}'
     elif spa == 419:
         # Contact Ability 2 (Melee Proc)
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Add Melee Proc: <a href="/spell/detail/{abs(min_val)}">{spell_name}</a>'
     elif spa == 420:
         # Limit: Use
@@ -2219,14 +2308,14 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'SPA {spa}: Unused (tell the EQDB dev to fix me)'
     elif spa == 427:
         # Skill Proc (Attempt)
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on fade'
     elif spa == 428:
         # Proc Skill Modifier
         return f'Increase proc chance of this spell by {min_val}%'
     elif spa == 429:
         # Skill Proc (Success)
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on successful hit'
     elif spa == 430:
         # PostEffect
@@ -2266,11 +2355,11 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Distance Removal {min_val}'
     elif spa == 442:
         # Doom Req Target
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on requirement {limit_val}'
     elif spa == 443:
         # Doom Req Caster
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return f'Trigger <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> on caster requirement {limit_val}'
     elif spa == 444:
         # Improved Taunt
@@ -2304,12 +2393,12 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Reduce spell damage by {min_val}% on melee hits over {limit_val} until {max_val} absorbed'
     elif spa == 453:
         # Doom Melee Threshold
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return (f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> '
                 f'on {limit_val} melee damage taken')
     elif spa == 454:
         # Doom Spell Threshold
-        spell_name = get_spell_name(abs(min_val), engine)
+        spell_name = get_spell_name(abs(min_val))
         return (f'Trigger effect <a href="/spell/detail/{abs(min_val)}">{spell_name}</a> '
                 f'on {limit_val} spell damage taken')
     elif spa == 455:
@@ -2330,7 +2419,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Unknown SPA: {spa}'
 
 
-def get_spell_name(spell_id, engine):
+def get_spell_name(spell_id):
     excl_list = utils.get_exclusion_list('spells')
     if spell_id in excl_list:
         return None
@@ -2342,6 +2431,21 @@ def get_spell_name(spell_id, engine):
         query = session.query(SpellsNew.name).filter(SpellsNew.id == spell_id)
         result = query.first()
     return result[0]
+
+
+def get_spell_group_name(group_id):
+    excl_list = utils.get_exclusion_list('spells')
+    with Session(bind=engine) as session:
+        query = session.query(SpellsNew.id, SpellsNew.name).filter(SpellsNew.spellgroup == group_id)
+        result = query.first()
+
+    spell_id = result[0]
+    spell_name = result[1]
+
+    if spell_id in excl_list:
+        return None
+
+    return spell_id, spell_name
 
 
 def fast_spa_lookup(spa):
@@ -2498,7 +2602,11 @@ def calculate_values(base_value, level, max_val, test_value_func, ignore_max=Fal
 
 def do_formula(base_value, formula_id, max_val, level=1, ignore_max=False):
     """Helper to do formula stuff."""
-    max_level = level
+    if level == 255:
+        max_level = 0
+        level = 0
+    else:
+        max_level = level
     if formula_id == 1:
         ret_val = base_value
     elif formula_id == 60:
@@ -2833,27 +2941,4 @@ def parse_duration(data, min_val=True, raw_seconds=False):
             return 'Permanent'
 
     # Translate this into human readible
-    hours = 0
-    minutes = 0
-    if seconds > 3600:
-        hours = int(seconds / 3600)
-        seconds = seconds - (hours * 3600)
-
-    if seconds > 60:
-        minutes = int(seconds / 60)
-        seconds = seconds - (minutes * 60)
-
-    if hours > 0 and minutes > 0 and seconds > 0:
-        return f'{hours} hours, {minutes} minutes, {seconds} seconds'
-    elif hours > 0 and minutes > 0:
-        return f'{hours} hours, {minutes} minutes'
-    elif hours > 0 and seconds > 0:
-        return f'{hours} hours, {seconds} seconds'
-    elif hours > 0:
-        return f'{hours} hours'
-    elif minutes > 0 and seconds > 0:
-        return f'{minutes} minutes, {seconds} seconds'
-    elif minutes > 0:
-        return f'{minutes} minutes'
-    else:
-        return f'{seconds} seconds'
+    return utils.convert_time(seconds)

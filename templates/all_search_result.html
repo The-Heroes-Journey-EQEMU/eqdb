@@ -7,7 +7,7 @@
         <center><h3>Items</h3></center>
         <ul>
     {% for entry in data.game_items %}
-        <li><img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.name}}</a></li>
+        <li><img src="/static/item_icons/item_{{entry.icon}}.png">  <a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.name}}</a> (<a href="{{url_for('item_detail', item_id=entry.item_id+1000000)}}" data-url="{{entry.item_id+1000000}}" class="tooltip-link"> E </a>) (<a href="{{url_for('item_detail', item_id=entry.item_id+2000000)}}" data-url="{{entry.item_id+2000000}}" class="tooltip-link"> L </a>)</li>
     {% endfor %}
         </ul>
     </div>

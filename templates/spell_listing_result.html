@@ -22,6 +22,20 @@
             <td style="border: 1px solid black; border-collapse: collapse;">{{entry.skill}}</td>
             <td style="border: 1px solid black; border-collapse: collapse;">{{entry.target}}</td>
             <td style="border: 1px solid black; border-collapse: collapse;">
+            {% if entry.instant %}
+                Instant
+            {% else %}
+                {% if entry.beneficial %}
+                  Buff
+                {% elif entry.dot %}
+                  DoT
+                {% else %}
+                  Debuff
+                {% endif %}
+            {% endif %}
+            </td>
+
+            <td style="border: 1px solid black; border-collapse: collapse;">
                 {% for sub_entry in entry['slots'] %}
                   {% if entry['slots'][sub_entry]['desc'] is not none %}
                    {{sub_entry.replace('_', ' ')}}: {{entry['slots'][sub_entry]['desc']|safe}}<br>

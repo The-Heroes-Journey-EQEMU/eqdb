@@ -25,13 +25,16 @@ def get_npcs(npc_name):
         level = entry[2]
         hp = entry[3]
         with Session(bind=engine) as session:
-            query = session.query(Zone.long_name, Zone.expansion).filter(Zone.zoneidnumber == zone_id)
+            query = session.query(Zone.long_name, Zone.expansion, Zone.short_name).filter(Zone.zoneidnumber == zone_id)
             sub_result = query.first()
 
         if not sub_result:
             continue
 
         if int(sub_result[1]) > expansion:
+            continue
+
+        if sub_result[2] in ['cshome', 'hateplane', 'powar', 'soldungc', 'qvicb']:
             continue
 
         if not sub_result:
@@ -202,7 +205,7 @@ def get_npc_detail(npc_id):
                                  'x': int(entry[0]) * -1,
                                  'y': int(entry[1]) * -1,
                                  'z': entry[2],
-                                 'respawn': entry[3],
+                                 'respawn': utils.convert_time(entry[3]),
                                  'spawn_npcs': spawn_npcs,
                                  'group_id': entry[5],
                                  'spawn_id': entry[6]})

@@ -1,11 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 <center><h3>User Home</h3></center>
-<h4>Enhanced Item Search</h4>
-<ul>
-    <li><a href="{{url_for('armor_search_authorized')}}">Armor Search with sets</a></li>
-    <li><a href="{{url_for('weapon_search_authorized')}}">Weapon Search with sets</a></li>
-</ul>
 <h4>Item Weight Sets</h4>
 {% if not data.weights %}
 No weight set yet!  <a href="{{url_for('create_weights_set')}}">Create One</a>

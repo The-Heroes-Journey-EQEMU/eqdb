@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
-{% block body %}
 {% if data is none %}
 <h2>Spell Data for this Spell ID not found</h2>
 {% else %}
+{% block title %}
+EQDB :: Spell :: {{data.name}}
+{% endblock %}
+{% block body %}
 <center><h2>{{data.name}}</h2></center>
 <br>
 <div style="display: flex; justify-content: center;">
@@ -189,5 +192,5 @@
 </table>
 </div>
 </div>
-{% endif %}
 {% endblock %}
+{% endif %}

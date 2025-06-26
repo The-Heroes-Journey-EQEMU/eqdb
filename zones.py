@@ -142,7 +142,8 @@ def get_zone_detail(zone_id):
             npc_hp = entry[2]
             npc_race = utils.get_bane_dmg_race(entry[3])
             npc_level = entry[4]
-            npc_list.append({'id': npc_id, 'name': npc_name, 'hp': npc_hp, 'race': npc_race, 'level': npc_level})
+            npc_list.append({'id': npc_id, 'name': utils.fix_npc_name(npc_name), 'hp': npc_hp, 'race': npc_race,
+                             'level': npc_level})
 
         base_data['npcs'] = npc_list
         query = session.query(Spawn2.x, Spawn2.y, Spawn2.z, Spawn2.respawntime, SpawnGroup.name, NPCTypes.name,
@@ -175,7 +176,7 @@ def get_zone_detail(zone_id):
             spawn_groups.update({name: {'x': x,
                                         'y': y,
                                         'z': z,
-                                        'respawn': respawn,
+                                        'respawn': utils.convert_time(respawn),
                                         'npcs': npc_list,
                                         'spawn_id': spawn_id,
                                         'group_id': group_id}})

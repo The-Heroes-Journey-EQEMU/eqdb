@@ -1,5 +1,4 @@
 {% extends "layout.html" %}
-{% block body %}
  <script>
  $(document).ready(function() {
 	 $('#npc_table').DataTable({
@@ -15,13 +14,14 @@
 {% if item is none %}
 <h3>Item data not found or item does not exist</h3>
 {% else %}
-<div style="display: flex; justify-content: center;">
-    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width=750px;" id="itemstats">
-        <style>
+{% block title %}
+EQDB :: Item :: {{item.Name}}
+{% endblock %}
+{% block body %}
+<style>
     .item-card {
         border: 1px solid transparent;
         border-collapse: collapse;
-        width: 716px;
     }
 
     .item-card td, item-card th {
@@ -43,8 +43,9 @@
     table {
         border-collapse: collapse;
     }
-
-        </style>
+</style>
+<div style="display: flex; justify-content: center;">
+    <div class="border bg-body-tertiary p-3 mb-4 d-inline-block" style="width=750px;" id="itemstats">
         <table class='item-card'>
             <tbody>
             <tr>
@@ -665,14 +666,14 @@
                 <b>Item Tint:</b> <div class="box" style="background-color:rgb({{item.red}}, {{item.green}}, {{item.blue}});"></div>
                 {% if item.thj_enabled %}
                 {% if item.id < 1000000 %}
-                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Enchanted Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id+2000000)}}">Legendary Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Enchanted Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id+2000000)}}" data-url="{{item.id+2000000}}" class="tooltip-link">Legendary Version</a><br>
                 {% elif 1000000 < item.id < 2000000 %}
-                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Base Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}">Legendary Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Base Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Legendary Version</a><br>
                 {% else %}
-                <a href="{{url_for('item_detail', item_id=item.id-2000000)}}">Base Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}">Enchanted Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id-2000000)}}" data-url="{{item.id-2000000}}" class="tooltip-link">Base Version</a><br>
+                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Enchanted Version</a><br>
                 {% endif %}
                 {% endif %}
                 <a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
@@ -764,5 +765,5 @@
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
+{% endif %}

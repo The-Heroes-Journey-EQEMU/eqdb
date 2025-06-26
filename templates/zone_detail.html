@@ -1,5 +1,4 @@
 {% extends "layout.html" %}
-{% block body %}
  <script>
  $(document).ready(function() {
 	 $('#npc_table').DataTable({
@@ -15,6 +14,10 @@
 {% if data is none %}
 <h3>Zone data not found or does not exist</h3>
 {% else %}
+{% block title %}
+EQDB :: Zone :: {{data.long_name}}
+{% endblock %}
+{% block body %}
 <center><h3>{{data.long_name}}</h3></center>
 <div style="display: flex; justify-content: center;">
 <div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
@@ -232,7 +235,7 @@
         <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="spawns" role="tabpanel" aria-labelledby="spawns-tab">
             <ul>
                 {% for entry in data.spawn_groups %}
-                  <li>{{entry}} :: {{data.spawn_groups[entry].y}}, {{data.spawn_groups[entry].x}}, {{data.spawn_groups[entry].z}} :: Respawn: {{data.spawn_groups[entry].respawn}}s :: <abbr title="spawngroupID: {{data.spawn_groups[entry].group_id}}, spawn2ID: {{data.spawn_groups[entry].spawn_id}}">Spawn Info</abbr></li>
+                  <li>{{entry}} :: {{data.spawn_groups[entry].y}}, {{data.spawn_groups[entry].x}}, {{data.spawn_groups[entry].z}} :: Respawn: {{data.spawn_groups[entry].respawn}} :: <abbr title="spawngroupID: {{data.spawn_groups[entry].group_id}}, spawn2ID: {{data.spawn_groups[entry].spawn_id}}">Spawn Info</abbr></li>
                   <ul>
                       {% for sub_entry in data.spawn_groups[entry].npcs %}
                       <li><a href="{{url_for('npc_detail', npc_id=sub_entry.npc_id)}}">{{sub_entry.npc_name}}</a> ({{sub_entry.chance}}% Chance)</li>
@@ -245,5 +248,5 @@
     </div>
 </div>
 </div>
-{% endif %}
 {% endblock %}
+{% endif %}
