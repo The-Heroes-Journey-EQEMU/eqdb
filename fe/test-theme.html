@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test</title>
+    <link rel="stylesheet" href="./src/styles/base.css">
+    <link rel="stylesheet" href="./src/styles/globals.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-box {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .variable-display {
+            font-family: monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS Theme Variables Test</h1>
+    
+    <div class="test-box" style="background-color: var(--background); color: var(--foreground);">
+        <h2>Background Test</h2>
+        <p>This should use --background and --foreground variables.</p>
+    </div>
+    
+    <div class="test-box" style="background-color: var(--card); color: var(--card-foreground);">
+        <h2>Card Test</h2>
+        <p>This should use --card and --card-foreground variables.</p>
+    </div>
+    
+    <div class="test-box" style="background-color: var(--primary); color: var(--primary-foreground);">
+        <h2>Primary Test</h2>
+        <p>This should use --primary and --primary-foreground variables.</p>
+    </div>
+    
+    <div class="variable-display">
+        <h3>CSS Variable Values:</h3>
+        <div id="variables"></div>
+    </div>
+    
+    <button onclick="toggleTheme()">Toggle Dark Theme</button>
+    
+    <script>
+        function displayVariables() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            const variables = [
+                '--background',
+                '--foreground',
+                '--primary',
+                '--primary-foreground',
+                '--card',
+                '--card-foreground',
+                '--muted',
+                '--muted-foreground',
+                '--border',
+                '--font-sans',
+                '--spacing-md',
+                '--radius-md'
+            ];
+            
+            const variablesDiv = document.getElementById('variables');
+            variablesDiv.innerHTML = variables.map(varName => {
+                const value = computedStyle.getPropertyValue(varName);
+                return `<div><strong>${varName}:</strong> ${value || '(not set)'}</div>`;
+            }).join('');
+        }
+        
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            displayVariables();
+        }
+        
+        // Display variables on load
+        displayVariables();
+    </script>
+</body>
+</html> 

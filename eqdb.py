@@ -5,6 +5,7 @@ import os
 
 from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
+from flask_cors import CORS
 
 import npc
 import pets
@@ -17,6 +18,10 @@ import local
 import items
 import logic
 
+# Import API module
+from api import init_api
+from api.routes import init_routes
+
 
 # Application Setup
 here = os.path.dirname(__file__)
@@ -28,6 +33,12 @@ SITE_TYPE = site_config.get('DEFAULT', 'site_type')
 SITE_VERSION = site_config.get('DEFAULT', 'site_version')
 
 app = Flask(__name__)
+# Enable CORS for development
+if SITE_TYPE == 'Development':
+    CORS(app, origins=["http://localhost:3100", "http://127.0.0.1:3100"])
+else:
+    CORS(app)  # For production, you might want to restrict origins
+
 fh = logging.FileHandler(site_config.get('path', 'flask_log'))
 app.logger.addHandler(fh)
 app.secret_key = 'this_is_a_secret'
@@ -56,6 +67,10 @@ afh.setFormatter(formatter)
 app_log.addHandler(afh)
 app_log.setLevel(logging.DEBUG)
 ALLOWED_EXTENSIONS = {'txt'}
+
+# Initialize API
+api = init_api(app)
+init_routes(api)
 
 
 """ MAIN METHODS """
