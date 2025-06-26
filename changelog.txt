@@ -1,4 +1,5 @@
 ==2.1.1==
+DEPLOYED: 6/25/2025
 * Added a search button to the top of the Armor/Weapon search form
 * Added (E) and (L) links on items returned when searching from the top navbar to link to Enchanted and Legendary versions of the items.
   * Enchanted and Legendary items that do not exist will just display that they don't exist.
