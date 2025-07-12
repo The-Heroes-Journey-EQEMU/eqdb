@@ -2838,7 +2838,9 @@ def get_map_poi(short_name):
 
 
 def parse_skill(skill_num):
-    if skill_num == 0:
+    if skill_num == -1:
+        return 'All Skills'
+    elif skill_num == 0:
         return '1H Blunt'
     elif skill_num == 1:
         return '1H Slashing'

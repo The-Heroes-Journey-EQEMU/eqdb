@@ -463,7 +463,7 @@ def all_search():
     if len(name) > 50:
         flash('Search by name limited to 50 characters.')
         return redirect(url_for('main_page'))
-    elif 0 < len(name) < 3:
+    elif len(name) < 3:
         flash('Search by name requires at least 3 characters.')
         return redirect(url_for('main_page'))
     if not name.isascii():
@@ -716,11 +716,14 @@ def item_search():
         return redirect(url_for('error'))
 
     if 'g_class_1' in request.form:
-        filters.update({'g_class_1': request.form['g_class_1']})
+        if request.form['g_class_1'] != 'None':
+            filters.update({'g_class_1': request.form['g_class_1']})
     if 'g_class_2' in request.form:
-        filters.update({'g_class_2': request.form['g_class_2']})
+        if request.form['g_class_2'] != 'None':
+            filters.update({'g_class_2': request.form['g_class_2']})
     if 'g_class_3' in request.form:
-        filters.update({'g_class_3': request.form['g_class_3']})
+        if request.form['g_class_3'] != 'None':
+            filters.update({'g_class_3': request.form['g_class_3']})
 
     if 'g_slot' in request.form:
         if request.form['g_slot'] != 'None':

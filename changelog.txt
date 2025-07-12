@@ -1,3 +1,19 @@
+==2.1.2==
+DEPLOYED: 7/12/2025
+* Removed a trailing character from Spell Detail page when showing items that the spell is a click effect on.
+* Changed how Armor and Weapon search filtering works when supplying classes.
+    * Changed 'any class' to 'pick class'
+    * If only one or two classes are supplied, only that class or those classes is now used as a filter.
+    * To search without any class provided, select 'Bypass Search Requirements'
+* Fixed navbar and main page search being able to search for less than three characters.
+* Fixed NPC listing on zone details page not being sortable or having a search bar.
+* Fixed several SPA display issues for spell effects.
+* SPA display in Spell Effects that have links to other spells now have their tooltips show correctly.
+
+==2.1.1.1==
+DEPLOYED: 6/26/2025
+* Fixed an issue with the front page search bar.
+
 ==2.1.1==
 DEPLOYED: 6/25/2025
 * Added a search button to the top of the Armor/Weapon search form

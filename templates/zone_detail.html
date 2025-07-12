@@ -1,4 +1,11 @@
 {% extends "layout.html" %}
+{% if data is none %}
+<h3>Zone data not found or does not exist</h3>
+{% else %}
+{% block title %}
+EQDB :: Zone :: {{data.long_name}}
+{% endblock %}
+{% block body %}
  <script>
  $(document).ready(function() {
 	 $('#npc_table').DataTable({
@@ -11,13 +18,6 @@
 	 });
  });
  </script>
-{% if data is none %}
-<h3>Zone data not found or does not exist</h3>
-{% else %}
-{% block title %}
-EQDB :: Zone :: {{data.long_name}}
-{% endblock %}
-{% block body %}
 <center><h3>{{data.long_name}}</h3></center>
 <div style="display: flex; justify-content: center;">
 <div style="height:1px; margin-top:2em;" xmlns="http://www.w3.org/1999/html"></div>
