@@ -418,9 +418,14 @@ class SpellsByClassResource(Resource):
         
         try:
             for class_name in class_list:
-                # Make sure to replace '-' with a space for class names like 'shadow-knight'
-                formatted_class_name = class_name.replace('-', ' ')
-                data = spell_db.get_spells_by_class_api(formatted_class_name, min_level, max_level)
+                normalized_name = class_name.replace('-', '').lower()
+                proper_name = _SPELL_CLASS_NAME_MAP.get(normalized_name)
+
+                if not proper_name:
+                    logger.warning(f"Could not find proper name for class: {class_name}")
+                    continue
+
+                data = spell_db.get_spells_by_class_api(proper_name, min_level, max_level)
                 if data and not data.get('error'):
                     all_spells_data[class_name] = data
             
@@ -482,6 +487,32 @@ class NPCResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving NPCs: {str(e)}")
 
+@v1.route('/zones/waypoints')
+class WaypointResource(Resource):
+    @optional_auth
+    @v1.doc('get_zones_with_waypoints',
+        responses={
+            200: ('Success', [zone_model]),
+            404: ('No zones with waypoints found', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get zones with waypoints
+        
+        Returns a list of zones that have waypoints.
+        """
+        try:
+            zones = zone_db.waypoint_listing()
+            
+            if not zones:
+                v1.abort(404, "No zones with waypoints found")
+            
+            return zones
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving zones with waypoints: {str(e)}")
+
 @v1.route('/zones')
 class ZoneResource(Resource):
     @optional_auth
@@ -502,27 +533,35 @@ class ZoneResource(Resource):
         Get zones using the following parameters:
         * name: Search zones by partial name (optional, 50 results maximum)
         
+        If no name is provided, returns all zones grouped by expansion.
         Returns a list of zones matching the criteria.
         """
         try:
             name = request.args.get('name')
         
-            # Get zones from database
-            zones = zone_db.get_zone_raw_data(name=name)
-            
-            if not zones:
-                v1.abort(404, "No zones found")
-            
-            # Format response
-            if isinstance(zones, list):
-                formatted_zones = []
-                for zone in zones:
-                    formatted_zone = format_zone_response(zone)
-                    formatted_zones.append(formatted_zone)
-                return formatted_zones
+            if name:
+                # Get zones from database
+                zones = zone_db.get_zone_raw_data(name=name)
+                
+                if not zones:
+                    v1.abort(404, "No zones found")
+                
+                # Format response
+                if isinstance(zones, list):
+                    formatted_zones = []
+                    for zone in zones:
+                        formatted_zone = format_zone_response(zone)
+                        formatted_zones.append(formatted_zone)
+                    return formatted_zones
+                else:
+                    # Single zone
+                    return format_zone_response(zones)
             else:
-                # Single zone
-                return format_zone_response(zones)
+                # Return all zones by expansion
+                zones = zone_db.get_all_zones_by_expansion()
+                if not zones:
+                    v1.abort(404, "No zones found")
+                return zones
             
         except Exception as e:
             v1.abort(500, f"Error retrieving zones: {str(e)}")
@@ -1210,6 +1249,32 @@ def init_routes(api):
     """Initialize all routes"""
     logger.info("Initializing API routes")
     
+    # Add resources to the v1 namespace
+    v1.add_resource(ItemResource, '/items')
+    v1.add_resource(SpellResource, '/spells')
+    v1.add_resource(SpellClassesResource, '/spells/classes')
+    v1.add_resource(SpellsByClassResource, '/spells/list/<string:class_names>')
+    v1.add_resource(NPCResource, '/npcs')
+    v1.add_resource(ZoneResource, '/zones')
+    v1.add_resource(WaypointResource, '/zones/waypoints')
+    v1.add_resource(TradeskillResource, '/tradeskills')
+    v1.add_resource(RecipeResource, '/recipes')
+    v1.add_resource(QuestResource, '/quests')
+    v1.add_resource(QuestChainResource, '/quests/chains')
+    v1.add_resource(QuestItemResource, '/quests/items')
+    v1.add_resource(QuestZoneResource, '/quests/zones')
+    v1.add_resource(QuestExpansionResource, '/quests/expansions')
+    v1.add_resource(QuestZoneByExpansionResource, '/quests/zones/<expansion>')
+    v1.add_resource(ExpansionsResource, '/expansions')
+    v1.add_resource(ExpansionResource, '/expansions/<int:expansion_id>')
+    v1.add_resource(ExpansionSearchResource, '/expansions/search')
+    v1.add_resource(ExpansionZonesResource, '/expansions/<int:expansion_id>/zones')
+    v1.add_resource(ExpansionItemsResource, '/expansion-items')
+    v1.add_resource(ExpansionItemsSummaryResource, '/expansion-items/summary')
+    v1.add_resource(CustomItemsResource, '/expansion-items/custom')
+    v1.add_resource(CustomItemResource, '/expansion-items/custom/<int:item_id>/<int:expansion_id>')
+    v1.add_resource(ImportItemsResource, '/expansion-items/import')
+
     # Add authentication namespace
     api.add_namespace(auth_ns, path='/api/v1/auth')
     

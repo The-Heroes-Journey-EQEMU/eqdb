@@ -95,4 +95,4 @@ def init_api(app):
     return api
 
 # Export v1 namespace and other necessary objects
-__all__ = ['v1', 'api', 'init_api'] 
+__all__ = ['v1', 'api', 'init_api']
