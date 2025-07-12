@@ -393,31 +393,43 @@ class SpellClassesResource(Resource):
         """Get a list of all spellcasting classes"""
         return sorted(list(_SPELL_CLASS_NAME_MAP.values()))
 
-@v1.route('/spells/list/<string:class_name>')
+@v1.route('/spells/list/<string:class_names>')
 class SpellsByClassResource(Resource):
     @optional_auth
     @v1.doc('get_spells_by_class',
         params={
-            'class_name': {'description': 'Name of the class', 'type': 'string', 'in': 'path', 'example': 'cleric'}
+            'class_names': {'description': 'Comma-separated list of class names', 'type': 'string', 'in': 'path', 'example': 'cleric,druid'}
         },
         responses={
-            200: ('Success', fields.Raw(description='Spells grouped by level')),
+            200: ('Success', fields.Raw(description='Spells grouped by class and level')),
             404: ('Class not found', error_model),
             500: ('Server error', error_model)
         },
         security='apikey'
     )
-    def get(self, class_name):
-        """Get all spells for a specific class, grouped by level"""
+    def get(self, class_names):
+        """Get all spells for specific classes, grouped by level"""
         min_level = request.args.get('min_level', default=1, type=int)
         max_level = request.args.get('max_level', default=65, type=int)
+        
+        class_list = [name.strip() for name in class_names.split(',')]
+        
+        all_spells_data = {}
+        
         try:
-            data = spell_db.get_spells_by_class_api(class_name, min_level, max_level)
-            if not data or (isinstance(data, dict) and data.get('error')):
-                v1.abort(404, f"No spells found for class {class_name}")
-            return data
+            for class_name in class_list:
+                # Make sure to replace '-' with a space for class names like 'shadow-knight'
+                formatted_class_name = class_name.replace('-', ' ')
+                data = spell_db.get_spells_by_class_api(formatted_class_name, min_level, max_level)
+                if data and not data.get('error'):
+                    all_spells_data[class_name] = data
+            
+            if not all_spells_data:
+                v1.abort(404, f"No spells found for classes {class_names}")
+                
+            return all_spells_data
         except Exception as e:
-            v1.abort(500, f"Error retrieving spells for class {class_name}: {str(e)}")
+            v1.abort(500, f"Error retrieving spells for classes {class_names}: {str(e)}")
 
 @v1.route('/npcs')
 class NPCResource(Resource):

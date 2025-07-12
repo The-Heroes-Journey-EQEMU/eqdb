@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const ClassSpellListPage: React.FC = () => {
-  const { className } = useParams<{ className?: string }>();
+  const navigate = useNavigate();
+  const { classNames: classNamesParam } = useParams<{ classNames?: string }>();
   const [spellsByLevel, setSpellsByLevel] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [classes, setClasses] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
   const classIdMap: { [key: string]: number } = {
     "Bard": 8, "Beastlord": 15, "Berserker": 16, "Cleric": 2,
@@ -14,6 +16,61 @@ const ClassSpellListPage: React.FC = () => {
     "Necromancer": 11, "Paladin": 3, "Ranger": 4, "Rogue": 9,
     "Shadow Knight": 5, "Shaman": 10, "Warrior": 1, "Wizard": 12
   };
+
+  useEffect(() => {
+    if (classNamesParam) {
+      setSelectedClasses(classNamesParam.split(','));
+    } else {
+      setSelectedClasses([]);
+    }
+  }, [classNamesParam]);
+
+  const fetchSpells = useCallback(async () => {
+    if (selectedClasses.length === 0) {
+      setSpellsByLevel({});
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/v1/spells/list/${selectedClasses.join(',')}`);
+      const { ...levels } = response.data;
+      
+      // Aggregate spells by level
+      const aggregatedSpells: any = {};
+      Object.entries(levels).forEach(([className, classSpells]: [string, any]) => {
+        Object.entries(classSpells).forEach(([level, spells]: [string, any]) => {
+          if (isNaN(parseInt(level, 10))) {
+            return;
+          }
+          if (!aggregatedSpells[level]) {
+            aggregatedSpells[level] = [];
+          }
+          if (Array.isArray(spells)) {
+            const spellsWithClass = spells.map(spell => ({ 
+              ...spell, 
+              className: className.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+            }));
+            aggregatedSpells[level].push(...spellsWithClass);
+          }
+        });
+      });
+
+      // Remove duplicates and sort
+      Object.keys(aggregatedSpells).forEach(level => {
+        const uniqueSpells = Array.from(new Map(aggregatedSpells[level].map((spell: any) => [spell.spell_id, spell])).values());
+        aggregatedSpells[level] = uniqueSpells.sort((a: any, b: any) => a.spell_name.localeCompare(b.spell_name));
+      });
+
+      setSpellsByLevel(aggregatedSpells);
+    } catch (error) {
+      console.error('Error fetching spells:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedClasses]);
+
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -29,26 +86,22 @@ const ClassSpellListPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchSpells = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/v1/spells/list/${className}`);
-        const { game_class, ...levels } = response.data;
-        setSpellsByLevel(levels);
-      } catch (error) {
-        console.error('Error fetching spells:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchSpells();
+  }, [fetchSpells]);
 
-    if (className) {
-      fetchSpells();
-    } else {
-      setSpellsByLevel({});
-      setLoading(false);
+  const handleClassClick = (cls: string) => {
+    const formattedCls = cls.toLowerCase().replace(/ /g, '-');
+    const newSelectedClasses = selectedClasses.includes(formattedCls)
+      ? selectedClasses.filter(c => c !== formattedCls)
+      : [...selectedClasses, formattedCls];
+
+    if (newSelectedClasses.length > 3) {
+      // Optional: show some feedback to the user
+      return;
     }
-  }, [className]);
+    
+    navigate(`/spells/list/${newSelectedClasses.join(',')}`);
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -62,29 +115,29 @@ const ClassSpellListPage: React.FC = () => {
         <div className="bg-background border border-border rounded-lg p-4">
           <div className="grid grid-cols-2 md:grid-cols-8 gap-4">
             {classes.map((cls) => {
-              const isActive = className === cls.toLowerCase().replace(/ /g, '-');
+              const formattedCls = cls.toLowerCase().replace(/ /g, '-');
+              const isActive = selectedClasses.includes(formattedCls);
               return (
-                <Link
+                <div
                   key={cls}
-                  to={`/spells/list/${cls.toLowerCase().replace(/ /g, '-')}`}
-                  className={`bg-card hover:bg-muted/50 text-foreground rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex flex-col items-center justify-center h-[85px] ${isActive ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => handleClassClick(cls)}
+                  className={`cursor-pointer bg-card hover:bg-muted/50 text-foreground rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex flex-col items-center justify-center h-[85px] ${isActive ? 'ring-2 ring-primary' : ''}`}
                 >
                   <img src={`/class_icons/${classIdMap[cls]}.gif`} alt={cls} className="h-10 w-10 mb-1 object-contain" />
                   <span className="text-sm font-semibold text-center">{cls}</span>
-                </Link>
+                </div>
               );
             })}
           </div>
         </div>
       </div>
 
-      {className && (
+      {selectedClasses.length > 0 && (
         <>
           <div className="bg-card border border-border rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-center text-foreground">Levels</h2>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-left gap-1">
               {levels.map(level => (
-                <a key={level} href={`#level-${level}`} className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/80 transition-colors">
+                <a key={level} href={`#level-${level}`}  style={{ width: '40px' }} className="text-center py-2 text-s bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors">
                   {level}
                 </a>
               ))}
@@ -95,19 +148,26 @@ const ClassSpellListPage: React.FC = () => {
             <div key={level} id={`level-${level}`} className="mb-8">
               <h2 className="text-3xl font-bold mb-4 text-foreground">Level {level}</h2>
               <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <table className="min-w-full">
+                <table className="min-w-full table-fixed">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground">Icon</th>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground">Name</th>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground">Skill</th>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground">Target</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground" style={{ width: '64px' }}>Icon</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground" style={{ width: '150px' }}>Class</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground" style={{ width: '280px' }}>Name</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground" style={{ width: '192px' }}>Skill</th>
+                      <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground" style={{ width: '192px' }}>Target</th>
                       <th className="py-3 px-4 text-left text-sm font-semibold text-muted-foreground">Description</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {spellsByLevel[level].map((spell: any) => (
-                      <tr key={spell.spell_id} className="hover:bg-muted/50">
+                    {spellsByLevel[level].map((spell: any, index: number) => (
+                      <tr
+                        key={spell.spell_id}
+                        className={`cursor-pointer transition-colors duration-200 hover:bg-muted ${
+                          index % 2 === 0 ? 'bg-background' : 'bg-muted/20'
+                        }`}
+                        onClick={() => navigate(`/spell/detail/${spell.spell_id}`)}
+                      >
                         <td className="py-3 px-4">
                           <div className="w-10 h-10">
                             <img
@@ -117,10 +177,11 @@ const ClassSpellListPage: React.FC = () => {
                             />
                           </div>
                         </td>
-                        <td className="py-3 px-4 font-medium text-foreground">{spell.spell_name}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{spell.skill}</td>
-                        <td className="py-3 px-4 text-muted-foreground">{spell.target}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">
+                        <td className="py-3 px-4 text-muted-foreground break-words">{spell.className}</td>
+                        <td className="py-3 px-4 font-medium text-foreground break-words">{spell.spell_name}</td>
+                        <td className="py-3 px-4 text-muted-foreground break-words">{spell.skill}</td>
+                        <td className="py-3 px-4 text-muted-foreground break-words">{spell.target}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground break-words">
                           {Object.values(spell.slots).map((slot: any, index: number) => (
                             <div key={index} dangerouslySetInnerHTML={{ __html: slot.desc }} />
                           ))}

@@ -40,7 +40,7 @@ const AppContent: React.FC = () => {
           <Route path="/items/armor-search" element={<ArmorSearchPage />} />
           <Route path="/items/weapon-search" element={<WeaponSearchPage />} />
           <Route path="/spells/list" element={<ClassSpellListPage />} />
-          <Route path="/spells/list/:className" element={<ClassSpellListPage />} />
+          <Route path="/spells/list/:classNames" element={<ClassSpellListPage />} />
           <Route path="/spells/search" element={<SpellSearchPage />} />
           <Route path="/zones/list" element={<ZoneListPage />} />
           <Route path="/zones/waypoint-listing" element={<WaypointListingPage />} />
