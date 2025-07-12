@@ -10,6 +10,11 @@ import LoadingOverlay from '@/components/common/LoadingOverlay'
 import Home from '@/pages/Home'
 import ItemSearchPage from '@/pages/ItemSearchPage'
 import SpellSearchPage from '@/pages/SpellSearchPage'
+import ArmorSearchPage from '@/pages/ArmorSearchPage'
+import WeaponSearchPage from '@/pages/WeaponSearchPage'
+import ZoneListPage from '@/pages/ZoneListPage'
+import WaypointListingPage from '@/pages/WaypointListingPage'
+import ClassSpellListPage from '@/pages/ClassSpellListPage'
 import { useAppStore } from '@/store'
 
 // Create a client
@@ -31,14 +36,21 @@ const AppContent: React.FC = () => {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/items/search" element={<ItemSearchPage />} />
+          <Route path="/items/armor-search" element={<ArmorSearchPage />} />
+          <Route path="/items/weapon-search" element={<WeaponSearchPage />} />
+          <Route path="/spells/list" element={<ClassSpellListPage />} />
+          <Route path="/spells/list/:className" element={<ClassSpellListPage />} />
+          <Route path="/spells/search" element={<SpellSearchPage />} />
+          <Route path="/zones/list" element={<ZoneListPage />} />
+          <Route path="/zones/waypoint-listing" element={<WaypointListingPage />} />
           <Route path="/items" element={<ItemSearchPage />} />
           <Route path="/spells" element={<SpellSearchPage />} />
-          <Route path="/npcs" element={<div className="p-8 text-center">NPC Search - Coming Soon</div>} />
+          <Route path="/npcs" element={<div className="p-8 text-center">NPC Search - 123 Coming Soon</div>} />
           <Route path="/zones" element={<div className="p-8 text-center">Zone Listing - Coming Soon</div>} />
           <Route path="/tradeskills" element={<div className="p-8 text-center">Tradeskill Search - Coming Soon</div>} />
           <Route path="/quests" element={<div className="p-8 text-center">Quest Search - Coming Soon</div>} />
           <Route path="/factions" element={<div className="p-8 text-center">Faction Search - Coming Soon</div>} />
-          <Route path="/tools" element={<div className="p-8 text-center">Tools - Coming Soon</div>} />
           <Route path="/user" element={<div className="p-8 text-center">User Area - Coming Soon</div>} />
           <Route path="/about" element={<div className="p-8 text-center">About - Coming Soon</div>} />
           <Route path="/changelog" element={<div className="p-8 text-center">Changelog - Coming Soon</div>} />
@@ -76,4 +88,4 @@ const App: React.FC = () => {
   )
 }
 
-export default App 
+export default App

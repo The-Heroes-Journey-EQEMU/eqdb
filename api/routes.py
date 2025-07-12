@@ -1,16 +1,17 @@
 import logging
 from flask import request, jsonify
 from flask_restx import Resource, fields
+from sqlalchemy import text
 from datetime import datetime
 from api import v1
-from db.item import ItemDB
-from db.spell import SpellDB
-from db.npc import NPCDB
-from db.zone import ZoneDB
-from db.tradeskill import TradeskillDB
-from db.quest import QuestDB
-from db.expansion import ExpansionDB
-from db.expansion_items import ExpansionItemsDB
+from api.db.item import ItemDB
+from api.db.spell import SpellDB
+from api.db.npc import NPCDB
+from api.db.zone import ZoneDB
+from api.db.tradeskill import TradeskillDB
+from api.db.quest import QuestDB
+from api.db.expansion import ExpansionDB
+from api.db.expansion_items import ExpansionItemsDB
 from .auth import auth
 from .auth_routes import auth_ns
 from .middleware import optional_auth, write_auth_required, admin_required
@@ -300,8 +301,8 @@ class ItemResource(Resource):
         """
         try:
             item_id = request.args.get('id', type=int)
-        name = request.args.get('name')
-        item_type = request.args.get('type')
+            name = request.args.get('name')
+            item_type = request.args.get('type')
             
             # Get items from database
             items = item_db.get_item_raw_data(item_id=item_id, name=name, item_type=item_type)
@@ -316,7 +317,7 @@ class ItemResource(Resource):
                     formatted_item = format_item_response(item)
                     formatted_items.append(formatted_item)
                 return formatted_items
-        else:
+            else:
                 # Single item
                 return format_item_response(items)
             
@@ -329,8 +330,7 @@ class SpellResource(Resource):
     @v1.doc('get_spells',
         params={
             'id': {'description': 'Search spells by spell ID', 'type': 'integer', 'example': 12345},
-            'name': {'description': 'Search spells by partial name (50 results maximum)', 'type': 'string', 'example': 'heal'},
-            'class': {'description': 'Filter spells by class', 'type': 'string', 'example': 'cleric'}
+            'name': {'description': 'Search spells by partial name (50 results maximum)', 'type': 'string', 'example': 'heal'}
         },
         responses={
             200: ('Success', [spell_model]),
@@ -345,17 +345,15 @@ class SpellResource(Resource):
         Get spells using the following parameters:
         * id: Search spells by spell ID (optional)
         * name: Search spells by partial name (optional, 50 results maximum)
-        * class: Filter spells by class (optional)
         
         Returns a list of spells matching the criteria.
         """
         try:
             spell_id = request.args.get('id', type=int)
-        name = request.args.get('name')
-        spell_class = request.args.get('class')
+            name = request.args.get('name')
         
             # Get spells from database
-            spells = spell_db.get_spell_raw_data(spell_id=spell_id, spell_name=name, spell_class=spell_class)
+            spells = spell_db.get_spell_raw_data(spell_id=spell_id, spell_name=name)
             
             if not spells:
                 v1.abort(404, "No spells found")
@@ -367,12 +365,59 @@ class SpellResource(Resource):
                     formatted_spell = format_spell_response(spell)
                     formatted_spells.append(formatted_spell)
                 return formatted_spells
-        else:
+            else:
                 # Single spell
                 return format_spell_response(spells)
             
         except Exception as e:
             v1.abort(500, f"Error retrieving spells: {str(e)}")
+
+_SPELL_CLASS_NAME_MAP = {
+    "bard": "Bard", "beastlord": "Beastlord", "berserker": "Berserker", "cleric": "Cleric",
+    "druid": "Druid", "enchanter": "Enchanter", "magician": "Magician", "monk": "Monk",
+    "necromancer": "Necromancer", "paladin": "Paladin", "ranger": "Ranger", "rogue": "Rogue",
+    "shadowknight": "Shadow Knight", "shaman": "Shaman", "warrior": "Warrior", "wizard": "Wizard"
+}
+
+@v1.route('/spells/classes')
+class SpellClassesResource(Resource):
+    @optional_auth
+    @v1.doc('get_spell_classes',
+        responses={
+            200: ('Success', fields.List(fields.String, description='List of spellcasting classes')),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get a list of all spellcasting classes"""
+        return sorted(list(_SPELL_CLASS_NAME_MAP.values()))
+
+@v1.route('/spells/list/<string:class_name>')
+class SpellsByClassResource(Resource):
+    @optional_auth
+    @v1.doc('get_spells_by_class',
+        params={
+            'class_name': {'description': 'Name of the class', 'type': 'string', 'in': 'path', 'example': 'cleric'}
+        },
+        responses={
+            200: ('Success', fields.Raw(description='Spells grouped by level')),
+            404: ('Class not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self, class_name):
+        """Get all spells for a specific class, grouped by level"""
+        min_level = request.args.get('min_level', default=1, type=int)
+        max_level = request.args.get('max_level', default=65, type=int)
+        try:
+            data = spell_db.get_spells_by_class_api(class_name, min_level, max_level)
+            if not data or (isinstance(data, dict) and data.get('error')):
+                v1.abort(404, f"No spells found for class {class_name}")
+            return data
+        except Exception as e:
+            v1.abort(500, f"Error retrieving spells for class {class_name}: {str(e)}")
 
 @v1.route('/npcs')
 class NPCResource(Resource):
@@ -402,8 +447,8 @@ class NPCResource(Resource):
         """
         try:
             npc_id = request.args.get('id', type=int)
-        name = request.args.get('name')
-        zone = request.args.get('zone')
+            name = request.args.get('name')
+            zone = request.args.get('zone')
         
             # Get NPCs from database
             npcs = npc_db.get_npc_raw_data(npc_id=npc_id, name=name, zone=zone)
@@ -418,7 +463,7 @@ class NPCResource(Resource):
                     formatted_npc = format_npc_response(npc)
                     formatted_npcs.append(formatted_npc)
                 return formatted_npcs
-        else:
+            else:
                 # Single NPC
                 return format_npc_response(npcs)
             
@@ -448,7 +493,7 @@ class ZoneResource(Resource):
         Returns a list of zones matching the criteria.
         """
         try:
-        name = request.args.get('name')
+            name = request.args.get('name')
         
             # Get zones from database
             zones = zone_db.get_zone_raw_data(name=name)
@@ -463,7 +508,7 @@ class ZoneResource(Resource):
                     formatted_zone = format_zone_response(zone)
                     formatted_zones.append(formatted_zone)
                 return formatted_zones
-        else:
+            else:
                 # Single zone
                 return format_zone_response(zones)
             
@@ -496,7 +541,7 @@ class TradeskillResource(Resource):
         """
         try:
             tradeskill_id = request.args.get('id', type=int)
-        name = request.args.get('name')
+            name = request.args.get('name')
         
             # Get tradeskills from database
             tradeskills = tradeskill_db.get_tradeskill_raw_data(tradeskill_id=tradeskill_id, name=name)
@@ -507,7 +552,7 @@ class TradeskillResource(Resource):
             # Format response
             if isinstance(tradeskills, list):
                 return tradeskills[:50]  # Enforce 50 result limit
-        else:
+            else:
                 return [tradeskills]
             
         except Exception as e:
@@ -1159,4 +1204,4 @@ def init_routes(api):
     # Create default admin user
     auth.create_default_admin()
     
-    logger.info("API routes initialization complete") 
+    logger.info("API routes initialization complete")

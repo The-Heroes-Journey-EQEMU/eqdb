@@ -10,6 +10,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? '[name].[contenthash].js' : '[name].js',
+      publicPath: '/',
       clean: true,
     },
     resolve: {
@@ -103,4 +104,4 @@ module.exports = (env, argv) => {
     },
     devtool: isProduction ? 'source-map' : 'eval-source-map',
   };
-}; 
+};
