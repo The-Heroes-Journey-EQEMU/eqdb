@@ -1,24 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { zoneService, Zone } from '@/services/zoneService';
+import { Link, useParams } from 'react-router-dom';
+import { zoneService, Zone, ConnectedZone } from '@/services/zoneService';
 import Card from '@/components/common/Card';
 import ZoneMap from '@/components/zones/ZoneMap';
 import ZoneDetails from '@/components/zones/ZoneDetails';
 
+const ConnectedZonesTab: React.FC<{ zones: ConnectedZone[] }> = ({ zones }) => (
+  <div>
+    <ul>
+      {zones.map((cz, index) => (
+        <li key={`${cz.target_zone_id}-${index}`}>
+          <Link to={`/zones/detail/${cz.short_name}`} className="text-blue-400 hover:underline">
+            {cz.long_name}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
 export const ZoneDetailPage: React.FC = () => {
   const { identifier } = useParams<{ identifier: string }>();
   const [zone, setZone] = useState<Zone | null>(null);
+  const [connectedZones, setConnectedZones] = useState<ConnectedZone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('Connected Zones');
 
   useEffect(() => {
-    const fetchZone = async () => {
+    const fetchZoneData = async () => {
       if (!identifier) return;
       try {
         setLoading(true);
         const zoneData = await zoneService.getZoneByIdentifier(identifier);
         setZone(zoneData);
+
+        const detailsData = await zoneService.getZoneDetails(zoneData.short_name);
+        const connectedData = await zoneService.getConnectedZones(detailsData.short_name);
+        setConnectedZones(connectedData);
+
         setError(null);
       } catch (err) {
         setError('Failed to fetch zone data.');
@@ -28,7 +48,7 @@ export const ZoneDetailPage: React.FC = () => {
       }
     };
 
-    fetchZone();
+    fetchZoneData();
   }, [identifier]);
 
   return (
@@ -76,7 +96,7 @@ export const ZoneDetailPage: React.FC = () => {
                   </div>
                   {/* Tab Content */}
                   <div className="pt-4 min-h-[12rem]">
-                    {activeTab === 'Connected Zones' && <p>Connected Zones Content</p>}
+                    {activeTab === 'Connected Zones' && <ConnectedZonesTab zones={connectedZones} />}
                     {activeTab === 'Items' && <p>Items Content</p>}
                     {activeTab === 'NPCs' && <p>NPCs Content</p>}
                     {activeTab === 'Spawns' && <p>Spawns Content</p>}

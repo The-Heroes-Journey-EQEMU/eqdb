@@ -64,6 +64,12 @@ zone_model = v1.model('Zone', {
     'expansion_name': fields.String(description='Expansion name', example='Classic')
 })
 
+connected_zone_model = v1.model('ConnectedZone', {
+    'target_zone_id': fields.Integer(description='Connected zone ID', example=2),
+    'short_name': fields.String(description='Connected zone short name', example='qeynos2'),
+    'long_name': fields.String(description='Connected zone long name', example='South Qeynos')
+})
+
 tradeskill_model = v1.model('Tradeskill', {
     'id': fields.Integer(description='Tradeskill ID', example=59),
     'name': fields.String(description='Tradeskill name', example='Alchemy'),
@@ -546,6 +552,23 @@ class ZoneExtraDetailsResource(Resource):
         if not zone_details:
             v1.abort(404, "Zone details not found")
         return zone_details
+
+@v1.route('/zones/<string:short_name>/connected')
+class ConnectedZoneResource(Resource):
+    @optional_auth
+    @v1.doc('get_connected_zones',
+        params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
+        responses={
+            200: ('Success', [connected_zone_model]),
+            404: ('Zone not found', error_model)
+        }
+    )
+    def get(self, short_name):
+        """Get all connected zones for a given zone short name"""
+        connected_zones = zone_db.get_connected_zones(short_name)
+        if not connected_zones:
+            v1.abort(404, "No connected zones found for this zone")
+        return connected_zones
 
 @v1.route('/zones')
 class ZoneResource(Resource):
@@ -1292,6 +1315,7 @@ def init_routes(api):
     v1.add_resource(ZoneResource, '/zones')
     v1.add_resource(ZoneDetailResource, '/zones/<string:identifier>')
     v1.add_resource(ZoneExtraDetailsResource, '/zones/<string:short_name>/details')
+    v1.add_resource(ConnectedZoneResource, '/zones/<string:short_name>/connected')
     v1.add_resource(WaypointResource, '/zones/waypoints')
     v1.add_resource(TradeskillResource, '/tradeskills')
     v1.add_resource(RecipeResource, '/recipes')

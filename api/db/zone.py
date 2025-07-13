@@ -124,22 +124,34 @@ class ZoneDB:
                 return zone_data
             return None
 
-    def get_connected_zones(self, zone_id):
-        """Get all connected zones for a given zone_id."""
+    def get_connected_zones(self, short_name):
+        """Get all connected zones for a given short_name."""
         with self.engine.connect() as conn:
-            query = text("""
-                SELECT
-                    zc.target_zone_id,
-                    z.short_name,
-                    z.long_name
-                FROM
-                    zone_connections zc
-                JOIN
-                    zone z ON z.zoneidnumber = zc.target_zone_id
-                WHERE
-                    zc.zone_id = :zone_id
+            # First, get the distinct target_zone_ids from zone_points
+            query_ids = text("""
+                SELECT DISTINCT target_zone_id
+                FROM zone_points
+                WHERE zone = :short_name
             """)
-            results = conn.execute(query, {"zone_id": zone_id}).fetchall()
+            target_ids_results = conn.execute(query_ids, {"short_name": short_name}).fetchall()
+            
+            if not target_ids_results:
+                return []
+
+            target_ids = [row._mapping['target_zone_id'] for row in target_ids_results]
+
+            # Now, get the zone details for those IDs
+            query_zones = text("""
+                SELECT DISTINCT
+                    zoneidnumber as target_zone_id,
+                    short_name,
+                    long_name
+                FROM
+                    zone
+                WHERE
+                    zoneidnumber IN :target_ids
+            """)
+            results = conn.execute(query_zones, {"target_ids": tuple(target_ids)}).fetchall()
             return [dict(row._mapping) for row in results]
 
     def get_zone_details_by_short_name(self, short_name):

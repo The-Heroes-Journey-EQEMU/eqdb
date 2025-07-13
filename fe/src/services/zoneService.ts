@@ -84,8 +84,8 @@ export const zoneService = {
     const response = await api.get<ZoneDetails>(`/zones/${shortName}/details`);
     return response.data;
   },
-  getConnectedZones: async (zoneId: number): Promise<ConnectedZone[]> => {
-    const response = await api.get<ConnectedZone[]>(`/zones/${zoneId}/connected`);
+  getConnectedZones: async (shortName: string): Promise<ConnectedZone[]> => {
+    const response = await api.get<ConnectedZone[]>(`/zones/${shortName}/connected`);
     return response.data;
   },
 };
