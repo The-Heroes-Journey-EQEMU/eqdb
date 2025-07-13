@@ -513,6 +513,40 @@ class WaypointResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving zones with waypoints: {str(e)}")
 
+@v1.route('/zones/<string:identifier>')
+class ZoneDetailResource(Resource):
+    @optional_auth
+    @v1.doc('get_zone_by_identifier',
+        params={'identifier': {'description': 'Zone ID or short name', 'in': 'path'}},
+        responses={
+            200: ('Success', zone_model),
+            404: ('Zone not found', error_model)
+        }
+    )
+    def get(self, identifier):
+        """Get a single zone by its ID or short name"""
+        zone = zone_db.get_zone_by_identifier(identifier)
+        if not zone:
+            v1.abort(404, "Zone not found")
+        return format_zone_response(zone)
+
+@v1.route('/zones/<string:short_name>/details')
+class ZoneExtraDetailsResource(Resource):
+    @optional_auth
+    @v1.doc('get_zone_details_by_short_name',
+        params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
+        responses={
+            200: ('Success', 'ZoneDetails'),
+            404: ('Zone not found', error_model)
+        }
+    )
+    def get(self, short_name):
+        """Get extended details for a single zone by its short name"""
+        zone_details = zone_db.get_zone_details_by_short_name(short_name)
+        if not zone_details:
+            v1.abort(404, "Zone details not found")
+        return zone_details
+
 @v1.route('/zones')
 class ZoneResource(Resource):
     @optional_auth
@@ -1256,6 +1290,8 @@ def init_routes(api):
     v1.add_resource(SpellsByClassResource, '/spells/list/<string:class_names>')
     v1.add_resource(NPCResource, '/npcs')
     v1.add_resource(ZoneResource, '/zones')
+    v1.add_resource(ZoneDetailResource, '/zones/<string:identifier>')
+    v1.add_resource(ZoneExtraDetailsResource, '/zones/<string:short_name>/details')
     v1.add_resource(WaypointResource, '/zones/waypoints')
     v1.add_resource(TradeskillResource, '/tradeskills')
     v1.add_resource(RecipeResource, '/recipes')

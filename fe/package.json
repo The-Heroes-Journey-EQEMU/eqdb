@@ -16,7 +16,9 @@
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.2",
+    "@svgdotjs/svg.panzoom.js": "^2.1.2",
     "@tanstack/react-query": "^5.8.4",
+    "@types/svg.js": "^0.0.17",
     "axios": "^1.6.2",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
@@ -26,6 +28,7 @@
     "react-hot-toast": "^2.4.1",
     "react-intersection-observer": "^9.5.3",
     "react-router-dom": "^6.20.1",
+    "svg.js": "^2.7.1",
     "tailwind-merge": "^2.0.0",
     "zod": "^3.22.4",
     "zustand": "^4.5.7"

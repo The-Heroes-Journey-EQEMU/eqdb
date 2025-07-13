@@ -252,8 +252,26 @@ def create_models(api, v1):
         'items': fields.List(fields.Raw, description='Loot items')
     })
 
+    zone_details_model = v1.model('ZoneDetails', {
+        'zoneidnumber': fields.Integer(description='Zone ID'),
+        'expansion': fields.String(description='Expansion'),
+        'short_name': fields.String(description='Short Name'),
+        'canbind': fields.Integer(description='Players can bind here'),
+        'canlevitate': fields.Integer(description='Levitation allowed here'),
+        'castoutdoor': fields.Integer(description='Indoor/Outdoor Zone'),
+        'zone_exp_multiplier': fields.Float(description='Zone Experience Multiplier'),
+        'safe_x': fields.Float(description='Safe X Coordinate'),
+        'safe_y': fields.Float(description='Safe Y Coordinate'),
+        'safe_z': fields.Float(description='Safe Z Coordinate'),
+        'newbie_zone': fields.Boolean(description='Newbie Zone'),
+        'waypoint_x': fields.Float(description='Waypoint X'),
+        'waypoint_y': fields.Float(description='Waypoint Y'),
+        'waypoint_z': fields.Float(description='Waypoint Z'),
+    })
+
     models = {
         'item_model': item_model,
+        'zone_details_model': zone_details_model,
         'npc_model': npc_model,
         'spell_model': spell_model,
         'tradeskill_model': tradeskill_model,
@@ -273,4 +291,4 @@ def create_models(api, v1):
     return models
 
 # Create models for import
-models = None 
+models = None

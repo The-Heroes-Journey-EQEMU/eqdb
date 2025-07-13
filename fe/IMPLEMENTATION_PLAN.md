@@ -45,7 +45,7 @@
 - [x] Create global state management with Zustand
 - [x] Set up error boundaries and loading states
 - [x] Create reusable UI components (Button, Input, Card, etc.)
-- [x] Implement global search functionality
+- [ ] Implement global search functionality
 - [x] **COMPLETED**: Implement comprehensive Zustand store with user preferences, UI state, and search state
 - [x] **COMPLETED**: Create ErrorBoundary component with development error details
 - [x] **COMPLETED**: Create LoadingSpinner, LoadingOverlay, and Skeleton components
@@ -77,12 +77,12 @@
 ## Phase 3: Advanced Features (Week 5-6)
 
 ### Week 5: Zone & Tradeskill Systems
-- [ ] Create ZoneListing with expansion grouping
+- [x] **COMPLETED**: Create ZoneListing with expansion grouping
 - [ ] Implement ZoneDetail with NPCs and items
 - [ ] Create TradeskillSearch with recipe counts
 - [ ] Implement TradeskillDetail with recipes
 - [ ] Add recipe component display
-- [ ] Create waypoint listing functionality
+- [x] **COMPLETED**: Create waypoint listing functionality
 
 ### Week 6: Quest & Faction Systems
 - [ ] Create QuestSearch with multiple filters

@@ -35,6 +35,10 @@ const Card: React.FC<CardProps> = ({
   )
 }
 
+export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ className = '', ...props }) => (
+  <h3 className={`text-lg font-semibold ${className}`} {...props} />
+);
+
 // Card sub-components
 export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -73,4 +77,4 @@ export const CardFooter: React.FC<CardFooterProps> = ({ children, className = ''
   </div>
 )
 
-export default Card 
+export default Card

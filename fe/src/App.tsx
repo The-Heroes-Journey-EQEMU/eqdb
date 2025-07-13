@@ -13,6 +13,7 @@ import SpellSearchPage from '@/pages/SpellSearchPage'
 import ArmorSearchPage from '@/pages/ArmorSearchPage'
 import WeaponSearchPage from '@/pages/WeaponSearchPage'
 import ZoneListPage from '@/pages/ZoneListPage'
+import { ZoneDetailPage } from '@/pages/ZoneDetailPage'
 import WaypointListingPage from '@/pages/WaypointListingPage'
 import ClassSpellListPage from '@/pages/ClassSpellListPage'
 import { useAppStore } from '@/store'
@@ -43,6 +44,7 @@ const AppContent: React.FC = () => {
           <Route path="/spells/list/:classNames" element={<ClassSpellListPage />} />
           <Route path="/spells/search" element={<SpellSearchPage />} />
           <Route path="/zones/list" element={<ZoneListPage />} />
+          <Route path="/zones/detail/:identifier" element={<ZoneDetailPage />} />
           <Route path="/zones/waypoint-listing" element={<WaypointListingPage />} />
           <Route path="/items" element={<ItemSearchPage />} />
           <Route path="/spells" element={<SpellSearchPage />} />

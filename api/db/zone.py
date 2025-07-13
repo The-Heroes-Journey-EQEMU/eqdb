@@ -59,7 +59,128 @@ class ZoneDB:
                 data = [dict(row._mapping) for row in results]
                 logger.debug(f"Retrieved {len(data)} zones with name {name}: {data}")
                 return data
-            return None 
+            return None
+
+    def get_map_data(self, short_name):
+        """Get map data for a given zone short_name."""
+        lines = []
+        if short_name == 'Unknown':
+            return lines
+        
+        # Determine the base directory of the script
+        here = os.path.dirname(os.path.abspath(__file__))
+        # Go up two levels to the project root
+        project_root = os.path.dirname(os.path.dirname(here))
+        
+        # Check for the map file in both the root maps directory and subdirectories
+        possible_paths = [
+            os.path.join(project_root, 'maps', f'{short_name}.txt'),
+            os.path.join(project_root, 'maps', 'brewall', f'{short_name}.txt')
+        ]
+        
+        map_file_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                map_file_path = path
+                break
+
+        if not map_file_path:
+            logger.warning(f"Map file not found for zone: {short_name}")
+            return lines
+
+        with open(map_file_path, 'r') as fh:
+            data = fh.read()
+            for line in data.split('\n'):
+                if line.startswith('L'):
+                    try:
+                        split_line = line.split()
+                        lines.append({'x1': float(split_line[1].strip(',')),
+                                      'y1': float(split_line[2].strip(',')),
+                                      'z1': float(split_line[3].strip(',')),
+                                      'x2': float(split_line[4].strip(',')),
+                                      'y2': float(split_line[5].strip(',')),
+                                      'z2': float(split_line[6].strip(',')),
+                                      'rgb': f'{split_line[7].strip(",")}, {split_line[8].strip(",")}, {split_line[9].strip(",")}'})
+                    except (IndexError, ValueError) as e:
+                        logger.error(f"Could not parse line '{line}' in {short_name}.txt: {e}")
+        return lines
+
+    def get_zone_by_identifier(self, identifier):
+        """Get a single zone by its ID or short_name."""
+        with self.engine.connect() as conn:
+            # Check if identifier is an integer (ID) or string (short_name)
+            try:
+                zone_id = int(identifier)
+                query = text("SELECT * FROM zone WHERE zoneidnumber = :identifier")
+                result = conn.execute(query, {"identifier": zone_id}).fetchone()
+            except ValueError:
+                query = text("SELECT * FROM zone WHERE short_name = :identifier")
+                result = conn.execute(query, {"identifier": identifier}).fetchone()
+
+            if result:
+                zone_data = dict(result._mapping)
+                zone_data['mapping'] = self.get_map_data(zone_data['short_name'])
+                zone_data['waypoint'] = self.get_zone_waypoint(zone_data['short_name'])
+                return zone_data
+            return None
+
+    def get_connected_zones(self, zone_id):
+        """Get all connected zones for a given zone_id."""
+        with self.engine.connect() as conn:
+            query = text("""
+                SELECT
+                    zc.target_zone_id,
+                    z.short_name,
+                    z.long_name
+                FROM
+                    zone_connections zc
+                JOIN
+                    zone z ON z.zoneidnumber = zc.target_zone_id
+                WHERE
+                    zc.zone_id = :zone_id
+            """)
+            results = conn.execute(query, {"zone_id": zone_id}).fetchall()
+            return [dict(row._mapping) for row in results]
+
+    def get_zone_details_by_short_name(self, short_name):
+        """Get extended zone details by short_name."""
+        from api.db.expansion import ExpansionDB
+        expansion_db = ExpansionDB(self.engine.url)
+
+        with self.engine.connect() as conn:
+            query = text("""
+                SELECT
+                    zoneidnumber,
+                    expansion,
+                    short_name,
+                    canbind,
+                    canlevitate,
+                    castoutdoor,
+                    zone_exp_multiplier,
+                    safe_x,
+                    safe_y,
+                    safe_z
+                FROM
+                    zone
+                WHERE
+                    short_name = :short_name
+            """)
+            result = conn.execute(query, {"short_name": short_name}).fetchone()
+            if result:
+                zone_data = dict(result._mapping)
+                
+                # Get expansion name from ExpansionDB
+                expansion_info = expansion_db.get_expansion_by_id(zone_data['expansion'])
+                zone_data['expansion'] = expansion_info['name'] if expansion_info else 'Unknown'
+
+                waypoint = self.get_zone_waypoint(short_name)
+                zone_data['waypoint_x'] = waypoint.get('x')
+                zone_data['waypoint_y'] = waypoint.get('y')
+                zone_data['waypoint_z'] = waypoint.get('z')
+                # Simple logic for newbie zones, can be expanded
+                zone_data['newbie_zone'] = zone_data['zoneidnumber'] in [1, 2, 10, 19, 22, 24, 25, 29, 30, 34, 35, 40, 41, 42, 45, 46, 47, 52, 54, 55, 68]
+                return zone_data
+            return None
 
     def get_zone_long_name(self, shortname):
         """Get zone id and long name by shortname, using cache if available."""
@@ -112,6 +233,183 @@ class ZoneDB:
         expansion_db = ExpansionDB(self.engine.url)
         expansions = expansion_db.get_all_expansions()
         
+        continent_zones = {
+            'Antonica': [
+                'befallen',
+                'beholder',
+                'blackburrow',
+                'cazicthule',
+                'commons',
+                'ecommons',
+                'feerrott',
+                'freporte',
+                'freportn',
+                'freportw',
+                'grobb',
+                'gukbottom',
+                'guktop',
+                'everfrost',
+                'halas',
+                'highkeep',
+                'innothule',
+                'kithicor',
+                'lakerathe',
+                'lavastorm',
+                'misty',
+                'najena',
+                'nektulos',
+                'neriakb',
+                'neriaka',
+                'neriakc',
+                'neriakd',
+                'northkarana',
+                'nro',
+                'oasis',
+                'oggok',
+                'oot',
+                'paw',
+                'qcat',
+                'qey2hh1',
+                'qeynos',
+                'qeynos2',
+                'qeytoqrg',
+                'qrg',
+                'rathemtn',
+                'rivervale',
+                'runnyeye',
+                'soldunga',
+                'soldungb',
+                'soltemple',
+                'southkarana',
+                'sro',
+                'eastkarana'
+            ],
+            'Faydwer': [
+                'akanon',
+                'butcher',
+                'cauldron',
+                'crushbone',
+                'felwithea',
+                'felwitheb',
+                'gfaydark',
+                'kaladima',
+                'kaladimb',
+                'kedge',
+                'lfaydark',
+                'mistmoore',
+                'steamfont',
+                'unrest'
+            ],
+            'Odus': [
+                'erudnext',
+                'erudnint',
+                'erudsxing',
+                'hole',
+                'kerraridge',
+                'paineel',
+                'tox',
+                'stonebrunt',
+                'warrens'
+            ],
+            'Kunark': [
+                'burningwood',
+                'cabwest',
+                'cabeast',
+                'chardok',
+                'citymist',
+                'dalnir',
+                'dreadlands',
+                'droga',
+                'emeraldjungle',
+                'fieldofbone',
+                'firiona',
+                'frontiermtns',
+                'howlingstones',
+                'kaesora',
+                'karnor',
+                'kurn',
+                'lakeofillomen',
+                'overthere',
+                'sebilis',
+                'skyfire',
+                'swampofnohope',
+                'timorous',
+                'trakanon',
+                'veksar',
+                'warslikswood'
+            ],
+            'Velious': [
+                'cobaltscar',
+                'crystal',
+                'dragonnecrop',
+                'eastwastes',
+                'greatdivide',
+                'growthplane',
+                'iceclad',
+                'kael',
+                'mischiefplane',
+                'sirens',
+                'skyshrine',
+                'sleeper',
+                'templeveeshan',
+                'thurgadina',
+                'towerfrozen',
+                'velketor',
+                'wakening',
+                'westwastes'
+            ],
+            'Luclin': [
+                'acrylia',
+                'akheva',
+                'bazaar',
+                'dawnshroud',
+                'echo',
+                'fungusgrove',
+                'griegsend',
+                'grimling',
+                'hollowshade',
+                'marusseru',
+                'monsletalis',
+                'netherbian',
+                'paludal',
+                'scarlet',
+                'shadowhaven',
+                'sharvahl',
+                'ssratemple',
+                'tenebrous',
+                'thegrey',
+                'twilight',
+                'umbral',
+                'vexthal'
+            ],
+            'Planes': [
+                'airplane',
+                'fearplane',
+                'hateplane',
+                'hateplaneb',
+                'podisease',
+                'poearth',
+                'pofire',
+                'poinnovation',
+                'pojustice',
+                'poknowledge',
+                'ponightmare',
+                'postagnation',
+                'potactics',
+                'potorment',
+                'potimea',
+                'potimeb',
+                'potranquility',
+                'povalor',
+                'powater',
+                'poair',
+                'pothunder',
+                'pohonora',
+                'pohonorb',
+                'solrotower'
+            ]
+        }
+
         with self.engine.connect() as conn:
             query = text("""
                 SELECT
@@ -144,9 +442,16 @@ class ZoneDB:
                 if expansion_name not in zones_by_expansion:
                     zones_by_expansion[expansion_name] = []
                 
+                continent = 'Unknown'
+                for c, zones in continent_zones.items():
+                    if row_dict['short_name'] in zones:
+                        continent = c
+                        break
+
                 zones_by_expansion[expansion_name].append({
                     'short_name': row_dict['short_name'],
-                    'long_name': row_dict['long_name']
+                    'long_name': row_dict['long_name'],
+                    'continent': continent
                 })
             return zones_by_expansion
 

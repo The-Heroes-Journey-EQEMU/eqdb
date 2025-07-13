@@ -4,16 +4,6 @@ import { zoneService, Zone } from '../services/zoneService';
 
 type ZonesByContinent = Record<string, Zone[]>;
 
-const continent_zones: Record<string, string[]> = {
-    'Antonica': ['blackburrow', 'commons', 'ecommons', 'feerrott', 'freportw', 'grobb', 'everfrost', 'halas', 'highkeep', 'lavastorm', 'neriakb', 'northkarana', 'eastkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'gukbottom', 'lakerathe', 'southkarana'],
-    'Faydwer': ['akanon', 'cauldron', 'felwithea', 'gfaydark', 'kaladima', 'mistmoore'],
-    'Odus': ['erudnext', 'hole', 'paineel', 'tox', 'stonebrunt', 'dulak', 'gunthak'],
-    'Kunark': ['burningwood', 'cabeast', 'citymist', 'dreadlands', 'fieldofbone', 'firiona', 'frontiermtns', 'karnor', 'lakeofillomen', 'overthere', 'skyfire', 'timorous', 'trakanon', 'chardokb'],
-    'Velious': ['cobaltscar', 'eastwastes', 'greatdivide', 'iceclad', 'wakening', 'westwastes', 'sirens'],
-    'Luclin': ['dawnshroud', 'fungusgrove', 'sharvahl', 'ssratemple', 'tenebrous', 'umbral', 'twilight', 'scarlet', 'paludal', 'bazaar'],
-    'Planes': ['airplane', 'fearplane', 'hateplaneb', 'poknowledge', 'potranquility', 'potimea']
-};
-
 const ZoneListPage: React.FC = () => {
   const [zonesByContinent, setZonesByContinent] = useState<ZonesByContinent>({});
   const [activeContinent, setActiveContinent] = useState<string>('');
@@ -32,18 +22,32 @@ const ZoneListPage: React.FC = () => {
     const fetchZones = async () => {
       try {
         const data = await zoneService.getZonesByExpansion();
-        const filteredZones = Object.entries(data)
+        const allZones = Object.entries(data)
           .filter(([expansionName]) => includedExpansions.includes(expansionName))
           .flatMap(([, zones]) => zones);
 
-        const groupedByContinent = Object.keys(continent_zones).reduce((acc, continent) => {
-          acc[continent] = filteredZones.filter(zone => continent_zones[continent].includes(zone.short_name));
+        const groupedByContinent = allZones.reduce((acc, zone) => {
+          const continent = zone.continent || 'Unknown';
+          if (!acc[continent]) {
+            acc[continent] = [];
+          }
+          acc[continent].push(zone);
           return acc;
         }, {} as ZonesByContinent);
 
-        setZonesByContinent(groupedByContinent);
-        if (Object.keys(groupedByContinent).length > 0) {
-          setActiveContinent(Object.keys(groupedByContinent)[0]);
+        const orderedContinents = ['Antonica', 'Faydwer', 'Odus', 'Kunark', 'Velious', 'Luclin', 'Planes'].filter(c => groupedByContinent[c]);
+        const otherContinents = Object.keys(groupedByContinent).filter(c => !orderedContinents.includes(c));
+        const finalOrder = [...orderedContinents, ...otherContinents];
+
+        const orderedZonesByContinent = finalOrder.reduce((acc, continent) => {
+            acc[continent] = groupedByContinent[continent];
+            return acc;
+        }, {} as ZonesByContinent);
+        
+        setZonesByContinent(orderedZonesByContinent);
+
+        if (finalOrder.length > 0) {
+          setActiveContinent(finalOrder[0]);
         }
       } catch (err) {
         setError('Failed to fetch zones.');
@@ -85,13 +89,12 @@ const ZoneListPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
             {zonesByContinent[activeContinent].map((zone, index) => (
               <div key={`${zone.short_name}-${index}`}>
-                <Link to={`/zone/${zone.short_name}`} className="text-blue-400 hover:underline">
+                <Link to={`/zones/detail/${zone.short_name}`} className="text-blue-400 hover:underline">
                   {zone.long_name}
                 </Link>
                 <div className="text-sm text-muted-foreground">
                   ({zone.short_name})
                 </div>
-                <div className="text-sm">ZEM: 2.00</div>
               </div>
             ))}
           </div>
