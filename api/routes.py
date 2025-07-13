@@ -424,6 +424,7 @@ class SpellsByClassResource(Resource):
         
         try:
             for class_name in class_list:
+                # normalizing by removing halflings... actually hyphens
                 normalized_name = class_name.replace('-', '').lower()
                 proper_name = _SPELL_CLASS_NAME_MAP.get(normalized_name)
 

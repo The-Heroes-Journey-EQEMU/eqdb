@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import ClassListIcons from '@/components/common/ClassListIcons';
 
 const ClassSpellListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -103,36 +104,21 @@ const ClassSpellListPage: React.FC = () => {
     navigate(`/spells/list/${newSelectedClasses.join(',')}`);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   const levels = Object.keys(spellsByLevel).map(Number).sort((a, b) => a - b);
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-card border border-border rounded-lg p-6 mb-8">
-        <div className="bg-background border border-border rounded-lg p-4">
-          <div className="grid grid-cols-2 md:grid-cols-8 gap-4">
-            {classes.map((cls) => {
-              const formattedCls = cls.toLowerCase().replace(/ /g, '-');
-              const isActive = selectedClasses.includes(formattedCls);
-              return (
-                <div
-                  key={cls}
-                  onClick={() => handleClassClick(cls)}
-                  className={`cursor-pointer bg-card hover:bg-muted/50 text-foreground rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 flex flex-col items-center justify-center h-[85px] ${isActive ? 'ring-2 ring-primary' : ''}`}
-                >
-                  <img src={`/class_icons/${classIdMap[cls]}.gif`} alt={cls} className="h-10 w-10 mb-1 object-contain" />
-                  <span className="text-sm font-semibold text-center">{cls}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {selectedClasses.length > 0 && (
+      <ClassListIcons
+        classes={classes}
+        selectedClasses={selectedClasses}
+        onClassClick={handleClassClick}
+        classIdMap={classIdMap}
+      />
+      {loading ? (
+        <div className="container mx-auto px-4 py-8 text-grey-100" style={{ minHeight: '400px' }}>Loading please wait...</div>
+      ) : selectedClasses.length === 0 ? (
+        <div className="container mx-auto px-4 py-8 text-grey-100" style={{ minHeight: '400px' }}>Select up to three classes.</div>
+      ) : (
         <>
           <div className="bg-card border border-border rounded-lg p-6 mb-8">
             <div className="flex flex-wrap justify-left gap-1">

@@ -92,9 +92,10 @@ class SpellDB:
             'beastlord': ('classes15', 15),
             'berserker': ('classes16', 16),
         }
-        if class_name.lower() not in CLASS_COLUMN_MAP:
+        normalized_name = class_name.lower().replace(' ', '')
+        if normalized_name not in CLASS_COLUMN_MAP:
             return {'error': 'Invalid class name'}
-        class_column, class_id = CLASS_COLUMN_MAP[class_name.lower()]
+        class_column, class_id = CLASS_COLUMN_MAP[normalized_name]
         excl_list = utils.get_exclusion_list('spells')
         with self.engine.connect() as conn:
             query = text(f"""
