@@ -1,26 +1,16 @@
-from sqlalchemy import create_engine, text
-import configparser
-import os
+from sqlalchemy import text
 import api.utils as utils
 from sqlalchemy.orm import Session
 from api.db.zone import ZoneDB
+from api.db_manager import db_manager
 
 LEVEL_CAP = 65
 zone_db = ZoneDB()
 
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
-
 class SpellDB:
     def __init__(self):
-        """Initialize the spell database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the SpellDB class."""
+        pass
     
     def get_spell_raw_data(self, spell_id=None, spell_name=None, spell_class=None):
         """Get raw spell data from the database"""
@@ -42,7 +32,8 @@ class SpellDB:
             'beastlord': 'classes15',
             'berserker': 'classes16',
         }
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('spells_new')
+        with engine.connect() as conn:
             if spell_id:
                 query = text("""
                     SELECT * FROM spells_new 
@@ -97,7 +88,8 @@ class SpellDB:
             return {'error': 'Invalid class name'}
         class_column, class_id = CLASS_COLUMN_MAP[normalized_name]
         excl_list = utils.get_exclusion_list('spells')
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('spells_new')
+        with engine.connect() as conn:
             query = text(f"""
                 SELECT id, name, skill, targettype, new_icon, 
                     {', '.join([f'effectid{i}' for i in range(1,13)])},
@@ -2082,7 +2074,8 @@ class SpellDB:
         excl_list = utils.get_exclusion_list('spells')
         if spell_id in excl_list:
             return None
-        with Session(bind=self.engine) as session:
+        engine = db_manager.get_engine_for_table('spells_new')
+        with Session(bind=engine) as session:
             result = session.execute(
                 text("SELECT name FROM spells_new WHERE id = :spell_id"),
                 {"spell_id": spell_id}

@@ -6,7 +6,6 @@ export interface NavigationItem {
   id: string
   name: string
   href: string
-  icon: string
   type?: 'main' | 'search' | 'breadcrumb'
   parentId?: string
   children?: NavigationItem[]
@@ -265,4 +264,4 @@ export const useAppStore = create<AppStore>()(
       }
     )
   )
-) 
+)

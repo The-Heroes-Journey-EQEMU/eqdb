@@ -17,6 +17,7 @@ import { ZoneDetailPage } from '@/pages/ZoneDetailPage'
 import WaypointListingPage from '@/pages/WaypointListingPage'
 import ClassSpellListPage from '@/pages/ClassSpellListPage'
 import { useAppStore } from '@/store'
+import './styles/custom.css'
 
 // Create a client
 const queryClient = new QueryClient({

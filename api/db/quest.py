@@ -1,12 +1,6 @@
-from sqlalchemy import create_engine, text
-import configparser
+from sqlalchemy import text
 import os
-
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
+from api.db_manager import db_manager
 
 def get_quest_item_ids():
     """Get all quest item IDs from the item files"""
@@ -31,17 +25,20 @@ def get_quest_item_ids():
 
 class QuestDB:
     def __init__(self):
-        """Initialize the quest database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the QuestDB class."""
         self.quest_item_ids = get_quest_item_ids()
     
     def get_quest_raw_data(self, name=None, npc_name=None, item_id=None, item_name=None, 
                           min_level=None, max_level=None, zone=None, expansion=None, class_name=None):
         """Get raw quest data from the database"""
-        with self.engine.connect() as conn:
+        if name or npc_name:
+            engine = db_manager.get_engine_for_table('npc_types')
+        elif item_id or item_name:
+            engine = db_manager.get_engine_for_table('items')
+        else:
+            return None
+
+        with engine.connect() as conn:
             if name:
                 # Search by quest name - look for NPCs with matching names
                 query = text("""
@@ -140,7 +137,8 @@ class QuestDB:
     
     def get_quest_chains(self, npc_id=None, faction_id=None):
         """Get quest chains based on NPC or faction"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('npc_types')
+        with engine.connect() as conn:
             if npc_id:
                 # Get NPC details
                 query = text("""
@@ -200,7 +198,8 @@ class QuestDB:
             
             item_ids = [int(item_id) for item_id in content.split('\n') if item_id.strip().isdigit()]
             
-            with self.engine.connect() as conn:
+            engine = db_manager.get_engine_for_table('items')
+            with engine.connect() as conn:
                 if not item_ids:
                     return []
                 
@@ -224,7 +223,8 @@ class QuestDB:
     
     def get_zones_by_expansion(self):
         """Get zones grouped by expansion for the two-tiered selector"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("""
                 SELECT DISTINCT z.expansion, z.short_name, z.long_name
                 FROM zone z
@@ -249,7 +249,8 @@ class QuestDB:
     
     def get_expansions(self):
         """Get list of available expansions"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("""
                 SELECT DISTINCT expansion
                 FROM zone
@@ -261,7 +262,8 @@ class QuestDB:
     
     def get_zones_in_expansion(self, expansion):
         """Get zones for a specific expansion"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("""
                 SELECT short_name, long_name
                 FROM zone
@@ -269,4 +271,4 @@ class QuestDB:
                 ORDER BY long_name
             """)
             results = conn.execute(query, {"expansion": expansion}).fetchall()
-            return [{'short_name': row[0], 'long_name': row[1]} for row in results] 
+            return [{'short_name': row[0], 'long_name': row[1]} for row in results]

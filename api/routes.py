@@ -27,7 +27,7 @@ npc_db = NPCDB()
 zone_db = ZoneDB()
 tradeskill_db = TradeskillDB()
 quest_db = QuestDB()
-expansion_db = ExpansionDB('mysql+pymysql://eq:eq@localhost/eq')
+expansion_db = ExpansionDB()
 expansion_items_db = ExpansionItemsDB('sqlite:///expansion_items.db')
 
 # Define error response models
@@ -1337,7 +1337,7 @@ def init_routes(api):
     v1.add_resource(ImportItemsResource, '/expansion-items/import')
 
     # Add authentication namespace
-    api.add_namespace(auth_ns, path='/api/v1/auth')
+    api.add_namespace(auth_ns, path='/auth')
     
     # Create default admin user
     auth.create_default_admin()

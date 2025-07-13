@@ -1,13 +1,14 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 import logging
+from api.db_manager import db_manager
 
 logger = logging.getLogger(__name__)
 
 class ExpansionDB:
-    def __init__(self, connection_string):
+    def __init__(self, connection_string=None):
         """Initialize the expansion database connection"""
-        self.engine = create_engine(connection_string)
-        logger.info("Expansion database initialized")
+        # The engine is now managed by db_manager, connection_string is for compatibility
+        logger.info("ExpansionDB initialized")
     
     def get_all_expansions(self):
         """Get all expansions with their details"""
@@ -173,7 +174,8 @@ class ExpansionDB:
     
     def get_zones_by_expansion(self):
         """Get zones grouped by expansion from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("""
                 SELECT DISTINCT z.expansion, z.short_name, z.long_name
                 FROM zone z
@@ -209,7 +211,8 @@ class ExpansionDB:
     
     def get_zones_in_expansion(self, expansion_id):
         """Get zones for a specific expansion"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("""
                 SELECT short_name, long_name
                 FROM zone
@@ -230,4 +233,4 @@ class ExpansionDB:
                 }
                 zones.append(zone_data)
             
-            return zones 
+            return zones

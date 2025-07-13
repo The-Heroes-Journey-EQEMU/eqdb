@@ -15,6 +15,7 @@ api = Api(
     version='1.0',
     title='EQDB API',
     description='A RESTful API for accessing EverQuest game data including items, spells, NPCs, zones, and tradeskills.',
+    prefix='/api/v1',
     doc='/api/v1/',
     default='v1',
     default_label='API v1',
@@ -50,7 +51,7 @@ api = Api(
 
 v1 = Namespace('v1', 
     description='API v1 endpoints for EverQuest game data',
-    path='/api/v1'
+    path='/'
 )
 
 # Add v1 namespace to API

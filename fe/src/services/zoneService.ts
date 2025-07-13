@@ -10,6 +10,8 @@ export interface Zone {
   safe_x?: number;
   safe_y?: number;
   safe_z?: number;
+  zone_exp_multiplier?: number;
+  zone_level_range?: string;
 }
 
 export interface ZoneSearchParams {
@@ -27,6 +29,7 @@ export interface ZoneDetails {
   canbind: number;
   canlevitate: number;
   castoutdoor: number;
+  zone_level_range: string;
   zone_exp_multiplier: number;
   safe_x: number;
   safe_y: number;

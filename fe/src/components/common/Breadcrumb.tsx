@@ -23,7 +23,6 @@ const Breadcrumb: React.FC = () => {
               ${index === breadcrumbs.length - 1 ? 'breadcrumb-current' : ''}
             `}
           >
-            <span className="mr-1">{item.icon}</span>
             {item.name}
           </Link>
         </div>

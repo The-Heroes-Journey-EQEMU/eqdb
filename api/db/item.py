@@ -1,24 +1,15 @@
-from sqlalchemy import create_engine, text
-import configparser
-import os
-
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
+from sqlalchemy import text
+from api.db_manager import db_manager
 
 class ItemDB:
     def __init__(self):
-        """Initialize the item database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the ItemDB class."""
+        pass
     
     def get_item_raw_data(self, item_id=None, name=None, item_type=None):
         """Get raw item data from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('items')
+        with engine.connect() as conn:
             if item_id:
                 query = text("""
                     SELECT * FROM items 
@@ -44,4 +35,4 @@ class ItemDB:
                 """)
                 results = conn.execute(query, {"item_type": item_type}).fetchall()
                 return [dict(row._mapping) for row in results]
-            return None 
+            return None

@@ -26,7 +26,7 @@ class DevServer:
             
             # Start Flask server
             flask_process = subprocess.Popen([
-                sys.executable, 'eqdb.py'
+                sys.executable, 'api_server.py'
             ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             
             self.processes.append(flask_process)
@@ -127,4 +127,4 @@ class DevServer:
 
 if __name__ == "__main__":
     dev_server = DevServer()
-    dev_server.run() 
+    dev_server.run()

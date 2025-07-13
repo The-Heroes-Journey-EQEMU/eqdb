@@ -1,12 +1,6 @@
-from sqlalchemy import create_engine, text
-import configparser
+from sqlalchemy import text
 import os
-
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
+from api.db_manager import db_manager
 
 def parse_skill(skill_num):
     """Parse skill number to tradeskill name"""
@@ -27,15 +21,13 @@ def parse_skill(skill_num):
 
 class TradeskillDB:
     def __init__(self):
-        """Initialize the tradeskill database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the TradeskillDB class."""
+        pass
     
     def get_tradeskill_raw_data(self, tradeskill_id=None, name=None):
         """Get raw tradeskill data from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('tradeskill_recipe')
+        with engine.connect() as conn:
             if tradeskill_id:
                 # For ID search, we'll return the tradeskill category if it's a valid skill number
                 if tradeskill_id in [59, 60, 61, 63, 64, 65, 68, 69, 58, 56, 57]:
@@ -76,7 +68,8 @@ class TradeskillDB:
 
     def get_recipe_raw_data(self, recipe_id=None, name=None, tradeskill=None):
         """Get raw recipe data from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('tradeskill_recipe')
+        with engine.connect() as conn:
             if recipe_id:
                 # Get recipe details
                 query = text("""
@@ -259,4 +252,4 @@ class TradeskillDB:
                     
                     recipes.append(recipe_data)
                 return recipes
-            return None 
+            return None

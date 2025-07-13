@@ -1,24 +1,15 @@
-from sqlalchemy import create_engine, text
-import configparser
-import os
-
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
+from sqlalchemy import text
+from api.db_manager import db_manager
 
 class NPCDB:
     def __init__(self):
-        """Initialize the NPC database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the NPCDB class."""
+        pass
     
     def get_npc_raw_data(self, npc_id=None, name=None, zone=None):
         """Get raw NPC data from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('npc_types')
+        with engine.connect() as conn:
             if npc_id:
                 query = text("""
                     SELECT n.*, z.short_name as zone_name, z.long_name as zone_long_name, z.expansion as zone_expansion
@@ -42,4 +33,4 @@ class NPCDB:
                 """)
                 results = conn.execute(query, {"name": f"%{name}%", "zone": zone}).fetchall()
                 return [dict(row._mapping) for row in results]
-            return None 
+            return None

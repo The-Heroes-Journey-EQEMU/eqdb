@@ -69,6 +69,10 @@ const ZoneDetails: React.FC<ZoneDetailsProps> = ({ shortName }) => {
               <TableCell>{zoneDetails.castoutdoor ? 'Outdoor' : 'Indoor'}</TableCell>
             </TableRow>
             <TableRow>
+              <TableCell className="text-xs text-white">Level Range</TableCell>
+              <TableCell>{zoneDetails.zone_level_range}</TableCell>
+            </TableRow>
+            <TableRow>
               <TableCell className="text-xs text-white">Experience Multiplier</TableCell>
               <TableCell>{zoneDetails.zone_exp_multiplier}</TableCell>
             </TableRow>

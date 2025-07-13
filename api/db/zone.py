@@ -1,32 +1,184 @@
-from sqlalchemy import create_engine, text
-import configparser
+from sqlalchemy import text
 import os
 import logging
+from api.db_manager import db_manager
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-def get_config():
-    """Get configuration from configuration.ini file"""
-    config = configparser.ConfigParser()
-    config.read('configuration.ini')
-    return config
-
 class ZoneDB:
     _zone_cache = None  # Class-level cache for shortname -> (zoneidnumber, long_name)
     _zone_cache_populated = False
-
+    ZONE_LEVEL_CHART = {
+        'abysmal': '1 - 65',
+        'acrylia': '50 - 60',
+        'airplane': '50 - 60',
+        'akanon': '1 - 10',
+        'akheva': '55 - 60',
+        'arcstone': '65 - 75',
+        'bazaar': '1 - 65',
+        'befallen': '5 - 20',
+        'beholder': '35 - 40',
+        'blackburrow': '5 - 15',
+        'bloodfields': '60 - 65',
+        'buriedsea': '65 - 75',
+        'burningwood': '50 - 60',
+        'butcher': '1 - 20',
+        'cabeast': '1 - 10',
+        'cauldron': '15 - 25',
+        'cazicthule': '40 - 60',
+        'charasis': '50 - 60',
+        'chardok': '50 - 60',
+        'citymist': '45 - 55',
+        'commonlands': '5 - 15',
+        'corathus': '50 - 65',
+        'cragstone': '20 - 30',
+        'crescent': '1 - 20',
+        'crushbone': '5 - 15',
+        'cryptofshade': '65 - 70',
+        'dalnir': '35 - 45',
+        'devastation': '65 - 75',
+        'dragonlair': '60 - 65',
+        'dragonscale': '70 - 80',
+        'dranik': '60 - 65',
+        'draniksscar': '60 - 65',
+        'dreadlands': '45 - 60',
+        'droga': '35 - 50',
+        'drowned': '50 - 65',
+        'eastkarana': '15 - 25',
+        'eastwastes': '35 - 50',
+        'ecommons': '5 - 15',
+        'emeraldjungle': '45 - 55',
+        'erudnext': '1 - 10',
+        'erudnint': '1 - 10',
+        'erudsxing': '10 - 20',
+        'everfrost': '1 - 10',
+        'fearplane': '50 - 60',
+        'feerrott': '1 - 10',
+        'felwithea': '1 - 10',
+        'fieldofbone': '1 - 20',
+        'firiona': '30 - 40',
+        'freporte': '1 - 10',
+        'freportw': '1 - 10',
+        'frontiermtns': '35 - 45',
+        'frozenshadow': '30 - 50',
+        'fungusgrove': '50 - 60',
+        'gfaydark': '1 - 15',
+        'griegsend': '55 - 60',
+        'grobb': '1-75',
+        'growthplane': '50 - 60',
+        'halas': '1 - 10',
+        'harbingers': '60 - 65',
+        'hateplaneb': '50 - 60',
+        'highkeep': '20 - 30',
+        'highpass': '10-20',
+        'hohonora': '60 - 65',
+        'hohonorb': '60 - 65',
+        'hole': '45 - 60',
+        'iceclad': '25 - 40',
+        'innothule': '5 - 15',
+        'kael': '50 - 60',
+        'kaladima': '1 - 10',
+        'kaladimb': '1 - 10',
+        'karnor': '45 - 60',
+        'kedge': '45 - 55',
+        'kelethin': '1 - 10',
+        'kerraridge': '10 - 20',
+        'kithicor': '10 - 50',
+        'lakeofillomen': '15 - 30',
+        'lakerathe': '10 - 25',
+        'lavastorm': '5 - 15',
+        'lfaydark': '10 - 25',
+        'maiden': '50 - 60',
+        'mesa': '35 - 55',
+        'mischiefplane': '50 - 60',
+        'misty': '1 - 10',
+        'moors': '30 - 45',
+        'mseru': '35 - 50',
+        'najena': '15 - 25',
+        'nektulos': '5 - 15',
+        'neriaka': '1 - 10',
+        'neriakb': '1 - 10',
+        'neriakc': '1 - 10',
+        'netherbian': '30 - 45',
+        'northkarana': '10 - 20',
+        'nro': '5 - 15',
+        'oggok': '1 - 10',
+        'oldhighpass': '10 - 20',
+        'oldkurn': '10 - 25',
+        'oot': '10 - 20',
+        'overthere': '25 - 40',
+        'paineel': '1 - 10',
+        'paludal': '15 - 30',
+        'paw': '30 - 40',
+        'poair': '65 - 70',
+        'podisease': '50 - 60',
+        'poearthb': '65 - 70',
+        'pofire': '65 - 70',
+        'poinnovation': '50 - 60',
+        'pojustice': '45 - 55',
+        'poknowledge': '1 - 65',
+        'ponightmare': '50 - 60',
+        'postorms': '55 - 65',
+        'potactics': '60 - 65',
+        'potimeb': '65 - 70',
+        'potorment': '60 - 65',
+        'potranquility': '1 - 65',
+        'povalor': '55 - 65',
+        'powater': '65 - 70',
+        'provinggrounds': '60 - 65',
+        'qcat': '5 - 15',
+        'qey2hh1': '10 - 20',
+        'qeynos': '1 - 10',
+        'qeynos2': '1 - 10',
+        'qeytoqrg': '1 - 10',
+        'qrg': '1 - 10',
+        'rathemtn': '15 - 30',
+        'riftseekers': '65 - 70',
+        'rivervale': '1 - 10',
+        'scarlet': '35 - 50',
+        'sebilis': '55 - 60',
+        'sirens': '50 - 60',
+        'skyfire': '50 - 60',
+        'sleeper': '60 - 65',
+        'soldunga': '20 - 30',
+        'soldungb': '40 - 60',        
+        'soltemple': '35 - 45',
+        'southkarana': '20 - 30',
+        'sro': '15 - 25',
+        'sseru': '45 - 55',
+        'ssratemple': '55 - 60',
+        'steamfactory': '70 - 80',
+        'steamfont': '1 - 15',
+        'steamfontmts': '1 - 15',
+        'steppes': '70 - 80',
+        'swampofnohope': '20 - 35',
+        'templeveeshan': '60 - 65',
+        'tenebrous': '25 - 40',
+        'thedeep': '45 - 60',
+        'thegrey': '45 - 55',
+        'thurgadina': '1 - 10',
+        'timorous': '25 - 40',
+        'toxxulia': '1 - 10',
+        'trakanon': '45 - 55',
+        'twilight': '45 - 55',
+        'umbral': '55 - 60',
+        'unrest': '15 - 30',
+        'wakening': '45 - 60',
+        'wallofslaughter': '60 - 65',
+        'warrens': '15 - 30',
+        'westwastes': '55 - 60',
+    }
+    
     def __init__(self):
-        """Initialize the zone database connection"""
-        config = get_config()
-        db_config = config['database']
-        url = f"{db_config['driver']}{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-        self.engine = create_engine(url)
+        """Initialize the ZoneDB class."""
+        pass
 
     def _populate_zone_cache(self):
         """Populate the in-memory cache for zone long names."""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             query = text("SELECT short_name, zoneidnumber, long_name FROM zone")
             results = conn.execute(query).fetchall()
             ZoneDB._zone_cache = {row._mapping['short_name']: (row._mapping['zoneidnumber'], row._mapping['long_name']) for row in results}
@@ -35,7 +187,8 @@ class ZoneDB:
 
     def get_zone_raw_data(self, zone_id=None, name=None):
         """Get raw zone data from the database"""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             if zone_id:
                 query = text("""
                     SELECT * FROM zone 
@@ -107,7 +260,8 @@ class ZoneDB:
 
     def get_zone_by_identifier(self, identifier):
         """Get a single zone by its ID or short_name."""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
             # Check if identifier is an integer (ID) or string (short_name)
             try:
                 zone_id = int(identifier)
@@ -126,7 +280,8 @@ class ZoneDB:
 
     def get_connected_zones(self, short_name):
         """Get all connected zones for a given short_name."""
-        with self.engine.connect() as conn:
+        engine = db_manager.get_engine_for_table('zone_points')
+        with engine.connect() as conn:
             # First, get the distinct target_zone_ids from zone_points
             query_ids = text("""
                 SELECT DISTINCT target_zone_id
@@ -141,25 +296,29 @@ class ZoneDB:
             target_ids = [row._mapping['target_zone_id'] for row in target_ids_results]
 
             # Now, get the zone details for those IDs
-            query_zones = text("""
-                SELECT DISTINCT
-                    zoneidnumber as target_zone_id,
-                    short_name,
-                    long_name
-                FROM
-                    zone
-                WHERE
-                    zoneidnumber IN :target_ids
-            """)
-            results = conn.execute(query_zones, {"target_ids": tuple(target_ids)}).fetchall()
-            return [dict(row._mapping) for row in results]
+            engine_zone = db_manager.get_engine_for_table('zone')
+            with engine_zone.connect() as conn_zone:
+                query_zones = text("""
+                    SELECT DISTINCT
+                        zoneidnumber as target_zone_id,
+                        short_name,
+                        long_name
+                    FROM
+                        zone
+                    WHERE
+                        zoneidnumber IN :target_ids
+                """)
+                results = conn_zone.execute(query_zones, {"target_ids": tuple(target_ids)}).fetchall()
+                return [dict(row._mapping) for row in results]
 
     def get_zone_details_by_short_name(self, short_name):
         """Get extended zone details by short_name."""
         from api.db.expansion import ExpansionDB
-        expansion_db = ExpansionDB(self.engine.url)
+        
+        engine = db_manager.get_engine_for_table('zone')
+        expansion_db = ExpansionDB(engine.url)
 
-        with self.engine.connect() as conn:
+        with engine.connect() as conn:
             query = text("""
                 SELECT
                     zoneidnumber,
@@ -184,7 +343,7 @@ class ZoneDB:
                 # Get expansion name from ExpansionDB
                 expansion_info = expansion_db.get_expansion_by_id(zone_data['expansion'])
                 zone_data['expansion'] = expansion_info['name'] if expansion_info else 'Unknown'
-
+                zone_data['zone_level_range'] = self.ZONE_LEVEL_CHART[short_name]
                 waypoint = self.get_zone_waypoint(short_name)
                 zone_data['waypoint_x'] = waypoint.get('x')
                 zone_data['waypoint_y'] = waypoint.get('y')
@@ -211,28 +370,41 @@ class ZoneDB:
             self._populate_zone_cache()
 
         continent_zones = {
-            'Antonica': ['blackburrow', 'commons', 'ecommons', 'feerrott', 'freportw', 'grobb', 'everfrost', 'halas', 'highkeep', 'lavastorm', 'neriakb', 'northkarana', 'eastkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'gukbottom', 'lakerathe', 'southkarana'],
+            'Antonica': ['blackburrow', 'commons', 'eastkarana', 'ecommons', 'everfrost', 'feerrott', 'freportw', 'grobb', 'gukbottom', 'halas', 'highkeep', 'lakerathe', 'lavastorm', 'neriakb', 'northkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'southkarana'],
             'Faydwer': ['akanon', 'cauldron', 'felwithea', 'gfaydark', 'kaladima', 'mistmoore'],
-            'Odus': ['erudnext', 'hole', 'paineel', 'tox', 'stonebrunt', 'dulak', 'gunthak'],
-            'Kunark': ['burningwood', 'cabeast', 'citymist', 'dreadlands', 'fieldofbone', 'firiona', 'frontiermtns', 'karnor', 'lakeofillomen', 'overthere', 'skyfire', 'timorous', 'trakanon', 'chardokb'],
-            'Velious': ['cobaltscar', 'eastwastes', 'greatdivide', 'iceclad', 'wakening', 'westwastes', 'sirens'],
-            'Luclin': ['dawnshroud', 'fungusgrove', 'sharvahl', 'ssratemple', 'tenebrous', 'umbral', 'twilight', 'scarlet', 'paludal', 'bazaar'],
-            'Planes': ['airplane', 'fearplane', 'hateplaneb', 'poknowledge', 'potranquility', 'potimea']
+            'Odus': ['dulak', 'erudnext', 'gunthak', 'hole', 'paineel', 'stonebrunt', 'tox'],
+            'Kunark': ['burningwood', 'cabeast', 'chardokb', 'citymist', 'dreadlands', 'fieldofbone', 'firiona', 'frontiermtns', 'karnor', 'lakeofillomen', 'overthere', 'skyfire', 'timorous', 'trakanon'],
+            'Velious': ['cobaltscar', 'eastwastes', 'greatdivide', 'iceclad', 'sirens', 'wakening', 'westwastes'],
+            'Luclin': ['bazaar', 'dawnshroud', 'fungusgrove', 'paludal', 'scarlet', 'sharvahl', 'ssratemple', 'tenebrous', 'twilight', 'umbral'],
+            'Planes': ['airplane', 'fearplane', 'hateplaneb', 'nightmareb', 'podisease', 'poknowledge', 'potimea', 'potranquility']
         }
 
         waypoints_by_continent = {}
         for continent, zones in continent_zones.items():
-            waypoints_by_continent[continent] = {}
+            continent_waypoints = []
             for short_name in zones:
                 waypoint = self.get_zone_waypoint(short_name)
                 if waypoint:
                     zone_id, long_name = self.get_zone_long_name(short_name)
                     if zone_id is not None:
-                        waypoints_by_continent[continent][long_name] = {
+                        continent_waypoints.append({
+                            'long_name': long_name,
                             'id': zone_id,
                             'short_name': short_name,
                             'waypoint': waypoint
-                        }
+                        })
+            
+            # Sort by long_name
+            continent_waypoints.sort(key=lambda x: x['long_name'])
+            
+            # Convert to the desired dictionary format
+            waypoints_by_continent[continent] = {
+                item['long_name']: {
+                    'id': item['id'],
+                    'short_name': item['short_name'],
+                    'waypoint': item['waypoint']
+                } for item in continent_waypoints
+            }
         
         return waypoints_by_continent
 
@@ -242,192 +414,59 @@ class ZoneDB:
         from api.utils import get_exclusion_list
         
         exclusion_list = get_exclusion_list('zone')
-        expansion_db = ExpansionDB(self.engine.url)
+        engine = db_manager.get_engine_for_table('zone')
+        expansion_db = ExpansionDB(engine.url)
         expansions = expansion_db.get_all_expansions()
         
         continent_zones = {
             'Antonica': [
-                'befallen',
-                'beholder',
-                'blackburrow',
-                'cazicthule',
-                'commons',
-                'ecommons',
-                'feerrott',
-                'freporte',
-                'freportn',
-                'freportw',
-                'grobb',
-                'gukbottom',
-                'guktop',
-                'everfrost',
-                'halas',
-                'highkeep',
-                'innothule',
-                'kithicor',
-                'lakerathe',
-                'lavastorm',
-                'misty',
-                'najena',
-                'nektulos',
-                'neriakb',
-                'neriaka',
-                'neriakc',
-                'neriakd',
-                'northkarana',
-                'nro',
-                'oasis',
-                'oggok',
-                'oot',
-                'paw',
-                'qcat',
-                'qey2hh1',
-                'qeynos',
-                'qeynos2',
-                'qeytoqrg',
-                'qrg',
-                'rathemtn',
-                'rivervale',
-                'runnyeye',
-                'soldunga',
-                'soldungb',
-                'soltemple',
-                'southkarana',
-                'sro',
-                'eastkarana'
+                'befallen', 'beholder', 'blackburrow', 'cazicthule', 'commons', 'eastkarana', 'ecommons', 'everfrost', 'feerrott',
+                'freporte', 'freportn', 'freportw', 'grobb', 'gukbottom', 'guktop', 'halas', 'highkeep', 'highpass',
+                'innothule', 'kithicor', 'lakerathe', 'lavastorm', 'misty', 'najena', 'nektulos', 'neriakb', 'neriaka',
+                'neriakc', 'neriakd', 'northkarana', 'nro', 'oasis', 'oggok', 'oot', 'paw', 'permafrost', 'qcat', 'qey2hh1',
+                'qeynos', 'qeynos2', 'qeytoqrg', 'qrg', 'rathemtn', 'rivervale', 'runnyeye', 'soldunga', 'soldungb',
+                'soltemple', 'southkarana', 'sro'
             ],
             'Faydwer': [
-                'akanon',
-                'butcher',
-                'cauldron',
-                'crushbone',
-                'felwithea',
-                'felwitheb',
-                'gfaydark',
-                'kaladima',
-                'kaladimb',
-                'kedge',
-                'lfaydark',
-                'mistmoore',
-                'steamfont',
-                'unrest'
+                'akanon', 'butcher', 'cauldron', 'crushbone', 'felwithea', 'felwitheb', 'gfaydark', 'kaladima', 'kaladimb',
+                'kedge', 'lfaydark', 'mistmoore', 'steamfont', 'unrest'
             ],
             'Odus': [
-                'erudnext',
-                'erudnint',
-                'erudsxing',
-                'hole',
-                'kerraridge',
-                'paineel',
-                'tox',
-                'stonebrunt',
-                'warrens'
+                'erudnext', 'erudnint', 'erudsxing', 'hole', 'kerraridge', 'paineel', 'stonebrunt', 'tox', 'warrens'
             ],
             'Kunark': [
-                'burningwood',
-                'cabwest',
-                'cabeast',
-                'chardok',
-                'citymist',
-                'dalnir',
-                'dreadlands',
-                'droga',
-                'emeraldjungle',
-                'fieldofbone',
-                'firiona',
-                'frontiermtns',
-                'howlingstones',
-                'kaesora',
-                'karnor',
-                'kurn',
-                'lakeofillomen',
-                'overthere',
-                'sebilis',
-                'skyfire',
-                'swampofnohope',
-                'timorous',
-                'trakanon',
-                'veksar',
-                'warslikswood'
+                'burningwood', 'cabeast', 'cabwest', 'chardok', 'charasis', 'citymist', 'dalnir', 'dreadlands', 'droga',
+                'emeraldjungle', 'fieldofbone', 'firiona', 'frontiermtns', 'howlingstones', 'kaesora', 'karnor', 'kurn',
+                'lakeofillomen', 'nurga', 'overthere', 'sebilis', 'skyfire', 'swampofnohope', 'timorous', 'trakanon',
+                'veeshan', 'veksar', 'warslikswood'
             ],
             'Velious': [
-                'cobaltscar',
-                'crystal',
-                'dragonnecrop',
-                'eastwastes',
-                'greatdivide',
-                'growthplane',
-                'iceclad',
-                'kael',
-                'mischiefplane',
-                'sirens',
-                'skyshrine',
-                'sleeper',
-                'templeveeshan',
-                'thurgadina',
-                'towerfrozen',
-                'velketor',
-                'wakening',
-                'westwastes'
+                'cobaltscar', 'crystal', 'dragonnecrop', 'eastwastes', 'frozenshadow', 'greatdivide', 'growthplane',
+                'iceclad', 'kael', 'necropolis', 'sirens', 'skyshrine', 'sleeper', 'templeveeshan', 'thurgadina',
+                'thurgadinb', 'towerfrozen', 'velketor', 'wakening', 'westwastes'
             ],
             'Luclin': [
-                'acrylia',
-                'akheva',
-                'bazaar',
-                'dawnshroud',
-                'echo',
-                'fungusgrove',
-                'griegsend',
-                'grimling',
-                'hollowshade',
-                'marusseru',
-                'monsletalis',
-                'netherbian',
-                'paludal',
-                'scarlet',
-                'shadowhaven',
-                'sharvahl',
-                'ssratemple',
-                'tenebrous',
-                'thegrey',
-                'twilight',
-                'umbral',
-                'vexthal'
+                'acrylia', 'akheva', 'bazaar', 'dawnshroud', 'echo', 'fungusgrove', 'griegsend', 'grimling', 'hollowshade',
+                'jaggedpine', 'katta', 'letalis', 'maiden', 'marusseru', 'mseru', 'netherbian', 'nexus', 'paludal',
+                'scarlet', 'shadeweaver', 'shadowhaven', 'sharvahl', 'sseru', 'ssratemple', 'tenebrous', 'thedeep',
+                'thegrey', 'twilight', 'umbral', 'vexthal'
             ],
             'Planes': [
-                'airplane',
-                'fearplane',
-                'hateplane',
-                'hateplaneb',
-                'podisease',
-                'poearth',
-                'pofire',
-                'poinnovation',
-                'pojustice',
-                'poknowledge',
-                'ponightmare',
-                'postagnation',
-                'potactics',
-                'potorment',
-                'potimea',
-                'potimeb',
-                'potranquility',
-                'povalor',
-                'powater',
-                'poair',
-                'pothunder',
-                'pohonora',
-                'pohonorb',
-                'solrotower'
+                'airplane', 'bothunder', 'codecay', 'fearplane', 'hateplane', 'hateplaneb', 'hohonora', 'hohonorb',
+                'mischiefplane', 'nightmareb', 'podisease', 'poair', 'poeartha', 'poearthb', 'pofire', 'pohonora',
+                'pohonorb', 'poinnovation', 'pojustice', 'poknowledge', 'ponightmare', 'postagnation', 'postorms',
+                'potactics', 'potimea', 'potimeb', 'potorment', 'pothunder', 'potranquility', 'povalor', 'powar',
+                'powater', 'solrotower'
             ]
         }
-
-        with self.engine.connect() as conn:
+        
+        with engine.connect() as conn:
             query = text("""
                 SELECT
                     z.expansion,
                     z.short_name,
-                    z.long_name
+                    z.long_name,
+                    z.zone_exp_multiplier
                 FROM
                     zone z
                 WHERE
@@ -463,7 +502,9 @@ class ZoneDB:
                 zones_by_expansion[expansion_name].append({
                     'short_name': row_dict['short_name'],
                     'long_name': row_dict['long_name'],
-                    'continent': continent
+                    'continent': continent,
+                    'zone_exp_multiplier': row_dict['zone_exp_multiplier'],
+                    'zone_level_range': self.ZONE_LEVEL_CHART.get(row_dict['short_name'], "N/A")
                 })
             return zones_by_expansion
 
