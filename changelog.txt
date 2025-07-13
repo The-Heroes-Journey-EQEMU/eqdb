@@ -1,3 +1,6 @@
+==2.1.2.1==
+* Fixed a user bleed over issue for Weights and Stat Restriction sets on the User Area page.
+
 ==2.1.2==
 DEPLOYED: 7/12/2025
 * Removed a trailing character from Spell Detail page when showing items that the spell is a click effect on.

@@ -483,11 +483,11 @@ def get_user_data(user):
         result = query.all()
         ret_data.update({'gearlists': result})
 
-        query = session.query(Restricts)
+        query = session.query(Restricts).filter(Restricts.uid == user_id)
         result = query.all()
         ret_data.update({'restricts': result})
 
-        query = session.query(Weights)
+        query = session.query(Weights).filter(Weights.uid == user_id)
         result = query.all()
         ret_data.update({'weights': result})
 
