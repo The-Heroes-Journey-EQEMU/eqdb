@@ -87,14 +87,14 @@ const ZoneListPage: React.FC = () => {
       <div className="py-4">
         {activeContinent && zonesByContinent[activeContinent] && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-            {zonesByContinent[activeContinent].map((zone, index) => (
-              <Link to={`/zones/detail/${zone.short_name}`}>
-                <div key={`${zone.short_name}-${index}`} className="card rounded-md">
+            {zonesByContinent[activeContinent].map((zone) => (
+              <Link key={zone.short_name} to={`/zones/detail/${zone.short_name}`}>
+                <div className="card rounded-md">
                     <div className="text-blue-100 hover:underline font-bold flex justify-between items-center py-2 px-5">
                       <span className="text-sm">{zone.long_name}</span>
                       <i className="text-xs font-normal">{zone.short_name}</i>
                     </div>
-                    <div key={`${zone.short_name}-${index}`} className="bg-gray-700 px-5 py-2 flex justify-between">
+                    <div className="bg-gray-700 px-5 py-2 flex justify-between">
                       <div className="text-sm text-muted-foreground">
                         ZEM: {zone.zone_exp_multiplier}
                       </div>
@@ -102,7 +102,6 @@ const ZoneListPage: React.FC = () => {
                         Level Range: {zone.zone_level_range}
                       </div>
                     </div>
-            
                 </div>
               </Link>
             ))}

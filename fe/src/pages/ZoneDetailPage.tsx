@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { zoneService, Zone, ConnectedZone } from '@/services/zoneService';
+import { zoneService, Zone, ConnectedZone, ZoneNPC, ZoneItem } from '@/services/zoneService';
 import Card from '@/components/common/Card';
 import ZoneMap from '@/components/zones/ZoneMap';
 import ZoneDetails from '@/components/zones/ZoneDetails';
+import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/common/Table';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import ItemCard from '@/components/items/ItemCard';
 
 const ConnectedZonesTab: React.FC<{ zones: ConnectedZone[] }> = ({ zones }) => (
   <div>
@@ -19,13 +22,125 @@ const ConnectedZonesTab: React.FC<{ zones: ConnectedZone[] }> = ({ zones }) => (
   </div>
 );
 
+const NPCsTab: React.FC<{ npcs: ZoneNPC[]; loading: boolean; onLoad: () => void }> = ({ npcs, loading, onLoad }) => {
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    if (npcs.length === 0 && !loading) {
+      onLoad();
+    }
+  }, [npcs.length, loading, onLoad]);
+
+  const filteredNpcs = npcs.filter(npc =>
+    npc.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (npcs.length === 0) {
+    return <div className="text-gray-500">No NPCs found in this zone.</div>;
+  }
+
+  return (
+    <div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Filter by NPC name..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableHeader>Name</TableHeader>
+            <TableHeader>Level</TableHeader>
+            <TableHeader>HP</TableHeader>
+            <TableHeader>Race</TableHeader>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredNpcs.map((npc) => (
+          <TableRow key={npc.id}>
+            <TableCell className="font-medium text-blue-400">{npc.name.replace(/_/g, ' ')}</TableCell>
+            <TableCell>{npc.level}</TableCell>
+            <TableCell>{npc.hp ? npc.hp.toLocaleString() : 'N/A'}</TableCell>
+            <TableCell>{npc.race}</TableCell>
+          </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+const ItemsTab: React.FC<{ items: ZoneItem[]; loading: boolean; onLoad: () => void }> = ({ items, loading, onLoad }) => {
+  useEffect(() => {
+    if (items.length === 0 && !loading) {
+      onLoad();
+    }
+  }, [items.length, loading, onLoad]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (items.length === 0) {
+    return <div className="text-gray-500">No items found in this zone.</div>;
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
+      {items.map((item) => (
+        <ItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  );
+};
+
 export const ZoneDetailPage: React.FC = () => {
   const { identifier } = useParams<{ identifier: string }>();
   const [zone, setZone] = useState<Zone | null>(null);
   const [connectedZones, setConnectedZones] = useState<ConnectedZone[]>([]);
+  const [zoneNPCs, setZoneNPCs] = useState<ZoneNPC[]>([]);
+  const [zoneItems, setZoneItems] = useState<ZoneItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [npcsLoading, setNpcsLoading] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('Connected Zones');
+
+  const fetchNPCs = async () => {
+    if (!zone || zoneNPCs.length > 0 || npcsLoading) return;
+    
+    try {
+      setNpcsLoading(true);
+      const npcs = await zoneService.getZoneNPCs(zone.short_name);
+      setZoneNPCs(npcs);
+    } catch (err) {
+      console.error('Failed to fetch zone NPCs:', err);
+    } finally {
+      setNpcsLoading(false);
+    }
+  };
+
+  const fetchItems = async () => {
+    if (!zone || zoneItems.length > 0 || itemsLoading) return;
+    
+    try {
+      setItemsLoading(true);
+      const items = await zoneService.getZoneItems(zone.short_name);
+      setZoneItems(items);
+    } catch (err) {
+      console.error('Failed to fetch zone items:', err);
+    } finally {
+      setItemsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchZoneData = async () => {
@@ -97,8 +212,8 @@ export const ZoneDetailPage: React.FC = () => {
                   {/* Tab Content */}
                   <div className="pt-4 min-h-[12rem]">
                     {activeTab === 'Connected Zones' && <ConnectedZonesTab zones={connectedZones} />}
-                    {activeTab === 'Items' && <p>Items Content</p>}
-                    {activeTab === 'NPCs' && <p>NPCs Content</p>}
+                    {activeTab === 'Items' && <ItemsTab items={zoneItems} loading={itemsLoading} onLoad={fetchItems} />}
+                    {activeTab === 'NPCs' && <NPCsTab npcs={zoneNPCs} loading={npcsLoading} onLoad={fetchNPCs} />}
                     {activeTab === 'Spawns' && <p>Spawns Content</p>}
                   </div>
                 </div>

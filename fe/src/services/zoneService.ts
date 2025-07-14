@@ -66,6 +66,47 @@ interface WaypointsByContinent {
     [continentName: string]: ContinentData;
 }
 
+export interface ZoneNPC {
+  id: number;
+  name: string;
+  level: number;
+  race: string;
+  class: string;
+  hp: number;
+  mindmg: number;
+  maxdmg: number;
+  attackspeed: number;
+  special_abilities: string;
+  aggroradius: number;
+  npcspecialattks: string;
+  zone_name: string;
+  zone_long_name: string;
+}
+
+export interface ZoneItem {
+  id: number;
+  name: string;
+  itemtype: number;
+  itemclass: number;
+  weight: number;
+  size: number;
+  slots: number;
+  price: number;
+  icon: number;
+  lore: string;
+  nodrop: number;
+  norent: number;
+  magic: number;
+  races: number;
+  classes: number;
+  ac: number;
+  hp: number;
+  mana: number;
+  damage: number;
+  delay: number;
+  drop_count: number;
+}
+
 export const zoneService = {
   searchZones: async (params: ZoneSearchParams): Promise<Zone[]> => {
     const response = await api.get<Zone[]>('/zones', { params });
@@ -89,6 +130,14 @@ export const zoneService = {
   },
   getConnectedZones: async (shortName: string): Promise<ConnectedZone[]> => {
     const response = await api.get<ConnectedZone[]>(`/zones/${shortName}/connected`);
+    return response.data;
+  },
+  getZoneNPCs: async (shortName: string): Promise<ZoneNPC[]> => {
+    const response = await api.get<ZoneNPC[]>(`/zones/${shortName}/npcs`);
+    return response.data;
+  },
+  getZoneItems: async (shortName: string): Promise<ZoneItem[]> => {
+    const response = await api.get<ZoneItem[]>(`/zones/${shortName}/items`);
     return response.data;
   },
 };

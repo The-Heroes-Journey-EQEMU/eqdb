@@ -28,3 +28,4 @@ fe/yarn-error.log*
 fe/.next/
 fe/.cache/
 fe/.turbo/
+node_modules

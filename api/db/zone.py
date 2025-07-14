@@ -25,13 +25,14 @@ class ZoneDB:
         'buriedsea': '65 - 75',
         'burningwood': '50 - 60',
         'butcher': '1 - 20',
-        'cabeast': '1 - 10',
+        'cabeast': '1 - 75',
+        'cabwest': '1- 75',
         'cauldron': '15 - 25',
         'cazicthule': '40 - 60',
         'charasis': '50 - 60',
         'chardok': '50 - 60',
         'citymist': '45 - 55',
-        'commonlands': '5 - 15',
+        'commons': '10 - 50',
         'corathus': '50 - 65',
         'cragstone': '20 - 30',
         'crescent': '1 - 20',
@@ -279,16 +280,25 @@ class ZoneDB:
             return None
 
     def get_connected_zones(self, short_name):
-        """Get all connected zones for a given short_name."""
+        """Get all connected zones for a given short_name, excluding those in the exclusion list."""
+        from api.utils import get_exclusion_list
+        
+        exclusion_list = get_exclusion_list('zone')
         engine = db_manager.get_engine_for_table('zone_points')
+        
         with engine.connect() as conn:
             # First, get the distinct target_zone_ids from zone_points
             query_ids = text("""
-                SELECT DISTINCT target_zone_id
-                FROM zone_points
-                WHERE zone = :short_name
+                SELECT DISTINCT zp.target_zone_id
+                FROM zone_points zp
+                JOIN zone z ON zp.target_zone_id = z.zoneidnumber
+                WHERE zp.zone = :short_name
+                AND z.short_name NOT IN :exclusion_list
             """)
-            target_ids_results = conn.execute(query_ids, {"short_name": short_name}).fetchall()
+            target_ids_results = conn.execute(
+                query_ids, 
+                {"short_name": short_name, "exclusion_list": tuple(exclusion_list)}
+            ).fetchall()
             
             if not target_ids_results:
                 return []
@@ -309,7 +319,8 @@ class ZoneDB:
                         zoneidnumber IN :target_ids
                 """)
                 results = conn_zone.execute(query_zones, {"target_ids": tuple(target_ids)}).fetchall()
-                return [dict(row._mapping) for row in results]
+                # Filter out the current zone from the results
+                return [dict(row._mapping) for row in results if row._mapping['short_name'] != short_name]
 
     def get_zone_details_by_short_name(self, short_name):
         """Get extended zone details by short_name."""
@@ -343,7 +354,7 @@ class ZoneDB:
                 # Get expansion name from ExpansionDB
                 expansion_info = expansion_db.get_expansion_by_id(zone_data['expansion'])
                 zone_data['expansion'] = expansion_info['name'] if expansion_info else 'Unknown'
-                zone_data['zone_level_range'] = self.ZONE_LEVEL_CHART[short_name]
+                zone_data['zone_level_range'] = self.ZONE_LEVEL_CHART.get(short_name, "N/A")
                 waypoint = self.get_zone_waypoint(short_name)
                 zone_data['waypoint_x'] = waypoint.get('x')
                 zone_data['waypoint_y'] = waypoint.get('y')
@@ -370,7 +381,7 @@ class ZoneDB:
             self._populate_zone_cache()
 
         continent_zones = {
-            'Antonica': ['blackburrow', 'commons', 'eastkarana', 'ecommons', 'everfrost', 'feerrott', 'freportw', 'grobb', 'gukbottom', 'halas', 'highkeep', 'lakerathe', 'lavastorm', 'neriakb', 'northkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'southkarana'],
+            'Antonica': ['blackburrow', 'commons','eastkarana', 'ecommons', 'everfrost', 'feerrott', 'freportw', 'grobb', 'gukbottom', 'halas', 'highkeep', 'lakerathe', 'lavastorm', 'neriakb', 'northkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'southkarana'],
             'Faydwer': ['akanon', 'cauldron', 'felwithea', 'gfaydark', 'kaladima', 'mistmoore'],
             'Odus': ['dulak', 'erudnext', 'gunthak', 'hole', 'paineel', 'stonebrunt', 'tox'],
             'Kunark': ['burningwood', 'cabeast', 'chardokb', 'citymist', 'dreadlands', 'fieldofbone', 'firiona', 'frontiermtns', 'karnor', 'lakeofillomen', 'overthere', 'skyfire', 'timorous', 'trakanon'],

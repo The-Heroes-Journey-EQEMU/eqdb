@@ -571,6 +571,58 @@ class ConnectedZoneResource(Resource):
             v1.abort(404, "No connected zones found for this zone")
         return connected_zones
 
+@v1.route('/zones/<string:short_name>/npcs')
+class ZoneNPCsResource(Resource):
+    @optional_auth
+    @v1.doc('get_zone_npcs',
+        params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
+        responses={
+            200: ('Success', [npc_model]),
+            404: ('Zone not found or no NPCs found', error_model)
+        }
+    )
+    def get(self, short_name):
+        """Get all NPCs for a given zone short name"""
+        try:
+            npcs = npc_db.get_npcs_by_zone(short_name)
+            if not npcs:
+                v1.abort(404, "No NPCs found for this zone")
+            
+            # Format response
+            formatted_npcs = []
+            for npc in npcs:
+                formatted_npc = format_npc_response(npc)
+                formatted_npcs.append(formatted_npc)
+            return formatted_npcs
+        except Exception as e:
+            v1.abort(500, f"Error retrieving NPCs for zone {short_name}: {str(e)}")
+
+@v1.route('/zones/<string:short_name>/items')
+class ZoneItemsResource(Resource):
+    @optional_auth
+    @v1.doc('get_zone_items',
+        params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
+        responses={
+            200: ('Success', [item_model]),
+            404: ('Zone not found or no items found', error_model)
+        }
+    )
+    def get(self, short_name):
+        """Get all items that drop in a given zone"""
+        try:
+            items = item_db.get_items_by_zone(short_name)
+            if not items:
+                v1.abort(404, "No items found for this zone")
+            
+            # Format response
+            formatted_items = []
+            for item in items:
+                formatted_item = format_item_response(item)
+                formatted_items.append(formatted_item)
+            return formatted_items
+        except Exception as e:
+            v1.abort(500, f"Error retrieving items for zone {short_name}: {str(e)}")
+
 @v1.route('/zones')
 class ZoneResource(Resource):
     @optional_auth
@@ -1317,6 +1369,8 @@ def init_routes(api):
     v1.add_resource(ZoneDetailResource, '/zones/<string:identifier>')
     v1.add_resource(ZoneExtraDetailsResource, '/zones/<string:short_name>/details')
     v1.add_resource(ConnectedZoneResource, '/zones/<string:short_name>/connected')
+    v1.add_resource(ZoneNPCsResource, '/zones/<string:short_name>/npcs')
+    v1.add_resource(ZoneItemsResource, '/zones/<string:short_name>/items')
     v1.add_resource(WaypointResource, '/zones/waypoints')
     v1.add_resource(TradeskillResource, '/tradeskills')
     v1.add_resource(RecipeResource, '/recipes')

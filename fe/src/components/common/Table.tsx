@@ -4,7 +4,7 @@ export const Table: React.FC<React.HTMLAttributes<HTMLTableElement>> = ({ classN
   <table className={`w-full text-sm text-left text-gray-500 dark:text-gray-400 ${className}`} {...props} />
 );
 
-export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ className = '', ...props }) => (
+export const TableHead: React.FC<React.HTMLAttributes<HTMLTableSectionElement>> = ({ className = '', ...props }) => (
   <thead className={`text-xxs text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300 ${className}`} {...props} />
 );
 
@@ -16,7 +16,7 @@ export const TableRow: React.FC<React.HTMLAttributes<HTMLTableRowElement>> = ({ 
   <tr className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${className}`} {...props} />
 );
 
-export const TableHead: React.FC<React.HTMLAttributes<HTMLTableCellElement>> = ({ className = '', ...props }) => (
+export const TableHeader: React.FC<React.HTMLAttributes<HTMLTableCellElement>> = ({ className = '', ...props }) => (
   <th scope="col" className={`px-2 py-3 ${className}`} {...props} />
 );
 
