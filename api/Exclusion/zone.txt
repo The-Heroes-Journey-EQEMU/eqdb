@@ -6,3 +6,5 @@ nedaria
 shadowrest
 hateplane
 commonlands
+chardokb
+soldungc

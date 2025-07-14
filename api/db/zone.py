@@ -2,6 +2,7 @@ from sqlalchemy import text
 import os
 import logging
 from api.db_manager import db_manager
+from api.db.zone_settings import ZONE_LEVEL_CHART, continent_zones
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -10,168 +11,8 @@ logger = logging.getLogger(__name__)
 class ZoneDB:
     _zone_cache = None  # Class-level cache for shortname -> (zoneidnumber, long_name)
     _zone_cache_populated = False
-    ZONE_LEVEL_CHART = {
-        'abysmal': '1 - 65',
-        'acrylia': '50 - 60',
-        'airplane': '50 - 60',
-        'akanon': '1 - 10',
-        'akheva': '55 - 60',
-        'arcstone': '65 - 75',
-        'bazaar': '1 - 65',
-        'befallen': '5 - 20',
-        'beholder': '35 - 40',
-        'blackburrow': '5 - 15',
-        'bloodfields': '60 - 65',
-        'buriedsea': '65 - 75',
-        'burningwood': '50 - 60',
-        'butcher': '1 - 20',
-        'cabeast': '1 - 75',
-        'cabwest': '1- 75',
-        'cauldron': '15 - 25',
-        'cazicthule': '40 - 60',
-        'charasis': '50 - 60',
-        'chardok': '50 - 60',
-        'citymist': '45 - 55',
-        'commons': '10 - 50',
-        'corathus': '50 - 65',
-        'cragstone': '20 - 30',
-        'crescent': '1 - 20',
-        'crushbone': '5 - 15',
-        'cryptofshade': '65 - 70',
-        'dalnir': '35 - 45',
-        'devastation': '65 - 75',
-        'dragonlair': '60 - 65',
-        'dragonscale': '70 - 80',
-        'dranik': '60 - 65',
-        'draniksscar': '60 - 65',
-        'dreadlands': '45 - 60',
-        'droga': '35 - 50',
-        'drowned': '50 - 65',
-        'eastkarana': '15 - 25',
-        'eastwastes': '35 - 50',
-        'ecommons': '5 - 15',
-        'emeraldjungle': '45 - 55',
-        'erudnext': '1 - 10',
-        'erudnint': '1 - 10',
-        'erudsxing': '10 - 20',
-        'everfrost': '1 - 10',
-        'fearplane': '50 - 60',
-        'feerrott': '1 - 10',
-        'felwithea': '1 - 10',
-        'fieldofbone': '1 - 20',
-        'firiona': '30 - 40',
-        'freporte': '1 - 10',
-        'freportw': '1 - 10',
-        'frontiermtns': '35 - 45',
-        'frozenshadow': '30 - 50',
-        'fungusgrove': '50 - 60',
-        'gfaydark': '1 - 15',
-        'griegsend': '55 - 60',
-        'grobb': '1-75',
-        'growthplane': '50 - 60',
-        'halas': '1 - 10',
-        'harbingers': '60 - 65',
-        'hateplaneb': '50 - 60',
-        'highkeep': '20 - 30',
-        'highpass': '10-20',
-        'hohonora': '60 - 65',
-        'hohonorb': '60 - 65',
-        'hole': '45 - 60',
-        'iceclad': '25 - 40',
-        'innothule': '5 - 15',
-        'kael': '50 - 60',
-        'kaladima': '1 - 10',
-        'kaladimb': '1 - 10',
-        'karnor': '45 - 60',
-        'kedge': '45 - 55',
-        'kelethin': '1 - 10',
-        'kerraridge': '10 - 20',
-        'kithicor': '10 - 50',
-        'lakeofillomen': '15 - 30',
-        'lakerathe': '10 - 25',
-        'lavastorm': '5 - 15',
-        'lfaydark': '10 - 25',
-        'maiden': '50 - 60',
-        'mesa': '35 - 55',
-        'mischiefplane': '50 - 60',
-        'misty': '1 - 10',
-        'moors': '30 - 45',
-        'mseru': '35 - 50',
-        'najena': '15 - 25',
-        'nektulos': '5 - 15',
-        'neriaka': '1 - 10',
-        'neriakb': '1 - 10',
-        'neriakc': '1 - 10',
-        'netherbian': '30 - 45',
-        'northkarana': '10 - 20',
-        'nro': '5 - 15',
-        'oggok': '1 - 10',
-        'oldhighpass': '10 - 20',
-        'oldkurn': '10 - 25',
-        'oot': '10 - 20',
-        'overthere': '25 - 40',
-        'paineel': '1 - 10',
-        'paludal': '15 - 30',
-        'paw': '30 - 40',
-        'poair': '65 - 70',
-        'podisease': '50 - 60',
-        'poearthb': '65 - 70',
-        'pofire': '65 - 70',
-        'poinnovation': '50 - 60',
-        'pojustice': '45 - 55',
-        'poknowledge': '1 - 65',
-        'ponightmare': '50 - 60',
-        'postorms': '55 - 65',
-        'potactics': '60 - 65',
-        'potimeb': '65 - 70',
-        'potorment': '60 - 65',
-        'potranquility': '1 - 65',
-        'povalor': '55 - 65',
-        'powater': '65 - 70',
-        'provinggrounds': '60 - 65',
-        'qcat': '5 - 15',
-        'qey2hh1': '10 - 20',
-        'qeynos': '1 - 10',
-        'qeynos2': '1 - 10',
-        'qeytoqrg': '1 - 10',
-        'qrg': '1 - 10',
-        'rathemtn': '15 - 30',
-        'riftseekers': '65 - 70',
-        'rivervale': '1 - 10',
-        'scarlet': '35 - 50',
-        'sebilis': '55 - 60',
-        'sirens': '50 - 60',
-        'skyfire': '50 - 60',
-        'sleeper': '60 - 65',
-        'soldunga': '20 - 30',
-        'soldungb': '40 - 60',        
-        'soltemple': '35 - 45',
-        'southkarana': '20 - 30',
-        'sro': '15 - 25',
-        'sseru': '45 - 55',
-        'ssratemple': '55 - 60',
-        'steamfactory': '70 - 80',
-        'steamfont': '1 - 15',
-        'steamfontmts': '1 - 15',
-        'steppes': '70 - 80',
-        'swampofnohope': '20 - 35',
-        'templeveeshan': '60 - 65',
-        'tenebrous': '25 - 40',
-        'thedeep': '45 - 60',
-        'thegrey': '45 - 55',
-        'thurgadina': '1 - 10',
-        'timorous': '25 - 40',
-        'toxxulia': '1 - 10',
-        'trakanon': '45 - 55',
-        'twilight': '45 - 55',
-        'umbral': '55 - 60',
-        'unrest': '15 - 30',
-        'wakening': '45 - 60',
-        'wallofslaughter': '60 - 65',
-        'warrens': '15 - 30',
-        'westwastes': '55 - 60',
-    }
-    
+    # ZONE_LEVEL_CHART and continent_zones are now imported from zone_settings.py
+
     def __init__(self):
         """Initialize the ZoneDB class."""
         pass
@@ -354,7 +195,7 @@ class ZoneDB:
                 # Get expansion name from ExpansionDB
                 expansion_info = expansion_db.get_expansion_by_id(zone_data['expansion'])
                 zone_data['expansion'] = expansion_info['name'] if expansion_info else 'Unknown'
-                zone_data['zone_level_range'] = self.ZONE_LEVEL_CHART.get(short_name, "N/A")
+                zone_data['zone_level_range'] = ZONE_LEVEL_CHART.get(short_name, "N/A")
                 waypoint = self.get_zone_waypoint(short_name)
                 zone_data['waypoint_x'] = waypoint.get('x')
                 zone_data['waypoint_y'] = waypoint.get('y')
@@ -375,49 +216,53 @@ class ZoneDB:
         logger.warning(f"Zone shortname {shortname} not found in cache.")
         return None, "Unknown Zone"
 
+    def get_zone_waypoint(self, short_name):
+        """Fetch waypoint for a given zone short_name from thj_waypoints."""
+        engine = db_manager.get_engine_for_table('thj_waypoints')
+        with engine.connect() as conn:
+            query = text("""
+                SELECT x, y, z, heading FROM thj_waypoints WHERE shortname = :short_name LIMIT 1
+            """)
+            result = conn.execute(query, {"short_name": short_name}).fetchone()
+            if result:
+                return {
+                    'x': result._mapping['x'],
+                    'y': result._mapping['y'],
+                    'z': result._mapping['z'],
+                    'heading': result._mapping['heading']
+                }
+            return {}
+
     def waypoint_listing(self):
-        """Get a list of zones that have waypoints."""
-        if not self._zone_cache_populated:
-            self._populate_zone_cache()
+        """Get a list of zones that have waypoints, grouped by continent/category (id <= 6)."""
+        engine = db_manager.get_engine_for_table('thj_waypoints')
+        with engine.connect() as conn:
+            query = text("""
+                SELECT w.shortname, w.long_name, w.x, w.y, w.z, w.heading, w.id as waypoint_id, w.category, c.name as category_name
+                FROM thj_waypoints w
+                JOIN thj_waypoints_categories c ON w.category = c.id
+                WHERE c.id <= 6
+                ORDER BY c.id, w.long_name
+            """)
+            results = conn.execute(query).fetchall()
 
-        continent_zones = {
-            'Antonica': ['blackburrow', 'commons','eastkarana', 'ecommons', 'everfrost', 'feerrott', 'freportw', 'grobb', 'gukbottom', 'halas', 'highkeep', 'lakerathe', 'lavastorm', 'neriakb', 'northkarana', 'oasis', 'oggok', 'oot', 'qey2hh1', 'qeynos2', 'qrg', 'rivervale', 'southkarana'],
-            'Faydwer': ['akanon', 'cauldron', 'felwithea', 'gfaydark', 'kaladima', 'mistmoore'],
-            'Odus': ['dulak', 'erudnext', 'gunthak', 'hole', 'paineel', 'stonebrunt', 'tox'],
-            'Kunark': ['burningwood', 'cabeast', 'chardokb', 'citymist', 'dreadlands', 'fieldofbone', 'firiona', 'frontiermtns', 'karnor', 'lakeofillomen', 'overthere', 'skyfire', 'timorous', 'trakanon'],
-            'Velious': ['cobaltscar', 'eastwastes', 'greatdivide', 'iceclad', 'sirens', 'wakening', 'westwastes'],
-            'Luclin': ['bazaar', 'dawnshroud', 'fungusgrove', 'paludal', 'scarlet', 'sharvahl', 'ssratemple', 'tenebrous', 'twilight', 'umbral'],
-            'Planes': ['airplane', 'fearplane', 'hateplaneb', 'nightmareb', 'podisease', 'poknowledge', 'potimea', 'potranquility']
-        }
-
-        waypoints_by_continent = {}
-        for continent, zones in continent_zones.items():
-            continent_waypoints = []
-            for short_name in zones:
-                waypoint = self.get_zone_waypoint(short_name)
-                if waypoint:
-                    zone_id, long_name = self.get_zone_long_name(short_name)
-                    if zone_id is not None:
-                        continent_waypoints.append({
-                            'long_name': long_name,
-                            'id': zone_id,
-                            'short_name': short_name,
-                            'waypoint': waypoint
-                        })
-            
-            # Sort by long_name
-            continent_waypoints.sort(key=lambda x: x['long_name'])
-            
-            # Convert to the desired dictionary format
-            waypoints_by_continent[continent] = {
-                item['long_name']: {
-                    'id': item['id'],
-                    'short_name': item['short_name'],
-                    'waypoint': item['waypoint']
-                } for item in continent_waypoints
-            }
-        
-        return waypoints_by_continent
+            waypoints_by_continent = {}
+            for row in results:
+                continent = row._mapping['category_name']
+                if continent not in waypoints_by_continent:
+                    waypoints_by_continent[continent] = {}
+                waypoints_by_continent[continent][row._mapping['long_name']] = {
+                    'id': row._mapping['waypoint_id'],
+                    'short_name': row._mapping['shortname'],
+                    'waypoint': {
+                        'x': row._mapping['x'],
+                        'y': row._mapping['y'],
+                        'z': row._mapping['z'],
+                        'heading': row._mapping['heading']
+                    },
+                    'waypoint_name': row._mapping['long_name']
+                }
+            return waypoints_by_continent
 
     def get_all_zones_by_expansion(self):
         """Get all zones grouped by expansion."""
@@ -429,48 +274,6 @@ class ZoneDB:
         expansion_db = ExpansionDB(engine.url)
         expansions = expansion_db.get_all_expansions()
         
-        continent_zones = {
-            'Antonica': [
-                'befallen', 'beholder', 'blackburrow', 'cazicthule', 'commons', 'eastkarana', 'ecommons', 'everfrost', 'feerrott',
-                'freporte', 'freportn', 'freportw', 'grobb', 'gukbottom', 'guktop', 'halas', 'highkeep', 'highpass',
-                'innothule', 'kithicor', 'lakerathe', 'lavastorm', 'misty', 'najena', 'nektulos', 'neriakb', 'neriaka',
-                'neriakc', 'neriakd', 'northkarana', 'nro', 'oasis', 'oggok', 'oot', 'paw', 'permafrost', 'qcat', 'qey2hh1',
-                'qeynos', 'qeynos2', 'qeytoqrg', 'qrg', 'rathemtn', 'rivervale', 'runnyeye', 'soldunga', 'soldungb',
-                'soltemple', 'southkarana', 'sro'
-            ],
-            'Faydwer': [
-                'akanon', 'butcher', 'cauldron', 'crushbone', 'felwithea', 'felwitheb', 'gfaydark', 'kaladima', 'kaladimb',
-                'kedge', 'lfaydark', 'mistmoore', 'steamfont', 'unrest'
-            ],
-            'Odus': [
-                'erudnext', 'erudnint', 'erudsxing', 'hole', 'kerraridge', 'paineel', 'stonebrunt', 'tox', 'warrens'
-            ],
-            'Kunark': [
-                'burningwood', 'cabeast', 'cabwest', 'chardok', 'charasis', 'citymist', 'dalnir', 'dreadlands', 'droga',
-                'emeraldjungle', 'fieldofbone', 'firiona', 'frontiermtns', 'howlingstones', 'kaesora', 'karnor', 'kurn',
-                'lakeofillomen', 'nurga', 'overthere', 'sebilis', 'skyfire', 'swampofnohope', 'timorous', 'trakanon',
-                'veeshan', 'veksar', 'warslikswood'
-            ],
-            'Velious': [
-                'cobaltscar', 'crystal', 'dragonnecrop', 'eastwastes', 'frozenshadow', 'greatdivide', 'growthplane',
-                'iceclad', 'kael', 'necropolis', 'sirens', 'skyshrine', 'sleeper', 'templeveeshan', 'thurgadina',
-                'thurgadinb', 'towerfrozen', 'velketor', 'wakening', 'westwastes'
-            ],
-            'Luclin': [
-                'acrylia', 'akheva', 'bazaar', 'dawnshroud', 'echo', 'fungusgrove', 'griegsend', 'grimling', 'hollowshade',
-                'jaggedpine', 'katta', 'letalis', 'maiden', 'marusseru', 'mseru', 'netherbian', 'nexus', 'paludal',
-                'scarlet', 'shadeweaver', 'shadowhaven', 'sharvahl', 'sseru', 'ssratemple', 'tenebrous', 'thedeep',
-                'thegrey', 'twilight', 'umbral', 'vexthal'
-            ],
-            'Planes': [
-                'airplane', 'bothunder', 'codecay', 'fearplane', 'hateplane', 'hateplaneb', 'hohonora', 'hohonorb',
-                'mischiefplane', 'nightmareb', 'podisease', 'poair', 'poeartha', 'poearthb', 'pofire', 'pohonora',
-                'pohonorb', 'poinnovation', 'pojustice', 'poknowledge', 'ponightmare', 'postagnation', 'postorms',
-                'potactics', 'potimea', 'potimeb', 'potorment', 'pothunder', 'potranquility', 'povalor', 'powar',
-                'powater', 'solrotower'
-            ]
-        }
-        
         with engine.connect() as conn:
             query = text("""
                 SELECT
@@ -481,7 +284,7 @@ class ZoneDB:
                 FROM
                     zone z
                 WHERE
-                    z.expansion <= 4
+                    z.expansion <= 5
                 ORDER BY
                     z.expansion, z.long_name;
             """)
@@ -515,170 +318,6 @@ class ZoneDB:
                     'long_name': row_dict['long_name'],
                     'continent': continent,
                     'zone_exp_multiplier': row_dict['zone_exp_multiplier'],
-                    'zone_level_range': self.ZONE_LEVEL_CHART.get(row_dict['short_name'], "N/A")
+                    'zone_level_range': ZONE_LEVEL_CHART.get(row_dict['short_name'], "N/A")
                 })
             return zones_by_expansion
-
-    def get_zone_waypoint(self, short_name):
-        if short_name == 'blackburrow':
-            return {'y': 38, 'x': -7, 'z': 3}
-        elif short_name == 'commons':
-            return {'y': -127, 'x': 503, 'z': -51}
-        elif short_name == 'ecommons':
-            return {'y': -1603, 'x': -356, 'z': 3}
-        elif short_name == 'feerrott':
-            return {'y': -430, 'x': -1830, 'z': -51}
-        elif short_name == 'freportw':
-            return {'y': -283, 'x': -396, 'z': -23}
-        elif short_name == 'grobb':
-            return {'y': 223, 'x': -200, 'z': 3.75}
-        elif short_name == 'everfrost':
-            return {'y': 2133, 'x': -6972, 'z': -58}
-        elif short_name == 'halas':
-            return {'y': 26, 'x': 0, 'z': 3.75}
-        elif short_name == 'highkeep':
-            return {'y': -17, 'x': -1, 'z': -4}
-        elif short_name == 'lavastorm':
-            return {'y': 918, 'x': 1318, 'z': 119}
-        elif short_name == 'neriakb':
-            return {'y': 3, 'x': -493, 'z': -10}
-        elif short_name == 'northkarana':
-            return {'y': -688, 'x': -175, 'z': -7.5}
-        elif short_name == 'eastkarana':
-            return {'y': 1333, 'x': 423, 'z': 1}
-        elif short_name == 'oasis':
-            return {'y': 532, 'x': 110, 'z': 6}
-        elif short_name == 'oggok':
-            return {'y': 465, 'x': 513, 'z': 3.75}
-        elif short_name == 'oot':
-            return {'y': 394, 'x': -9172, 'z': 6}
-        elif short_name == 'qey2hh1':
-            return {'y': -3570, 'x': -14816, 'z': 36}
-        elif short_name == 'qeynos2':
-            return {'y': 165, 'x': 392, 'z': 4}
-        elif short_name == 'qrg':
-            return {'y': 45, 'x': -66, 'z': 4}
-        elif short_name == 'rivervale':
-            return {'y': -10, 'x': -140, 'z': 4}
-        elif short_name == 'gukbottom':
-            return {'y': 1157, 'x': -233, 'z': -80}
-        elif short_name == 'lakerathe':
-            return {'y': 2404, 'x': 2673, 'z': 95}
-        elif short_name == 'southkarana':
-            return {'y': -6689, 'x': 1027, 'z': 0}
-        elif short_name == 'akanon':
-            return {'y': 1279, 'x': -761, 'z': -24.25}
-        elif short_name == 'cauldron':
-            return {'y': -1790, 'x': -700, 'z': 100}
-        elif short_name == 'felwithea':
-            return {'y': 240, 'x': -626, 'z': -10.25}
-        elif short_name == 'gfaydark':
-            return {'y': 458, 'x': -385, 'z': 0}
-        elif short_name == 'kaladima':
-            return {'y': 90, 'x': 197, 'z': 3.75}
-        elif short_name == 'mistmoore':
-            return {'y': -294, 'x': 122, 'z': -179}
-        elif short_name == 'erudnext':
-            return {'y': -1216, 'x': -240, 'z': 52}
-        elif short_name == 'hole':
-            return {'y': 287, 'x': -543, 'z': -140}
-        elif short_name == 'paineel':
-            return {'y': 839, 'x': 210, 'z': 4}
-        elif short_name == 'tox':
-            return {'y': -1510, 'x': -916, 'z': -33}
-        elif short_name == 'stonebrunt':
-            return {'y': -4531, 'x': 673, 'z': 0}
-        elif short_name == 'dulak':
-            return {'y': -190, 'x': -1190, 'z': 4}
-        elif short_name == 'gunthak':
-            return {'y': 1402, 'x': -410, 'z': 3}
-        elif short_name == 'burningwood':
-            return {'y': 7407, 'x': -3876, 'z': -233}
-        elif short_name == 'cabeast':
-            return {'y': 969, 'x': -136, 'z': 4.68}
-        elif short_name == 'citymist':
-            return {'y': 249, 'x': -572, 'z': 4}
-        elif short_name == 'dreadlands':
-            return {'y': 3005, 'x': 9633, 'z': 1049}
-        elif short_name == 'fieldofbone':
-            return {'y': -1684, 'x': 1617, 'z': -55}
-        elif short_name == 'firiona':
-            return {'y': -2397, 'x': 1825, 'z': -98}
-        elif short_name == 'frontiermtns':
-            return {'y': 53, 'x': 392, 'z': -102}
-        elif short_name == 'karnor':
-            return {'y': 251, 'x': 160, 'z': 3.75}
-        elif short_name == 'lakeofillomen':
-            return {'y': 985, 'x': -1070, 'z': 78}
-        elif short_name == 'overthere':
-            return {'y': -2757, 'x': 1480, 'z': 11}
-        elif short_name == 'skyfire':
-            return {'y': -3100, 'x': 780, 'z': -158}
-        elif short_name == 'timorous':
-            return {'y': -12256.8, 'x': 4366.5, 'z': -278}
-        elif short_name == 'trakanon':
-            return {'y': -1620, 'x': -4720, 'z': -473}
-        elif short_name == 'chardokb':
-            return {'y': 315, 'x': -210, 'z': 1.5}
-        elif short_name == 'cobaltscar':
-            return {'y': -1064, 'x': -1633, 'z': 296}
-        elif short_name == 'eastwastes':
-            return {'y': -4037, 'x': 464, 'z': 144}
-        elif short_name == 'greatdivide':
-            return {'y': -6646, 'x': 3287, 'z': -35}
-        elif short_name == 'iceclad':
-            return {'y': 1300, 'x': 3127, 'z': 111}
-        elif short_name == 'wakening':
-            return {'y': 1455, 'x': 4552, 'z': -60}
-        elif short_name == 'westwastes':
-            return {'y': 1323, 'x': 808, 'z': -196}
-        elif short_name == 'cobaltscar':
-            return {'y': -1065, 'x': -1634, 'z': 299}
-        elif short_name == 'sirens':
-            return {'y': -590, 'x': 20, 'z': -93}
-        elif short_name == 'dawnshroud':
-            return {'y': -280, 'x': -1260, 'z': 97}
-        elif short_name == 'fungusgrove':
-            return {'y': 2398, 'x': 1359, 'z': -261}
-        elif short_name == 'sharvahl':
-            return {'y': 55, 'x': 250, 'z': -188}
-        elif short_name == 'ssratemple':
-            return {'y': 0, 'x': -6.5, 'z': 4}
-        elif short_name == 'tenebrous':
-            return {'y': -1514, 'x': -967, 'z': -56}
-        elif short_name == 'umbral':
-            return {'y': -640, 'x': 1840, 'z': 24}
-        elif short_name == 'twilight':
-            return {'y': 1338, 'x': -1028, 'z': 39}
-        elif short_name == 'scarlet':
-            return {'y': -956, 'x': -1777, 'z': -99}
-        elif short_name == 'paludal':
-            return {'y': -1175, 'x': 220, 'z': -236}
-        elif short_name == 'bazaar':
-            return {'y': -175, 'x': 105, 'z': -15}
-        elif short_name == 'airplane':
-            return {'y': 1560, 'x': 700, 'z': -680}
-        elif short_name == 'fearplane':
-            return {'y': -1305, 'x': 1065, 'z': 3}
-        elif short_name == 'hateplaneb':
-            return {'y': 680, 'x': -400, 'z': 4}
-        elif short_name == 'poknowledge':
-            return {'y': 50, 'x': -215, 'z': -160}
-        elif short_name == 'potranquility':
-            return {'y': -192, 'x': -8, 'z': -628}
-        elif short_name == 'potimea':
-            return {'y': 110, 'x': 0, 'z': 8}
-        elif short_name == 'barindu':
-            return {'y': -515, 'x': 210, 'z': -117}
-        elif short_name == 'kodtaz':
-            return {'y': -2422, 'x': 1536, 'z': -348}
-        elif short_name == 'natimbi':
-            return {'y': 125, 'x': -310, 'z': 520}
-        elif short_name == 'qvic':
-            return {'y': -1403, 'x': -1018, 'z': -490}
-        elif short_name == 'txevu':
-            return {'y': -20, 'x': -316, 'z': -420}
-        elif short_name == 'wallofslaughter':
-            return {'y': 13, 'x': -943, 'z': 130}
-        else:
-            return {}

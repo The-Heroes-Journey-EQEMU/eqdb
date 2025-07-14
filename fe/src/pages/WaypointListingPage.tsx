@@ -61,12 +61,12 @@ const WaypointListingPage: React.FC = () => {
               <tbody>
                 {Object.entries(zones).map(([zoneName, zoneData]) => (
                   <tr key={zoneData.id} className="card-background border-b-2 border-gray-700">
-                    <td className="p-1 border-b-1 border-gray-600">
+                    <td className="p-1 border-b-1 border-gray-600 text-sm">
                       <Link to={`/zones/detail/${zoneData.short_name}`} className="text-blue-100 hover:underline">
                         {zoneName}
                       </Link>
                     </td>
-                    <td className="p-1 text-sm card-foreground">( {`${zoneData.waypoint.x}, ${zoneData.waypoint.y}, ${zoneData.waypoint.z}`} )</td>
+                    <td className="p-1 text-sm card-foreground">{`${zoneData.waypoint.x}, ${zoneData.waypoint.y}, ${zoneData.waypoint.z}`}</td>
                   </tr>
                 ))}
               </tbody>

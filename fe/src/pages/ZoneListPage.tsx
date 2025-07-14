@@ -1,62 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { zoneService, Zone } from '../services/zoneService';
+import { zoneService, Zone, ZonesByExpansion } from '../services/zoneService';
 
-type ZonesByContinent = Record<string, Zone[]>;
 
 const ZoneListPage: React.FC = () => {
-  const [zonesByContinent, setZonesByContinent] = useState<ZonesByContinent>({});
-  const [activeContinent, setActiveContinent] = useState<string>('');
+  const [zonesByExpansion, setZonesByExpansion] = useState<ZonesByExpansion>({});
+  const [activeExpansion, setActiveExpansion] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const includedExpansions = [
-    'Classic',
-    'The Ruins of Kunark',
-    'The Scars of Velious',
-    'The Shadows of Luclin',
-    'The Planes of Power',
-  ];
-
   useEffect(() => {
-    const fetchZones = async () => {
+    const fetchData = async () => {
       try {
-        const data = await zoneService.getZonesByExpansion();
-        const allZones = Object.entries(data)
-          .filter(([expansionName]) => includedExpansions.includes(expansionName))
-          .flatMap(([, zones]) => zones);
+        const zonesData = await zoneService.getZonesByExpansion();
+        const processedZones: ZonesByExpansion = {};
 
-        const groupedByContinent = allZones.reduce((acc, zone) => {
-          const continent = zone.continent || 'Unknown';
-          if (!acc[continent]) {
-            acc[continent] = [];
-          }
-          acc[continent].push(zone);
-          return acc;
-        }, {} as ZonesByContinent);
+        for (const expansionName in zonesData) {
+          const zones = zonesData[expansionName];
+          const uniqueZones = Array.from(new Map(zones.map(zone => [zone.short_name, zone])).values());
+          processedZones[expansionName] = uniqueZones.sort((a, b) => a.long_name.localeCompare(b.long_name));
+        }
 
-        const orderedContinents = ['Antonica', 'Faydwer', 'Odus', 'Kunark', 'Velious', 'Luclin', 'Planes'].filter(c => groupedByContinent[c]);
-        const otherContinents = Object.keys(groupedByContinent).filter(c => !orderedContinents.includes(c));
-        const finalOrder = [...orderedContinents, ...otherContinents];
+        setZonesByExpansion(processedZones);
 
-        const orderedZonesByContinent = finalOrder.reduce((acc, continent) => {
-            acc[continent] = groupedByContinent[continent];
-            return acc;
-        }, {} as ZonesByContinent);
-        
-        setZonesByContinent(orderedZonesByContinent);
-
-        if (finalOrder.length > 0) {
-          setActiveContinent(finalOrder[0]);
+        const expansionNames = Object.keys(processedZones);
+        if (expansionNames.length > 0) {
+          // Set the initial active tab to the first expansion in the list
+          // We'll rely on the backend to send them in the correct order.
+          setActiveExpansion(expansionNames[0]);
         }
       } catch (err) {
-        setError('Failed to fetch zones.');
+        setError('Failed to fetch zone data.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchZones();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -69,25 +49,26 @@ const ZoneListPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex border-b border-gray-600">
-        {Object.keys(zonesByContinent).map((continent) => (
+      <div className="flex border-b border-gray-600 overflow-x-auto">
+        {Object.keys(zonesByExpansion).map((expansionName) => (
           <button
-            key={continent}
-            className={`py-2 px-4 text-lg font-medium px-10 ${
-              activeContinent === continent
+            key={expansionName}
+            className={`py-2 px-4 text-lg font-medium whitespace-nowrap ${
+              activeExpansion === expansionName
                 ? 'border-b-2 border-blue-500 text-blue-400'
                 : 'text-gray-400 hover:text-white'
             }`}
-            onClick={() => setActiveContinent(continent)}
+            onClick={() => setActiveExpansion(expansionName)}
+            
           >
-            {continent}
+            {expansionName}
           </button>
         ))}
       </div>
       <div className="py-4">
-        {activeContinent && zonesByContinent[activeContinent] && (
+        {activeExpansion && zonesByExpansion[activeExpansion] && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-            {zonesByContinent[activeContinent].map((zone) => (
+            {zonesByExpansion[activeExpansion].map((zone: Zone) => (
               <Link key={zone.short_name} to={`/zones/detail/${zone.short_name}`}>
                 <div className="card rounded-md">
                     <div className="text-blue-100 hover:underline font-bold flex justify-between items-center py-2 px-5">

@@ -113,7 +113,12 @@ export const zoneService = {
     return response.data;
   },
   getZonesByExpansion: async (): Promise<ZonesByExpansion> => {
-    const response = await api.get<ZonesByExpansion>('/zones');
+    const response = await api.get<ZonesByExpansion>('/zones', {
+      params: {
+        // cache bust
+        t: new Date().getTime(),
+      }
+    });
     return response.data;
   },
   getZonesWithWaypoints: async (): Promise<WaypointsByContinent> => {
