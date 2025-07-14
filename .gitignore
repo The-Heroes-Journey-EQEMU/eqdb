@@ -23,6 +23,7 @@ fe/build/
 fe/.env
 fe/.DS_Store
 fe/npm-debug.log*
+fe/public/item_icons/*
 fe/yarn-debug.log*
 fe/yarn-error.log*
 fe/.next/

@@ -193,3 +193,9 @@ The map conversion system is currently in development. For detailed information 
 - **Pathfinding**: Visual navigation between points
 - **Mobile Support**: Responsive design for mobile devices
 - **VR/AR Support**: Virtual and augmented reality viewing
+
+## Zone Static Data
+
+- Large static dictionaries such as `ZONE_LEVEL_CHART` and `continent_zones` have been moved to `api/db/zone_settings.py`.
+- If you need to add or update static zone-related data, edit `api/db/zone_settings.py` instead of `api/db/zone.py`.
+- This keeps the main codebase cleaner and makes static data easier to maintain and share across modules.

@@ -321,3 +321,59 @@ class ZoneDB:
                     'zone_level_range': ZONE_LEVEL_CHART.get(row_dict['short_name'], "N/A")
                 })
             return zones_by_expansion
+
+    def get_zone_spawns_by_short_name(self, short_name):
+        """Get spawn data for a given zone short_name."""
+        engine = db_manager.get_engine_for_table('spawn2')
+        with engine.connect() as conn:
+            query = text("""
+                SELECT
+                    s2.x,
+                    s2.y,
+                    s2.z,
+                    s2.respawntime,
+                    sg.name as spawngroup_name,
+                    nt.name as npc_name,
+                    nt.id as npc_id,
+                    se.chance,
+                    s2.id as spawn2_id,
+                    s2.spawngroupID
+                FROM
+                    spawn2 s2
+                JOIN
+                    spawngroup sg ON s2.spawngroupID = sg.id
+                JOIN
+                    spawnentry se ON s2.spawngroupID = se.spawngroupID
+                JOIN
+                    npc_types nt ON se.npcID = nt.id
+                WHERE
+                    s2.zone = :short_name
+                ORDER BY
+                    sg.name, s2.id;
+            """)
+            results = conn.execute(query, {"short_name": short_name}).fetchall()
+
+            spawn_groups = {}
+            for row in results:
+                row_dict = dict(row._mapping)
+                # Use a combination of spawngroup_name and spawn2_id for a unique key
+                spawn_key = f"{row_dict['spawngroup_name']}_{row_dict['spawn2_id']}"
+
+                if spawn_key not in spawn_groups:
+                    spawn_groups[spawn_key] = {
+                        'x': row_dict['x'],
+                        'y': row_dict['y'],
+                        'z': row_dict['z'],
+                        'respawn': row_dict['respawntime'],
+                        'spawngroup_name': row_dict['spawngroup_name'],
+                        'npcs': []
+                    }
+
+                spawn_groups[spawn_key]['npcs'].append({
+                    'npc_name': row_dict['npc_name'],
+                    'npc_id': row_dict['npc_id'],
+                    'chance': row_dict['chance']
+                })
+
+            # Convert the dictionary to a list of values for the final output
+            return list(spawn_groups.values())

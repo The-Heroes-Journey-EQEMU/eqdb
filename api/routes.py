@@ -623,6 +623,26 @@ class ZoneItemsResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving items for zone {short_name}: {str(e)}")
 
+@v1.route('/zones/<string:short_name>/spawns')
+class ZoneSpawnsResource(Resource):
+    @optional_auth
+    @v1.doc('get_zone_spawns',
+        params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
+        responses={
+            200: ('Success', 'ZoneSpawns'),
+            404: ('Zone not found or no spawns found', error_model)
+        }
+    )
+    def get(self, short_name):
+        """Get all spawns for a given zone short name"""
+        try:
+            spawns = zone_db.get_zone_spawns_by_short_name(short_name)
+            if not spawns:
+                v1.abort(404, "No spawns found for this zone")
+            return spawns
+        except Exception as e:
+            v1.abort(500, f"Error retrieving spawns for zone {short_name}: {str(e)}")
+
 @v1.route('/zones')
 class ZoneResource(Resource):
     @optional_auth
@@ -1371,6 +1391,7 @@ def init_routes(api):
     v1.add_resource(ConnectedZoneResource, '/zones/<string:short_name>/connected')
     v1.add_resource(ZoneNPCsResource, '/zones/<string:short_name>/npcs')
     v1.add_resource(ZoneItemsResource, '/zones/<string:short_name>/items')
+    v1.add_resource(ZoneSpawnsResource, '/zones/<string:short_name>/spawns')
     v1.add_resource(WaypointResource, '/zones/waypoints')
     v1.add_resource(TradeskillResource, '/tradeskills')
     v1.add_resource(RecipeResource, '/recipes')

@@ -107,6 +107,21 @@ export interface ZoneItem {
   drop_count: number;
 }
 
+export interface SpawnNPC {
+  npc_name: string;
+  npc_id: number;
+  chance: number;
+}
+
+export interface ZoneSpawn {
+  x: number;
+  y: number;
+  z: number;
+  respawn: number;
+  spawngroup_name: string;
+  npcs: SpawnNPC[];
+}
+
 export const zoneService = {
   searchZones: async (params: ZoneSearchParams): Promise<Zone[]> => {
     const response = await api.get<Zone[]>('/zones', { params });
@@ -143,6 +158,10 @@ export const zoneService = {
   },
   getZoneItems: async (shortName: string): Promise<ZoneItem[]> => {
     const response = await api.get<ZoneItem[]>(`/zones/${shortName}/items`);
+    return response.data;
+  },
+  getZoneSpawns: async (shortName: string): Promise<ZoneSpawn[]> => {
+    const response = await api.get<ZoneSpawn[]>(`/zones/${shortName}/spawns`);
     return response.data;
   },
 };

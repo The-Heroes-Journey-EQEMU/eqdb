@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { zoneService, Zone, ConnectedZone, ZoneNPC, ZoneItem } from '@/services/zoneService';
+import { useParams, Link } from 'react-router-dom';
+import { zoneService, Zone, ConnectedZone, ZoneNPC, ZoneItem, ZoneDetails as ZoneDetailsType } from '@/services/zoneService';
 import Card from '@/components/common/Card';
 import ZoneMap from '@/components/zones/ZoneMap';
 import ZoneDetails from '@/components/zones/ZoneDetails';
 import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/common/Table';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ItemCard from '@/components/items/ItemCard';
+import ZoneSpawns from '@/components/ZoneSpawns';
 
 const ConnectedZonesTab: React.FC<{ zones: ConnectedZone[] }> = ({ zones }) => (
   <div>
@@ -103,8 +104,9 @@ const ItemsTab: React.FC<{ items: ZoneItem[]; loading: boolean; onLoad: () => vo
 };
 
 export const ZoneDetailPage: React.FC = () => {
-  const { identifier } = useParams<{ identifier: string }>();
+  const { shortName: identifier } = useParams<{ shortName: string }>();
   const [zone, setZone] = useState<Zone | null>(null);
+  const [zoneDetails, setZoneDetails] = useState<ZoneDetailsType | null>(null);
   const [connectedZones, setConnectedZones] = useState<ConnectedZone[]>([]);
   const [zoneNPCs, setZoneNPCs] = useState<ZoneNPC[]>([]);
   const [zoneItems, setZoneItems] = useState<ZoneItem[]>([]);
@@ -150,8 +152,11 @@ export const ZoneDetailPage: React.FC = () => {
         const zoneData = await zoneService.getZoneByIdentifier(identifier);
         setZone(zoneData);
 
-        const detailsData = await zoneService.getZoneDetails(zoneData.short_name);
-        const connectedData = await zoneService.getConnectedZones(detailsData.short_name);
+        const [detailsData, connectedData] = await Promise.all([
+          zoneService.getZoneDetails(zoneData.short_name),
+          zoneService.getConnectedZones(zoneData.short_name)
+        ]);
+        setZoneDetails(detailsData);
         setConnectedZones(connectedData);
 
         setError(null);
@@ -193,7 +198,7 @@ export const ZoneDetailPage: React.FC = () => {
 
             {/* Right Column: Zone Info */}
             <div style={{ flex: '3 1 0' }} className="p-0">
-              <ZoneDetails shortName={zone.short_name} />
+              {zoneDetails && <ZoneDetails shortName={zone.short_name} />}
             </div>
           </div>
 
@@ -214,7 +219,7 @@ export const ZoneDetailPage: React.FC = () => {
                     {activeTab === 'Connected Zones' && <ConnectedZonesTab zones={connectedZones} />}
                     {activeTab === 'Items' && <ItemsTab items={zoneItems} loading={itemsLoading} onLoad={fetchItems} />}
                     {activeTab === 'NPCs' && <NPCsTab npcs={zoneNPCs} loading={npcsLoading} onLoad={fetchNPCs} />}
-                    {activeTab === 'Spawns' && <p>Spawns Content</p>}
+                    {activeTab === 'Spawns' && <ZoneSpawns shortName={zone.short_name} />}
                   </div>
                 </div>
               </Card>

@@ -45,7 +45,7 @@ const AppContent: React.FC = () => {
           <Route path="/spells/list/:classNames" element={<ClassSpellListPage />} />
           <Route path="/spells/search" element={<SpellSearchPage />} />
           <Route path="/zones/list" element={<ZoneListPage />} />
-          <Route path="/zones/detail/:identifier" element={<ZoneDetailPage />} />
+          <Route path="/zones/detail/:shortName" element={<ZoneDetailPage />} />
           <Route path="/zones/waypoint-listing" element={<WaypointListingPage />} />
           <Route path="/items" element={<ItemSearchPage />} />
           <Route path="/spells" element={<SpellSearchPage />} />
