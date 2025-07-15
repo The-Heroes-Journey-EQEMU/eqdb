@@ -12,6 +12,8 @@ export interface Zone {
   safe_z?: number;
   zone_exp_multiplier?: number;
   zone_level_range?: string;
+  min_level?: number;
+  max_level?: number;
 }
 
 export interface ZoneSearchParams {
@@ -110,7 +112,11 @@ export interface ZoneItem {
 export interface SpawnNPC {
   npc_name: string;
   npc_id: number;
+  npc_level: number;
+  npc_race: string;
+  npc_hp: number;
   chance: number;
+  spawn2_id: number;
 }
 
 export interface ZoneSpawn {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { BiAnchor, BiAlarm, BiBadge, BiBell, BiBookContent, BiUser } from 'react-icons/bi'
 
 const ThemeTest: React.FC = () => {
   const [cssVariables, setCssVariables] = useState<Record<string, string>>({})
@@ -161,8 +162,49 @@ const ThemeTest: React.FC = () => {
           HTML element has class: {isDark ? '"dark"' : 'none'}
         </p>
       </div>
-    </div>
-  )
-}
 
-export default ThemeTest 
+      {/* Icon Usage Examples */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-foreground">Icon Usage Examples</h3>
+        <div className="p-4 bg-card border border-border rounded-md space-y-4">
+          <div>
+            <h4 className="font-medium mb-2 text-card-foreground">Icons in Buttons</h4>
+            <div className="flex flex-wrap gap-4">
+              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+                <BiAnchor />
+                <span>Primary Button</span>
+              </button>
+              <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors flex items-center gap-2">
+                <BiAlarm />
+                <span>Secondary Button</span>
+              </button>
+              <button className="px-4 py-2 bg-success text-success-foreground rounded-md hover:bg-success/90 transition-colors flex items-center gap-2">
+                <BiBadge />
+                <span>Success Button</span>
+              </button>
+              <button className="px-4 py-2 bg-error text-error-foreground rounded-md hover:bg-error/90 transition-colors flex items-center gap-2">
+                <BiBell />
+                <span>Error Button</span>
+              </button>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium mb-2 text-card-foreground">Icons in Links</h4>
+            <div className="flex flex-wrap gap-4">
+              <a href="#" className="text-primary hover:underline flex items-center gap-2">
+                <BiBookContent />
+                <span>Primary Link</span>
+              </a>
+              <a href="#" className="text-secondary hover:underline flex items-center gap-2">
+                <BiUser />
+                <span>Secondary Link</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ThemeTest;
