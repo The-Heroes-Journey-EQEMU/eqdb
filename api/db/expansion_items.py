@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine, text, MetaData, Table, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, aliased
 import os
 import logging
 from datetime import datetime
+from api.db_manager import db_manager
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
@@ -71,6 +72,8 @@ class ExpansionItemsDB:
                             item_type = 'tradeskill'
                         elif filename.endswith('_special.txt'):
                             item_type = 'special'
+                        elif filename.endswith('.txt'):
+                            item_type = 'regular'
                         break
                 
                 if expansion_name and expansion_name in expansion_mapping:
@@ -187,19 +190,68 @@ class ExpansionItemsDB:
         return summary
     
     def search_items(self, item_id=None, expansion_id=None, item_type=None, is_custom=None):
-        """Search for items with various filters"""
-        query = self.session.query(ExpansionItem)
+        """Search for items with various filters and join with items table for name and icon."""
         
+        # Alias for ExpansionItem table
+        ei = aliased(ExpansionItem)
+        
+        # Base query
+        query = self.session.query(
+            ei.id,
+            ei.item_id,
+            ei.expansion_id,
+            ei.item_type,
+            ei.is_custom,
+            ei.added_date,
+            ei.notes
+        )
+
+        # Apply filters
         if item_id is not None:
-            query = query.filter_by(item_id=item_id)
+            query = query.filter(ei.item_id == item_id)
         if expansion_id is not None:
-            query = query.filter_by(expansion_id=expansion_id)
+            query = query.filter(ei.expansion_id == expansion_id)
         if item_type is not None:
-            query = query.filter_by(item_type=item_type)
+            query = query.filter(ei.item_type == item_type)
         if is_custom is not None:
-            query = query.filter_by(is_custom=is_custom)
+            query = query.filter(ei.is_custom == is_custom)
+            
+        # Execute the first query to get expansion items
+        expansion_items_results = query.all()
         
-        return query.all()
+        if not expansion_items_results:
+            return []
+            
+        # Get all item_ids from the results
+        item_ids = [item.item_id for item in expansion_items_results]
+        
+        # Now, query the `items` table from the other database
+        item_engine = db_manager.get_engine_for_table('items')
+        with item_engine.connect() as conn:
+            # Use a text() construct for the query with an IN clause
+            item_query = text("SELECT id, name, icon FROM items WHERE id IN :item_ids")
+            item_results = conn.execute(item_query, {'item_ids': tuple(item_ids)}).fetchall()
+        
+        # Create a dictionary for quick lookup of item details
+        item_details_map = {item._mapping['id']: {'name': item._mapping['name'], 'icon': item._mapping['icon']} for item in item_results}
+        
+        # Combine the results
+        combined_results = []
+        for exp_item in expansion_items_results:
+            item_details = item_details_map.get(exp_item.item_id, {'name': 'Unknown', 'icon': 0})
+            combined_results.append({
+                'id': exp_item.id,
+                'item_id': exp_item.item_id,
+                'expansion_id': exp_item.expansion_id,
+                'item_type': exp_item.item_type,
+                'is_custom': exp_item.is_custom,
+                'added_date': exp_item.added_date.isoformat() if exp_item.added_date else None,
+                'notes': exp_item.notes,
+                'item_name': item_details['name'],
+                'icon': item_details['icon']
+            })
+            
+        return combined_results
     
     def update_item_notes(self, item_id, expansion_id, notes):
         """Update notes for an item"""
@@ -212,4 +264,4 @@ class ExpansionItemsDB:
             item.notes = notes
             self.session.commit()
             return True
-        return False 
+        return False

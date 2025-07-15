@@ -3,6 +3,7 @@ import os
 import logging
 from api.db_manager import db_manager
 from api.db.zone_settings import ZONE_LEVEL_CHART, continent_zones
+from api.db.npc import NPCDB
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -280,7 +281,9 @@ class ZoneDB:
                     z.expansion,
                     z.short_name,
                     z.long_name,
-                    z.zone_exp_multiplier
+                    z.zone_exp_multiplier,
+                    z.min_level,
+                    z.max_level
                 FROM
                     zone z
                 WHERE
@@ -313,17 +316,37 @@ class ZoneDB:
                         continent = c
                         break
 
+                level_range_str = ZONE_LEVEL_CHART.get(row_dict['short_name'])
+                min_level = None
+                max_level = None
+                if level_range_str and '-' in level_range_str:
+                    try:
+                        min_level_str, max_level_str = level_range_str.split('-')
+                        min_level = int(min_level_str.strip())
+                        max_level = int(max_level_str.strip())
+                    except ValueError:
+                        logger.warning(f"Could not parse level range '{level_range_str}' for zone {row_dict['short_name']}.")
+                        pass # Keep as None if parsing fails
+                
+                if min_level is None or max_level is None:
+                    logger.warning(f"Zone '{row_dict['long_name']}' ({row_dict['short_name']}) is missing a valid level range.")
+
                 zones_by_expansion[expansion_name].append({
                     'short_name': row_dict['short_name'],
                     'long_name': row_dict['long_name'],
                     'continent': continent,
                     'zone_exp_multiplier': row_dict['zone_exp_multiplier'],
-                    'zone_level_range': ZONE_LEVEL_CHART.get(row_dict['short_name'], "N/A")
+                    'min_level': min_level,
+                    'max_level': max_level,
+                    'zone_level_range': level_range_str,
+                    'expansion_id': expansion_id,
+                    'expansion_name': expansion_name
                 })
             return zones_by_expansion
 
     def get_zone_spawns_by_short_name(self, short_name):
         """Get spawn data for a given zone short_name."""
+        npc_db = NPCDB()
         engine = db_manager.get_engine_for_table('spawn2')
         with engine.connect() as conn:
             query = text("""
@@ -335,6 +358,9 @@ class ZoneDB:
                     sg.name as spawngroup_name,
                     nt.name as npc_name,
                     nt.id as npc_id,
+                    nt.level as npc_level,
+                    nt.race as npc_race,
+                    nt.hp as npc_hp,
                     se.chance,
                     s2.id as spawn2_id,
                     s2.spawngroupID
@@ -369,10 +395,17 @@ class ZoneDB:
                         'npcs': []
                     }
 
+                race_id = row_dict['npc_race']
+                race_name = NPCDB._race_cache.get(race_id, str(race_id))
+
                 spawn_groups[spawn_key]['npcs'].append({
                     'npc_name': row_dict['npc_name'],
                     'npc_id': row_dict['npc_id'],
-                    'chance': row_dict['chance']
+                    'npc_level': row_dict['npc_level'],
+                    'npc_race': race_name,
+                    'npc_hp': row_dict['npc_hp'],
+                    'chance': row_dict['chance'],
+                    'spawn2_id': row_dict['spawn2_id']
                 })
 
             # Convert the dictionary to a list of values for the final output

@@ -209,25 +209,45 @@ class ExpansionDB:
             
             return zones_by_expansion
     
-    def get_zones_in_expansion(self, expansion_id):
-        """Get zones for a specific expansion"""
+    def get_zones_in_expansion(self, expansion_id, min_level=None, max_level=None):
+        """Get zones for a specific expansion, with optional level filtering"""
         engine = db_manager.get_engine_for_table('zone')
         with engine.connect() as conn:
-            query = text("""
-                SELECT short_name, long_name
+            params = {"expansion_id": expansion_id}
+            
+            query_sql = """
+                SELECT short_name, long_name, min_level, max_level
                 FROM zone
                 WHERE expansion = :expansion_id
-                ORDER BY long_name
-            """)
-            results = conn.execute(query, {"expansion_id": expansion_id}).fetchall()
+            """
+            
+            if min_level is not None:
+                query_sql += " AND min_level >= :min_level"
+                params['min_level'] = min_level
+            
+            if max_level is not None:
+                query_sql += " AND max_level <= :max_level"
+                params['max_level'] = max_level
+                
+            query_sql += " ORDER BY long_name"
+            
+            query = text(query_sql)
+            results = conn.execute(query, params).fetchall()
             
             zones = []
             expansion_info = self.get_expansion_by_id(expansion_id)
             
             for row in results:
+                short_name, long_name, db_min_level, db_max_level = row
+                
+                if db_min_level is None or db_max_level is None:
+                    print(f"Zone '{long_name}' ({short_name}) is missing level range.")
+
                 zone_data = {
-                    'short_name': row[0],
-                    'long_name': row[1],
+                    'short_name': short_name,
+                    'long_name': long_name,
+                    'min_level': db_min_level,
+                    'max_level': db_max_level,
                     'expansion_id': expansion_id,
                     'expansion_name': expansion_info['name'] if expansion_info else f'Expansion {expansion_id}'
                 }

@@ -40,7 +40,8 @@ item_model = v1.model('Item', {
     'id': fields.Integer(description='Item ID', example=12345),
     'name': fields.String(description='Item name', example='Fine Steel Dagger'),
     'type': fields.String(description='Item type', example='Weapon'),
-    'serialized': fields.String(description='Serialized item data', example='{"stats": {"damage": "1-5"}}')
+    'serialized': fields.String(description='Serialized item data', example='{"stats": {"damage": "1-5"}}'),
+    'expansion_name': fields.String(description='Expansion name', example='Classic')
 })
 
 spell_model = v1.model('Spell', {
@@ -61,7 +62,9 @@ zone_model = v1.model('Zone', {
     'short_name': fields.String(description='Zone short name', example='qeynos'),
     'long_name': fields.String(description='Zone full name', example='North Qeynos'),
     'expansion_id': fields.Integer(description='Expansion ID', example=0),
-    'expansion_name': fields.String(description='Expansion name', example='Classic')
+    'expansion_name': fields.String(description='Expansion name', example='Classic'),
+    'min_level': fields.Integer(description='Minimum level for the zone', example=1),
+    'max_level': fields.Integer(description='Maximum level for the zone', example=25)
 })
 
 connected_zone_model = v1.model('ConnectedZone', {
@@ -145,7 +148,9 @@ expansion_item_model = v1.model('ExpansionItem', {
     'item_type': fields.String(description='Item type', example='regular', enum=['regular', 'tradeskill', 'special', 'custom']),
     'is_custom': fields.Boolean(description='Whether this is a custom item', example=False),
     'added_date': fields.DateTime(description='Date added to database', example='2024-01-01T00:00:00'),
-    'notes': fields.String(description='Additional notes', example='Custom server item')
+    'notes': fields.String(description='Additional notes', example='Custom server item'),
+    'item_name': fields.String(description='Item Name'),
+    'icon': fields.Integer(description='Item Icon ID')
 })
 
 expansion_items_list_model = v1.model('ExpansionItemsList', {
@@ -537,13 +542,31 @@ class ZoneDetailResource(Resource):
             v1.abort(404, "Zone not found")
         return format_zone_response(zone)
 
+zone_details_model = v1.model('ZoneDetails', {
+    'zoneidnumber': fields.Integer(description='Zone ID Number'),
+    'expansion': fields.String(description='Expansion Name'),
+    'short_name': fields.String(description='Zone Short Name'),
+    'canbind': fields.Integer(description='Can Bind'),
+    'canlevitate': fields.Integer(description='Can Levitate'),
+    'castoutdoor': fields.Integer(description='Can Cast Outdoor Spells'),
+    'zone_exp_multiplier': fields.Float(description='Zone Experience Multiplier'),
+    'safe_x': fields.Float(description='Safe X Coordinate'),
+    'safe_y': fields.Float(description='Safe Y Coordinate'),
+    'safe_z': fields.Float(description='Safe Z Coordinate'),
+    'zone_level_range': fields.String(description='Zone Level Range'),
+    'waypoint_x': fields.Float(description='Waypoint X Coordinate'),
+    'waypoint_y': fields.Float(description='Waypoint Y Coordinate'),
+    'waypoint_z': fields.Float(description='Waypoint Z Coordinate'),
+    'newbie_zone': fields.Boolean(description='Is Newbie Zone')
+})
+
 @v1.route('/zones/<string:short_name>/details')
 class ZoneExtraDetailsResource(Resource):
     @optional_auth
     @v1.doc('get_zone_details_by_short_name',
         params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
         responses={
-            200: ('Success', 'ZoneDetails'),
+            200: ('Success', zone_details_model),
             404: ('Zone not found', error_model)
         }
     )
@@ -623,13 +646,32 @@ class ZoneItemsResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving items for zone {short_name}: {str(e)}")
 
+npc_spawn_model = v1.model('NPCSpawn', {
+    'npc_name': fields.String(description='NPC Name'),
+    'npc_id': fields.Integer(description='NPC ID'),
+    'npc_level': fields.Integer(description='NPC Level'),
+    'npc_race': fields.String(description='NPC Race'),
+    'npc_hp': fields.Integer(description='NPC HP'),
+    'chance': fields.Integer(description='Spawn Chance'),
+    'spawn2_id': fields.Integer(description='Spawn2 ID')
+})
+
+zone_spawn_model = v1.model('ZoneSpawn', {
+    'x': fields.Float(description='X Coordinate'),
+    'y': fields.Float(description='Y Coordinate'),
+    'z': fields.Float(description='Z Coordinate'),
+    'respawn': fields.Integer(description='Respawn Time'),
+    'spawngroup_name': fields.String(description='Spawngroup Name'),
+    'npcs': fields.List(fields.Nested(npc_spawn_model), description='List of NPCs in this spawn group')
+})
+
 @v1.route('/zones/<string:short_name>/spawns')
 class ZoneSpawnsResource(Resource):
     @optional_auth
     @v1.doc('get_zone_spawns',
         params={'short_name': {'description': 'Zone short name', 'in': 'path'}},
         responses={
-            200: ('Success', 'ZoneSpawns'),
+            200: ('Success', [zone_spawn_model]),
             404: ('Zone not found or no spawns found', error_model)
         }
     )
@@ -965,7 +1007,7 @@ class QuestExpansionResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error retrieving expansions: {str(e)}")
 
-@v1.route('/quests/zones/<expansion>')
+@v1.route('/quests/zones/<int:expansion>')
 class QuestZoneByExpansionResource(Resource):
     @v1.doc('get_quest_zones_by_expansion',
         params={
@@ -1081,7 +1123,9 @@ class ExpansionSearchResource(Resource):
 class ExpansionZonesResource(Resource):
     @v1.doc('get_expansion_zones',
         params={
-            'expansion_id': {'description': 'Expansion ID', 'type': 'integer', 'in': 'path', 'example': 0}
+            'expansion_id': {'description': 'Expansion ID', 'type': 'integer', 'in': 'path', 'example': 0},
+            'min_level': {'description': 'Minimum zone level', 'type': 'integer', 'in': 'query', 'example': 1},
+            'max_level': {'description': 'Maximum zone level', 'type': 'integer', 'in': 'query', 'example': 65}
         },
         responses={
             200: ('Success', zones_in_expansion_model),
@@ -1093,21 +1137,55 @@ class ExpansionZonesResource(Resource):
     def get(self, expansion_id):
         """Get zones for a specific expansion
         
-        Get zones using the expansion_id parameter:
+        Get zones using the following parameters:
         * expansion_id: Expansion ID (path parameter)
+        * min_level: Minimum zone level (optional)
+        * max_level: Maximum zone level (optional)
         
         Returns a list of zones in the specified expansion.
         """
         try:
+            min_level = request.args.get('min_level', type=int)
+            max_level = request.args.get('max_level', type=int)
+
             # First check if expansion exists
             expansion_data = expansion_db.get_expansion_by_id(expansion_id)
             if not expansion_data:
                 v1.abort(404, "Expansion not found")
             
-            zones = expansion_db.get_zones_in_expansion(expansion_id)
+            zones = expansion_db.get_zones_in_expansion(expansion_id, min_level=min_level, max_level=max_level)
             return {'zones': zones}
         except Exception as e:
             v1.abort(500, f"Error retrieving zones: {str(e)}")
+
+@v1.route('/expansions/<int:expansion_id>/items')
+class ExpansionItemsByExpansionResource(Resource):
+    @optional_auth
+    @v1.doc('get_expansion_items_by_expansion',
+        params={
+            'expansion_id': {'description': 'Expansion ID', 'type': 'integer', 'in': 'path', 'example': 0}
+        },
+        responses={
+            200: ('Success', [item_model]),
+            404: ('Expansion not found or no items found', error_model)
+        },
+        security='apikey'
+    )
+    def get(self, expansion_id):
+        """Get all items that drop in a given expansion"""
+        try:
+            items = item_db.get_items_by_expansion(expansion_id)
+            if not items:
+                v1.abort(404, "No items found for this expansion")
+            
+            # Format response
+            formatted_items = []
+            for item in items:
+                formatted_item = format_item_response(item)
+                formatted_items.append(formatted_item)
+            return formatted_items
+        except Exception as e:
+            v1.abort(500, f"Error retrieving items for expansion {expansion_id}: {str(e)}")
 
 @v1.route('/expansion-items')
 class ExpansionItemsResource(Resource):
@@ -1148,20 +1226,8 @@ class ExpansionItemsResource(Resource):
                 is_custom=is_custom
             )
             
-            # Convert SQLAlchemy objects to dictionaries
-            items_data = []
-            for item in items:
-                items_data.append({
-                    'id': item.id,
-                    'item_id': item.item_id,
-                    'expansion_id': item.expansion_id,
-                    'item_type': item.item_type,
-                    'is_custom': item.is_custom,
-                    'added_date': item.added_date.isoformat() if item.added_date else None,
-                    'notes': item.notes
-                })
-            
-            return {'items': items_data}
+            # The data is already in the correct format from the search_items method
+            return {'items': items}
         except Exception as e:
             v1.abort(500, f"Error retrieving expansion items: {str(e)}")
 
@@ -1400,16 +1466,18 @@ def init_routes(api):
     v1.add_resource(QuestItemResource, '/quests/items')
     v1.add_resource(QuestZoneResource, '/quests/zones')
     v1.add_resource(QuestExpansionResource, '/quests/expansions')
-    v1.add_resource(QuestZoneByExpansionResource, '/quests/zones/<expansion>')
+    v1.add_resource(QuestZoneByExpansionResource, '/quests/zones/<int:expansion>')
     v1.add_resource(ExpansionsResource, '/expansions')
     v1.add_resource(ExpansionResource, '/expansions/<int:expansion_id>')
     v1.add_resource(ExpansionSearchResource, '/expansions/search')
     v1.add_resource(ExpansionZonesResource, '/expansions/<int:expansion_id>/zones')
+    v1.add_resource(ExpansionItemsByExpansionResource, '/expansions/<int:expansion_id>/items')
     v1.add_resource(ExpansionItemsResource, '/expansion-items')
     v1.add_resource(ExpansionItemsSummaryResource, '/expansion-items/summary')
     v1.add_resource(CustomItemsResource, '/expansion-items/custom')
     v1.add_resource(CustomItemResource, '/expansion-items/custom/<int:item_id>/<int:expansion_id>')
     v1.add_resource(ImportItemsResource, '/expansion-items/import')
+
 
     # Add authentication namespace
     api.add_namespace(auth_ns, path='/auth')
