@@ -1,13 +1,14 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query'
-import { itemService, Item, ItemSearchParams } from '@/services/itemService'
+import { itemService, Item, ItemSearchParams, ItemSearchResponse } from '@/services/itemService'
 import { spellService, Spell, SpellSearchParams } from '@/services/spellService'
 import { npcService, NPC, NPCSearchParams } from '@/services/npcService'
 import { zoneService, Zone, ZoneSearchParams } from '@/services/zoneService'
 import { questService, Quest, QuestSearchParams } from '@/services/questService'
 import { expansionService, Expansion } from '@/services/expansionService'
+import { ItemType, ItemSlot } from '@/types/apiTypes'
 
 // Item hooks
-export const useItems = (params: ItemSearchParams = {}, options?: Partial<UseQueryOptions<Item[], Error, Item[], readonly unknown[]>>) => {
+export const useItems = (params: ItemSearchParams = {}, options?: Partial<UseQueryOptions<ItemSearchResponse, Error, ItemSearchResponse, readonly unknown[]>>) => {
   return useQuery({
     queryKey: ['items', params],
     queryFn: () => itemService.searchItems(params),
@@ -20,6 +21,22 @@ export const useItemById = (id: number, options?: Partial<UseQueryOptions<Item[]
     queryKey: ['item', id],
     queryFn: () => itemService.getItemById(id),
     enabled: !!id,
+    ...options,
+  })
+}
+
+export const useItemTypes = (options?: Partial<UseQueryOptions<ItemType, Error, ItemType, readonly unknown[]>>) => {
+  return useQuery({
+    queryKey: ['itemTypes'],
+    queryFn: () => itemService.getItemTypes(),
+    ...options,
+  })
+}
+
+export const useItemSlots = (options?: Partial<UseQueryOptions<ItemSlot, Error, ItemSlot, readonly unknown[]>>) => {
+  return useQuery({
+    queryKey: ['itemSlots'],
+    queryFn: () => itemService.getItemSlots(),
     ...options,
   })
 }
@@ -94,4 +111,4 @@ export const useExpansionById = (id: number, options?: Partial<UseQueryOptions<E
     enabled: !!id,
     ...options,
   })
-} 
+}

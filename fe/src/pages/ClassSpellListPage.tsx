@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ClassListIcons from '@/components/common/ClassListIcons';
+import Card from '@/components/common/Card';
 
 const ClassSpellListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -120,7 +121,7 @@ const ClassSpellListPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8 text-grey-100" style={{ minHeight: '400px' }}>Select up to three classes.</div>
       ) : (
         <>
-          <div className="bg-card border border-border rounded-lg p-6 mb-8">
+          <Card className="p-6 mb-8">
             <div className="flex flex-wrap justify-left gap-1">
               {levels.map(level => (
                 <a key={level} href={`#level-${level}`}  style={{ width: '40px' }} className="text-center py-2 text-s bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors">
@@ -128,7 +129,7 @@ const ClassSpellListPage: React.FC = () => {
                 </a>
               ))}
             </div>
-          </div>
+          </Card>
 
           {levels.map(level => (
             <div key={level} id={`level-${level}`} className="mb-8">

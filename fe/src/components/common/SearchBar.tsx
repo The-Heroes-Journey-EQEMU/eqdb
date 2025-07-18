@@ -31,7 +31,7 @@ const SearchBar: React.FC = () => {
   const queryOptions = useMemo(() => ({ enabled: debouncedQuery.length >= 2 }), [debouncedQuery])
 
   // API hooks for search - use memoized parameters
-  const { data: items = [], isLoading: itemsLoading } = useItems(searchParams, queryOptions)
+  const { data: items, isLoading: itemsLoading } = useItems(searchParams, queryOptions)
   const { data: spells = [], isLoading: spellsLoading } = useSpells(searchParams, queryOptions)
   const { data: npcs = [], isLoading: npcsLoading } = useNPCs(searchParams, queryOptions)
   const { data: zones = [], isLoading: zonesLoading } = useZones(searchParams, queryOptions)
@@ -47,7 +47,7 @@ const SearchBar: React.FC = () => {
   const results = useMemo(() => {
     if (debouncedQuery.length >= 2) {
       const allResults: SearchResult[] = [
-        ...items.map((item: any) => ({
+        ...(items && 'results' in items ? items.results : []).map((item: any) => ({
           type: 'item' as const,
           id: item.id,
           name: item.name,

@@ -22,7 +22,7 @@ const Input: React.FC<InputProps> = ({
 }) => {
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
   
-  const baseClasses = 'block w-full rounded-md border border-border bg-background text-foreground placeholder-muted-foreground shadow-sm focus:border-ring focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:ring-offset-background sm:text-sm transition-colors duration-200'
+  const baseClasses = 'block w-full rounded-[24px] border border-border bg-background text-foreground placeholder-muted-foreground shadow-sm focus:border-ring focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:ring-offset-background sm:text-sm transition-colors duration-200 px-[8px] py-[8px]'
   const errorClasses = 'border-destructive text-destructive placeholder-destructive/50 focus:border-destructive focus:ring-destructive'
   const searchClasses = 'pl-10'
   const iconClasses = 'absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { zoneService } from '../services/zoneService';
+import Card from '@/components/common/Card';
 
 interface Waypoint {
     x: number;
@@ -55,7 +56,7 @@ const WaypointListingPage: React.FC = () => {
       <h1 className="text-3xl font-bold mb-4">Zones with Waypoints</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Object.entries(waypointsByContinent).map(([continent, zones]) => (
-          <div key={continent} className="p-4 bg-card text-card-foreground border border-border rounded-md">
+          <Card key={continent} className="p-4 text-card-foreground h-full">
             <h2 className="text-2xl font-semibold pb-2 mb-4 text-foreground">{continent}</h2>
             <table className="w-full text-left border-t-2 border-gray-700">
               <tbody>
@@ -71,7 +72,7 @@ const WaypointListingPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

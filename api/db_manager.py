@@ -1,14 +1,16 @@
 import configparser
 from sqlalchemy import create_engine, inspect
 import logging
+from api.cache import cache_results
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DatabaseManager:
+    # Tables that should always use the old engine
+    ALWAYS_OLD_ENGINE_TABLES = ['db_str']
     def __init__(self):
         self._engines = {}
-        self._table_cache = {}
         self._initialize_engines()
 
     def _get_config(self):
@@ -31,27 +33,24 @@ class DatabaseManager:
         
         logger.info("Database engines initialized.")
 
+    @cache_results(ttl=3600)  # Cache for 1 hour
     def _table_exists_in_new_db(self, table_name):
-        if table_name in self._table_cache:
-            return self._table_cache[table_name]
-
         try:
             inspector = inspect(self._engines['new'])
-            exists = inspector.has_table(table_name)
-            self._table_cache[table_name] = exists
-            logger.info(f"Table '{table_name}' existence in new DB: {exists}. Cached.")
-            return exists
+            return inspector.has_table(table_name)
         except Exception as e:
             logger.error(f"Error checking for table '{table_name}' in new DB: {e}")
             # Fallback to old DB in case of error
             return False
 
     def get_engine_for_table(self, table_name):
+        if table_name in self.ALWAYS_OLD_ENGINE_TABLES:
+            return self._engines['old']
         if self._table_exists_in_new_db(table_name):
-            logger.debug(f"Using 'new' database engine for table '{table_name}'.")
+            # logger.debug(f"Using 'new' database engine for table '{table_name}'.")
             return self._engines['new']
         else:
-            logger.debug(f"Using 'old' database engine for table '{table_name}'.")
+            # logger.debug(f"Using 'old' database engine for table '{table_name}'.")
             return self._engines['old']
 
 # Singleton instance

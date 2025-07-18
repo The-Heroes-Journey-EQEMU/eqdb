@@ -2,17 +2,32 @@ from sqlalchemy import text
 import os
 from api.db_manager import db_manager
 
-def get_quest_item_ids():
-    """Get all quest item IDs from the item files"""
-    quest_item_ids = []
+def get_quest_item_ids(zone_id=None):
+    """Get all quest item IDs from the item files, optionally filtered by zone."""
     item_files_dir = os.path.join(os.path.dirname(__file__), '..', 'item_files')
-    
-    # List of expansion quest item files
-    quest_files = [
-        'Classic.txt', 'Kunark.txt', 'Velious.txt', 'Luclin.txt', 
-        'Planes.txt', 'GoD.txt', 'OoW.txt', 'DoN.txt', 'LDoN.txt', 'LoY.txt'
-    ]
-    
+    quest_files = []
+
+    if zone_id:
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
+            query = text("SELECT expansion FROM zone WHERE zoneidnumber = :zone_id")
+            result = conn.execute(query, {"zone_id": zone_id}).fetchone()
+            if result:
+                expansion_id = result[0]
+                expansion_map = {
+                    0: 'Classic.txt', 1: 'Kunark.txt', 2: 'Velious.txt', 3: 'Luclin.txt',
+                    4: 'Planes.txt', 5: 'LoY.txt', 6: 'LDoN.txt', 7: 'GoD.txt',
+                    8: 'OoW.txt', 9: 'DoN.txt'
+                }
+                if expansion_id in expansion_map:
+                    quest_files.append(expansion_map[expansion_id])
+    else:
+        quest_files = [
+            'Classic.txt', 'Kunark.txt', 'Velious.txt', 'Luclin.txt', 
+            'Planes.txt', 'GoD.txt', 'OoW.txt', 'DoN.txt', 'LDoN.txt', 'LoY.txt'
+        ]
+
+    quest_item_ids = []
     for filename in quest_files:
         filepath = os.path.join(item_files_dir, filename)
         if os.path.exists(filepath):

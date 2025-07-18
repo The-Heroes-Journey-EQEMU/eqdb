@@ -1,12 +1,14 @@
 import React from 'react'
 import { useAppStore } from '@/store'
 import Button from './Button'
+import { api } from '@/services/api'
+import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
 
 const Footer: React.FC = () => {
   const { 
     addNotification, 
     setLoadingOverlay, 
-    toggleSidebar, 
     toggleSearchModal,
     addToSearchHistory,
     addRecentSearch,
@@ -115,6 +117,26 @@ const Footer: React.FC = () => {
     })
   }
 
+  const clearRedisCache = async () => {
+    try {
+      await api.post('/cache/clear')
+      toast.success('Redis cache cleared successfully!')
+    } catch (error) {
+      toast.error('Failed to clear Redis cache.')
+      console.error('Failed to clear Redis cache:', error)
+    }
+  }
+
+  const reindexItems = async () => {
+    try {
+      await api.post('/items/reindex')
+      toast.success('Item re-indexing started successfully!')
+    } catch (error) {
+      toast.error('Failed to start item re-indexing.')
+      console.error('Failed to start item re-indexing:', error)
+    }
+  }
+
   return (
     <footer className="bg-card border-t border-border">
       {/* Development Toolbar */}
@@ -158,13 +180,11 @@ const Footer: React.FC = () => {
               >
                 Test UI Components
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={toggleSidebar}
-              >
-                Toggle Sidebar
-              </Button>
+              <Link to="/storybook">
+                <Button size="sm" variant="outline">
+                  Storybook
+                </Button>
+              </Link>
               <Button
                 size="sm"
                 variant="outline"
@@ -186,6 +206,20 @@ const Footer: React.FC = () => {
               >
                 Clear All Data
               </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={clearRedisCache}
+              >
+                Clear Redis Cache
+              </Button>
+              <Button
+                size="sm"
+                variant="warning"
+                onClick={reindexItems}
+              >
+                Re-index Items
+              </Button>
             </div>
           </div>
         </div>
@@ -206,4 +240,4 @@ const Footer: React.FC = () => {
   )
 }
 
-export default Footer 
+export default Footer

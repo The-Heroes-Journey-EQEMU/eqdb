@@ -1,41 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { zoneService, ZoneDetails as ZoneDetailsType } from '@/services/zoneService';
-import { Table, TableBody, TableCell,TableRow } from '@/components/common/Table';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
+import React from 'react';
+import { ZoneDetails as ZoneDetailsType } from '@/services/zoneService';
+import { Table, TableBody, TableCell, TableRow } from '@/components/common/Table';
 
 interface ZoneDetailsProps {
-  shortName: string;
+  zoneDetails: ZoneDetailsType | null;
 }
 
-const ZoneDetails: React.FC<ZoneDetailsProps> = ({ shortName }) => {
-  const [zoneDetails, setZoneDetails] = useState<ZoneDetailsType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchZoneDetails = async () => {
-      try {
-        setLoading(true);
-        const details = await zoneService.getZoneDetails(shortName);
-        setZoneDetails(details);
-      } catch (err) {
-        setError('Failed to fetch zone details.');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchZoneDetails();
-  }, [shortName]);
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
+const ZoneDetails: React.FC<ZoneDetailsProps> = ({ zoneDetails }) => {
 
   if (!zoneDetails) {
     return <div>No details found for this zone.</div>;

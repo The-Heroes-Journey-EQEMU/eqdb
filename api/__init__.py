@@ -5,6 +5,9 @@ import json
 from decimal import Decimal
 import logging
 import os
+import configparser
+import redis
+from . import cache
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -57,8 +60,12 @@ v1 = Namespace('v1',
 # Add v1 namespace to API
 api.add_namespace(v1)
 
+from datetime import datetime, date
+
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
+        if isinstance(obj, (datetime, date)):
+            return obj.isoformat()
         if isinstance(obj, Decimal):
             return float(obj)
         return super().default(obj)
@@ -75,7 +82,27 @@ def output_json(data, code, headers=None):
 def init_api(app):
     """Initialize the API with the Flask app"""
     logger.info("Initializing API")
+
+    # Initialize Redis
+    config = configparser.ConfigParser()
+    config.read('configuration.ini')
+    redis_client = None
+    if 'redis' in config:
+        try:
+            redis_client = redis.Redis(
+                host=config.get('redis', 'host', fallback='localhost'),
+                port=config.getint('redis', 'port', fallback=6379),
+                db=config.getint('redis', 'db', fallback=0),
+                decode_responses=True
+            )
+            redis_client.ping()
+            logger.info("Connected to Redis successfully!")
+        except redis.exceptions.ConnectionError as e:
+            logger.error(f"Could not connect to Redis: {e}")
+            redis_client = None
     
+    cache.init_cache(redis_client)
+
     # Initialize JWT
     jwt = JWTManager(app)
     

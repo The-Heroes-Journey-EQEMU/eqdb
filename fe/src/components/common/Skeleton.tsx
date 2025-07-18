@@ -15,7 +15,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   height,
   lines = 1
 }) => {
-  const baseClasses = 'animate-pulse bg-gray-200 rounded'
+  const baseClasses = 'animate-pulse rounded-[24px]'
   
   const variantClasses = {
     text: 'h-4',
@@ -51,13 +51,13 @@ const Skeleton: React.FC<SkeletonProps> = ({
 
 // Predefined skeleton components
 export const SkeletonCard: React.FC = () => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-    <Skeleton className="w-3/4 h-6 mb-2" />
-    <Skeleton className="w-1/2 h-4 mb-4" />
+  <div className="bg-card border border-border rounded-[24px] p-[8px] shadow-sm">
+    <Skeleton className="w-3/4 h-6 mb-2 rounded-[16px] bg-muted" />
+    <Skeleton className="w-1/2 h-4 mb-4 rounded-[16px] bg-muted" />
     <div className="space-y-2">
-      <Skeleton className="w-full h-3" />
-      <Skeleton className="w-5/6 h-3" />
-      <Skeleton className="w-4/6 h-3" />
+      <Skeleton className="w-full h-3 rounded-[16px] bg-muted" />
+      <Skeleton className="w-5/6 h-3 rounded-[16px] bg-muted" />
+      <Skeleton className="w-4/6 h-3 rounded-[16px] bg-muted" />
     </div>
   </div>
 )

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Card from '@/components/common/Card';
 
 const SpellListPage: React.FC = () => {
   const [classes, setClasses] = useState<string[]>([]);
@@ -34,16 +35,20 @@ const SpellListPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">Spell List by Class</h1>
+      <Card className="mb-4 p-6 flex items-center justify-center">
+        <h1 className="text-2xl font-bold text-center m-0">Spell List by Class</h1>
+      </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
         {classes.map(className => (
           <Link
             key={className}
             to={`/spells/list/${className.toLowerCase().replace(' ', '-')}`}
-            className="p-4 bg-gray-800 text-white rounded-lg text-center hover:bg-gray-700 flex flex-col items-center"
+            className="text-center flex flex-col items-center"
           >
-            <img src={`/class_icons/${classIdMap[className]}.gif`} alt={className} className="h-16 w-16 mb-2" />
-            <span className="text-lg font-semibold">{className}</span>
+            <Card className="w-full h-full flex flex-col items-center p-4 hover:shadow-lg transition-shadow">
+              <img src={`/class_icons/${classIdMap[className]}.gif`} alt={className} className="h-16 w-16 mb-2" />
+              <span className="text-lg font-semibold">{className}</span>
+            </Card>
           </Link>
         ))}
       </div>

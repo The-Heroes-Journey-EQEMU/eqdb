@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { zoneService, ZoneSpawn } from '../services/zoneService';
+import { ZoneSpawn } from '../services/zoneService';
 import { Table, TableBody, TableCell, TableRow, TableHead, TableHeader } from '@/components/common/Table';
 import { BiTargetLock, BiSolidZoomIn } from "react-icons/bi";
 
@@ -17,6 +17,7 @@ interface FormattedSpawn {
 
 interface ZoneSpawnsProps {
   shortName: string;
+  spawns: ZoneSpawn[];
 }
 
 const formatSpawnData = (spawns: ZoneSpawn[]): FormattedSpawn[] => {
@@ -59,33 +60,8 @@ const formatSpawnData = (spawns: ZoneSpawn[]): FormattedSpawn[] => {
   return formatted.sort((a, b) => b.level - a.level);
 };
 
-const ZoneSpawns: React.FC<ZoneSpawnsProps> = ({ shortName }) => {
-  const [formattedSpawns, setFormattedSpawns] = useState<FormattedSpawn[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchSpawns = async () => {
-      try {
-        setLoading(true);
-        const spawnData = await zoneService.getZoneSpawns(shortName);
-        setFormattedSpawns(formatSpawnData(spawnData));
-      } catch (err) {
-        setError('Failed to fetch spawn data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSpawns();
-  }, [shortName]);
-
-  if (loading) {
-    return <div>Loading spawns...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+const ZoneSpawns: React.FC<ZoneSpawnsProps> = ({ shortName, spawns }) => {
+  const formattedSpawns = formatSpawnData(spawns);
 
   return (
     <div className="mt-8">

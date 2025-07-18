@@ -12,9 +12,16 @@ from api.db.tradeskill import TradeskillDB
 from api.db.quest import QuestDB
 from api.db.expansion import ExpansionDB
 from api.db.expansion_items import ExpansionItemsDB
+from api.redis_item_indexer import index_all_items, search_items_from_redis
+from api.db.item_indexer_utils import index_item
 from .auth import auth
 from .auth_routes import auth_ns
 from .middleware import optional_auth, write_auth_required, admin_required
+from .cache import clear_cache
+from .models import create_models
+from utils import get_type_string, get_slot_string, Util, get_all_skills, get_class_string
+import time
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +48,9 @@ item_model = v1.model('Item', {
     'name': fields.String(description='Item name', example='Fine Steel Dagger'),
     'type': fields.String(description='Item type', example='Weapon'),
     'serialized': fields.String(description='Serialized item data', example='{"stats": {"damage": "1-5"}}'),
-    'expansion_name': fields.String(description='Expansion name', example='Classic')
+    'expansion_name': fields.String(description='Expansion name', example='Classic'),
+    'itemtype_name': fields.String(description='Human-readable item type', example='2H Slashing'),
+    'slot_names': fields.String(description='Human-readable slot names (space-separated)', example='Primary Secondary'),
 })
 
 spell_model = v1.model('Spell', {
@@ -179,6 +188,39 @@ import_result_model = v1.model('ImportResult', {
     'total_imported': fields.Integer(description='Number of items imported', example=3319)
 })
 
+# Weight Set models
+weight_model = v1.model('Weight', {
+    'stat': fields.String(description='Stat name', example='hp'),
+    'value': fields.Float(description='Weight value', example=1.5)
+})
+
+weight_set_model = v1.model('WeightSet', {
+    'id': fields.Integer(description='Weight set ID', example=1),
+    'name': fields.String(description='Weight set name', example='Tank Weights'),
+    'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+    'weights': fields.List(fields.Nested(weight_model), description='List of stat weights'),
+    'created_at': fields.String(description='Creation date'),
+    'updated_at': fields.String(description='Last update date')
+})
+
+weight_set_create_model = v1.model('WeightSetCreate', {
+    'name': fields.String(required=True, description='Weight set name', example='Tank Weights'),
+    'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+    'weights': fields.List(fields.Nested(weight_model), required=True, description='List of stat weights')
+})
+
+weight_set_update_model = v1.model('WeightSetUpdate', {
+    'name': fields.String(description='Weight set name', example='Tank Weights'),
+    'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+    'weights': fields.List(fields.Nested(weight_model), description='List of stat weights')
+})
+
+weight_sets_list_model = v1.model('WeightSetsList', {
+    'weight_sets': fields.List(fields.Nested(weight_set_model), description='List of user weight sets')
+})
+
+
+
 def format_date(date_val):
     """Format date to match production API format, robust to type and value."""
     if not date_val:
@@ -291,10 +333,59 @@ class ItemResource(Resource):
         params={
             'id': {'description': 'Search items by item ID', 'type': 'integer', 'example': 12345},
             'name': {'description': 'Search items by partial name (50 results maximum)', 'type': 'string', 'example': 'dagger'},
-            'type': {'description': 'Filter items by type', 'type': 'string', 'example': 'weapon'}
+            'item_type': {'description': 'Filter items by type', 'type': 'string', 'enum': list(Util.get_categorized_item_types().values()), 'example': 'Weapon'},
+            'tradeskill_only': {'description': 'Filter for tradeskill items', 'type': 'boolean', 'example': False},
+            'equippable_only': {'description': 'Filter for equippable items', 'type': 'boolean', 'example': False},
+            'exclude_glamours': {'description': 'Exclude glamour items', 'type': 'boolean', 'example': False},
+            'only_augments': {'description': 'Filter for augmentations only', 'type': 'boolean', 'example': False},
+            'item_slot': {'description': 'Filter by item slot', 'type': 'string', 'enum': list(Util.get_categorized_item_slots().values()), 'example': 'Primary'},
+            'itemtype_name': {
+                'description': 'Filter by human-readable item type',
+                'type': 'string',
+                'enum': list(Util.get_categorized_item_types().values()),
+                'example': '2H Slashing'
+            },
+            'slot_names': {
+                'description': 'Filter by human-readable slot name',
+                'type': 'string',
+                'enum': list(Util.get_categorized_item_slots().values()),
+                'example': 'Primary'
+            },
+            'itemclass_name': {
+                'description': 'Filter by item class (only Weapon or Armor are supported)',
+                'type': 'string',
+                'enum': ['Weapon', 'Armor'],
+                'example': 'Weapon'
+            },
+            'stat_filters': {'description': 'Array of stat filter objects: {stat: string, value: int}', 'type': 'array', 'items': {'type': 'object', 'properties': {'stat': {'type': 'string'}, 'value': {'type': 'integer'}}}, 'example': [{'stat': 'hp', 'value': 50}]},
+            'stat_weights': {'description': 'Array of stat weight objects: {stat: string, weight: float}', 'type': 'array', 'items': {'type': 'object', 'properties': {'stat': {'type': 'string'}, 'weight': {'type': 'number'}}}, 'example': [{'stat': 'damage', 'weight': 1.5}]},
+            'exclude_expansions': {'description': 'Array of expansion names to exclude', 'type': 'array', 'items': {'type': 'string'}, 'example': ['Kunark', 'Velious']},
+            'elemental_damage_type': {'description': 'Weapon elemental damage type', 'type': 'string', 'enum': ['Magic', 'Fire', 'Cold', 'Poison', 'Disease', 'Chromatic', 'Prismatic', 'Phys', 'Corruption'], 'example': 'Fire'},
+            'bane_damage_type': {'description': 'Weapon bane damage type', 'type': 'string', 'enum': ['body_14', 'race_217', 'race_236'], 'example': 'body_14'},
+            'proc': {'description': 'Weapons with proc: None (include), True (only)', 'type': 'string', 'enum': ['None', 'True'], 'example': 'None'},
+            'click': {'description': 'Items with click effect: None (include), True (only)', 'type': 'string', 'enum': ['None', 'True'], 'example': 'None'},
+            'proc_level': {'description': 'Required level to proc', 'type': 'integer', 'example': 0},
+            'click_level': {'description': 'Required level to click', 'type': 'integer', 'example': 0},
+            'skillmodtype': {'description': 'Skill mod type', 'type': 'string', 'enum': [entry for skill in get_all_skills() for entry in skill.values()], 'example': 'Abjuration'},
+            'expansion': {'description': 'Expansion name', 'type': 'string', 'enum': [], 'example': 'Classic'},
+            'pet_search': {'description': 'Search for pet items', 'type': 'boolean', 'example': False},
+            'show_full_detail': {'description': 'Show item detail table', 'type': 'boolean', 'example': False},
+            'show_weight_detail': {'description': 'Show only weight details (requires one weight)', 'type': 'boolean', 'example': False},
+            'ignore_zero': {'description': 'Include zero weight items (requires one weight)', 'type': 'boolean', 'example': False},
+            'sympathetic': {'description': 'Sympathetic effect filter', 'type': 'string', 'enum': ['None', 'all_strike', '24356', '24357', '24358', '24359', '24360', '24361', '24362', '24363', '24364', '24365', 'all_heal', '24434', '24435', '24436', '24437', '24438', '24439', '24440', '24441', '24442', '24443'], 'example': 'None'},
+            'page': {
+                'description': 'Page number for pagination (starts at 1)',
+                'type': 'integer',
+                'example': 1
+            },
+            'page_size': {
+                'description': 'Number of items per page (default 50, max 200)',
+                'type': 'integer',
+                'example': 50
+            }
         },
         responses={
-            200: ('Success', [item_model]),
+            200: ('Success', fields.Raw(description='Paginated item search results with total, page, page_size, and pages. Each item includes all stats, effects, icons, and nested spell/effect info needed for the results table.')),
             400: ('Invalid parameters', error_model),
             404: ('Item not found', error_model)
         },
@@ -306,34 +397,359 @@ class ItemResource(Resource):
         Get items using the following parameters:
         * id: Search items by item ID (optional)
         * name: Search items by partial name (optional, 50 results maximum)
-        * type: Filter items by type (optional)
+        * item_type: Filter items by type (optional)
         
         Returns a list of items matching the criteria.
         """
         try:
             item_id = request.args.get('id', type=int)
-            name = request.args.get('name')
-            item_type = request.args.get('type')
-            
-            # Get items from database
-            items = item_db.get_item_raw_data(item_id=item_id, name=name, item_type=item_type)
+            item_type_map = item_db.get_item_types()
+
+            if item_id:
+                items = item_db.get_item_details(item_id)
+            else:
+                name = request.args.get('name')
+                item_type = request.args.get('item_type')
+                tradeskill_only = request.args.get('tradeskill_only', type=lambda v: v.lower() == 'true')
+                equippable_only = request.args.get('equippable_only', type=lambda v: v.lower() == 'true')
+                exclude_glamours = request.args.get('exclude_glamours', type=lambda v: v.lower() == 'true')
+                only_augments = request.args.get('only_augments', type=lambda v: v.lower() == 'true')
+                item_slot = request.args.get('item_slot')
+                itemtype_name = request.args.get('itemtype_name')
+                slot_names = request.args.get('slot_names')
+                itemclass_name = request.args.get('itemclass_name')
+                page = request.args.get('page', default=1, type=int)
+                page_size = request.args.get('page_size', default=50, type=int)
+
+                result = item_db.search_items(
+                    name=name, 
+                    item_type=item_type,
+                    tradeskill_only=tradeskill_only,
+                    equippable_only=equippable_only,
+                    exclude_glamours=exclude_glamours,
+                    only_augments=only_augments,
+                    item_slot=item_slot,
+                    itemtype_name=itemtype_name,
+                    slot_names=slot_names,
+                    itemclass_name=itemclass_name,
+                    page=page,
+                    page_size=page_size
+                )
+                items = result['results']
+                total = result['total']
+                page = result['page']
+                page_size = result['page_size']
+                pages = result['pages']
             
             if not items:
-                v1.abort(404, "No items found")
+                return {'message': 'No items found', 'total': total, 'page': page, 'page_size': page_size, 'pages': pages}, 404
             
             # Format response
             if isinstance(items, list):
                 formatted_items = []
                 for item in items:
-                    formatted_item = format_item_response(item)
-                    formatted_items.append(formatted_item)
-                return formatted_items
+                    new_item = dict(item)
+                    item_type_id = new_item.get('itemtype')
+                    # Use Util mapping for type
+                    type_map = Util.get_categorized_item_types()
+                    if item_type_id is not None:
+                        new_item['type'] = type_map.get(item_type_id, get_type_string(item_type_id))
+                        if 'itemtype' in new_item:
+                            del new_item['itemtype']
+                    else:
+                        new_item['type'] = 'Unknown'
+                    formatted_items.append(format_item_response(new_item))
+                return {
+                    'results': formatted_items,
+                    'total': total,
+                    'page': page,
+                    'page_size': page_size,
+                    'pages': pages
+                }
             else:
                 # Single item
-                return format_item_response(items)
+                item = items
+                item_type_id = item.get('itemtype')
+                if item_type_id is not None:
+                    item['type'] = type_map.get(item_type_id, get_type_string(item_type_id))
+                    if 'itemtype' in item:
+                        del item['itemtype']
+                else:
+                    item['type'] = 'Unknown'
+                return format_item_response(item)
             
         except Exception as e:
             v1.abort(500, f"Error retrieving items: {str(e)}")
+
+@v1.route('/items/types')
+class ItemTypesResource(Resource):
+    @optional_auth
+    @v1.doc('get_item_types',
+        responses={
+            200: ('Success', fields.Raw(description='A dictionary of item types, mapping type ID to type name')),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get all item types"""
+        try:
+            return item_db.get_item_types()
+        except Exception as e:
+            v1.abort(500, f"Error retrieving item types: {str(e)}")
+
+@v1.route('/items/slots')
+class ItemSlotsResource(Resource):
+    @optional_auth
+    @v1.doc('get_item_slots',
+        responses={
+            200: ('Success', fields.Raw(description='A dictionary of item slots, mapping slot bitmask to slot name')),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get all item slots"""
+        try:
+            return item_db.get_item_slots()
+        except Exception as e:
+            v1.abort(500, f"Error retrieving item slots: {str(e)}")
+
+@v1.route('/items/details/<int:item_id>')
+class ItemDetailsResource(Resource):
+    @optional_auth
+    @v1.doc('get_item_details',
+        params={
+            'item_id': {'description': 'Item ID to get exhaustive details for', 'type': 'integer', 'in': 'path', 'example': 12345}
+        },
+        responses={
+            200: ('Success', fields.Raw(description='Exhaustive item details including both enriched and raw data, NPCs, spells, effects, and all available information')),
+            404: ('Item not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self, item_id):
+        """Get exhaustive details for a single item by ID
+        
+        Returns comprehensive item information including:
+        * All raw database fields
+        * Enriched human-readable fields (type names, slot names, etc.)
+        * NPCs that drop this item
+        * Associated spells and effects
+        * Expansion information
+        * Quest item status
+        * All available metadata
+        
+        This endpoint provides the most complete item information available.
+        """
+        try:
+            # Get basic item details
+            item_details = item_db.get_item_details(item_id)
+            if not item_details:
+                v1.abort(404, f"Item with ID {item_id} not found")
+                return
+            
+            # Get NPCs that drop this item
+            npcs = item_db.get_item_npcs(item_id)
+            
+            # Get associated spells if any
+            spells = []
+            if item_details.get('clicktype') > 0:
+                spell_details = spell_db.get_spell_raw_data(spell_id=item_details['clicktype'])
+                if spell_details:
+                    spells.append({
+                        'type': 'click_effect',
+                        'spell_id': item_details['clicktype'],
+                        'spell_data': format_spell_response(spell_details)
+                    })
+            
+            if item_details.get('worneffect') > 0:
+                spell_details = spell_db.get_spell_raw_data(spell_id=item_details['worneffect'])
+                if spell_details:
+                    spells.append({
+                        'type': 'worn_effect',
+                        'spell_id': item_details['worneffect'],
+                        'spell_data': format_spell_response(spell_details)
+                    })
+            
+            if item_details.get('focuseffect') > 0:
+                spell_details = spell_db.get_spell_raw_data(spell_id=item_details['focuseffect'])
+                if spell_details:
+                    spells.append({
+                        'type': 'focus_effect',
+                        'spell_id': item_details['focuseffect'],
+                        'spell_data': format_spell_response(spell_details)
+                    })
+            
+            if item_details.get('bardeffect') > 0:
+                spell_details = spell_db.get_spell_raw_data(spell_id=item_details['bardeffect'])
+                if spell_details:
+                    spells.append({
+                        'type': 'bard_effect',
+                        'spell_id': item_details['bardeffect'],
+                        'spell_data': format_spell_response(spell_details)
+                    })
+            
+            if item_details.get('proceffect') > 0:
+                spell_details = spell_db.get_spell_raw_data(spell_id=item_details['proceffect'])
+                if spell_details:
+                    spells.append({
+                        'type': 'proc_effect',
+                        'spell_id': item_details['proceffect'],
+                        'spell_data': format_spell_response(spell_details)
+                    })
+            
+            # Build comprehensive response
+            response = {
+                'item_id': item_id,
+                'raw_data': item_details,  # All raw database fields
+                'enriched_data': {
+                    'id': item_details.get('id'),
+                    'name': item_details.get('name'),
+                    'type': item_details.get('itemtype_name'),
+                    'slot_names': item_details.get('slot_names'),
+                    'expansion_name': item_details.get('expansion_name'),
+                    'is_quest_item': item_details.get('is_quest_item', False),
+                    'itemclass_name': self._get_item_class_name(item_details.get('itemtype')),
+                    'human_readable': {
+                        'type': item_details.get('itemtype_name'),
+                        'slots': item_details.get('slot_names'),
+                        'expansion': item_details.get('expansion_name'),
+                        'classes': self._get_class_names(item_details.get('classes')),
+                        'races': self._get_race_names(item_details.get('races')),
+                        'deity': self._get_deity_name(item_details.get('deity')),
+                        'material': self._get_material_name(item_details.get('material')),
+                        'color': self._get_color_name(item_details.get('color')),
+                        'size': self._get_size_name(item_details.get('size'))
+                    }
+                },
+                'npcs': npcs,  # NPCs that drop this item
+                'spells': spells,  # Associated spells and effects
+                'metadata': {
+                    'last_updated': format_date(datetime.now()),
+                    'data_sources': ['items', 'npcs', 'spells', 'expansions'],
+                    'enriched_fields': ['type', 'slots', 'expansion', 'classes', 'races', 'deity', 'material', 'color', 'size']
+                }
+            }
+            
+            return response
+            
+        except Exception as e:
+            v1.abort(500, f"Error retrieving item details: {str(e)}")
+    
+    def _get_item_class_name(self, itemtype):
+        """Get item class name (Weapon/Armor) based on itemtype"""
+        if not itemtype:
+            return None
+        
+        weapon_types = list(Util.get_categorized_item_types('weapon').keys())
+        armor_types = list(Util.get_categorized_item_types('armor').keys())
+        
+        if itemtype in weapon_types:
+            return 'Weapon'
+        elif itemtype in armor_types:
+            return 'Armor'
+        return None
+    
+    def _get_class_names(self, classes_bitmask):
+        """Convert classes bitmask to list of class names"""
+        if not classes_bitmask:
+            return []
+        
+        class_names = []
+        for i in range(1, 17):
+            if classes_bitmask & (1 << (i - 1)):
+                class_names.append(get_class_string(i))
+        return class_names
+    
+    def _get_race_names(self, races_bitmask):
+        """Convert races bitmask to list of race names"""
+        if not races_bitmask:
+            return []
+        
+        # Basic race mapping - could be expanded
+        race_map = {
+            1: 'Human', 2: 'Barbarian', 4: 'Erudite', 8: 'Wood Elf',
+            16: 'High Elf', 32: 'Dark Elf', 64: 'Half Elf', 128: 'Dwarf',
+            256: 'Troll', 512: 'Ogre', 1024: 'Halfling', 2048: 'Gnome',
+            4096: 'Iksar', 8192: 'Vah Shir', 16384: 'Froglok'
+        }
+        
+        race_names = []
+        for race_id, race_name in race_map.items():
+            if races_bitmask & race_id:
+                race_names.append(race_name)
+        return race_names
+    
+    def _get_deity_name(self, deity_id):
+        """Get deity name by ID"""
+        if not deity_id:
+            return None
+        
+        # Basic deity mapping - could be expanded
+        deity_map = {
+            1: 'Agnostic', 2: 'Bertoxxulous', 3: 'Brell Serilis', 4: 'Cazic-Thule',
+            5: 'Erollisi Marr', 6: 'Bristlebane', 7: 'Innoruuk', 8: 'Karana',
+            9: 'Mithaniel Marr', 10: 'Prexus', 11: 'Quellious', 12: 'Rallos Zek',
+            13: 'Rodcet Nife', 14: 'Solusek Ro', 15: 'The Tribunal', 16: 'Tunare',
+            17: 'Veeshan'
+        }
+        return deity_map.get(deity_id, f'Unknown Deity {deity_id}')
+    
+    def _get_material_name(self, material_id):
+        """Get material name by ID"""
+        if not material_id:
+            return None
+        
+        # Basic material mapping - could be expanded
+        material_map = {
+            0: 'Cloth', 1: 'Leather', 2: 'Chain', 3: 'Plate',
+            4: 'Velious', 5: 'Velious', 6: 'Velious', 7: 'Velious',
+            8: 'Velious', 9: 'Velious', 10: 'Velious', 11: 'Velious',
+            12: 'Velious', 13: 'Velious', 14: 'Velious', 15: 'Velious'
+        }
+        return material_map.get(material_id, f'Unknown Material {material_id}')
+    
+    def _get_color_name(self, color_id):
+        """Get color name by ID"""
+        if not color_id:
+            return None
+        
+        # Basic color mapping - could be expanded
+        color_map = {
+            0: 'None', 1: 'Red', 2: 'Blue', 3: 'Green', 4: 'Yellow',
+            5: 'Purple', 6: 'Orange', 7: 'White', 8: 'Black'
+        }
+        return color_map.get(color_id, f'Unknown Color {color_id}')
+    
+    def _get_size_name(self, size_id):
+        """Get size name by ID"""
+        if not size_id:
+            return None
+        
+        size_map = {
+            0: 'Tiny', 1: 'Small', 2: 'Medium', 3: 'Large', 4: 'Giant'
+        }
+        return size_map.get(size_id, f'Unknown Size {size_id}')
+
+@v1.route('/items/reindex')
+class ItemReindexResource(Resource):
+    @write_auth_required
+    @v1.doc('reindex_items',
+        responses={
+            200: ('Success', success_message_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def post(self):
+        """Re-index all items into Redis"""
+        try:
+            index_all_items()
+            return {'message': 'Item re-indexing started successfully.'}
+        except Exception as e:
+            v1.abort(500, f"Error starting item re-indexing: {str(e)}")
 
 @v1.route('/spells')
 class SpellResource(Resource):
@@ -632,19 +1048,16 @@ class ZoneItemsResource(Resource):
     )
     def get(self, short_name):
         """Get all items that drop in a given zone"""
-        try:
-            items = item_db.get_items_by_zone(short_name)
-            if not items:
-                v1.abort(404, "No items found for this zone")
-            
-            # Format response
-            formatted_items = []
-            for item in items:
-                formatted_item = format_item_response(item)
-                formatted_items.append(formatted_item)
-            return formatted_items
-        except Exception as e:
-            v1.abort(500, f"Error retrieving items for zone {short_name}: {str(e)}")
+        items = item_db.get_items_by_zone(short_name)
+        if not items:
+            v1.abort(404, "No items found for this zone")
+        
+        # Format response
+        formatted_items = []
+        for item in items:
+            formatted_item = format_item_response(item)
+            formatted_items.append(formatted_item)
+        return formatted_items
 
 npc_spawn_model = v1.model('NPCSpawn', {
     'npc_name': fields.String(description='NPC Name'),
@@ -1407,6 +1820,26 @@ class CustomItemResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error removing custom item: {str(e)}")
 
+@v1.route('/cache/clear')
+class CacheClearResource(Resource):
+    @write_auth_required
+    @v1.doc('clear_cache',
+        responses={
+            200: ('Success', success_message_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def post(self):
+        """Clear the Redis cache"""
+        try:
+            if clear_cache():
+                return {'message': 'Cache cleared successfully'}
+            else:
+                v1.abort(500, "Could not connect to Redis")
+        except Exception as e:
+            v1.abort(500, f"Error clearing cache: {str(e)}")
+
 @v1.route('/expansion-items/import')
 class ImportItemsResource(Resource):
     @write_auth_required
@@ -1441,12 +1874,245 @@ class ImportItemsResource(Resource):
         except Exception as e:
             v1.abort(500, f"Error importing item files: {str(e)}")
 
+@v1.route('/items/search')
+class ItemSearchResource(Resource):
+    @optional_auth
+    @v1.doc('search_items_rich',
+        params={
+            'name': {'description': 'Partial item name', 'type': 'string', 'example': 'Short Sword'},
+            'slot': {'description': 'Equipment slot', 'type': 'string', 'enum': list(Util.get_categorized_item_slots().values()), 'example': 'Primary'},
+            'class': {'description': 'Playable class', 'type': 'string', 'enum': [get_class_string(i) for i in range(1, 17)], 'example': 'Warrior'},
+            'item_type': {'description': 'Item type', 'type': 'string', 'enum': list(Util.get_categorized_item_types().values()), 'example': '1H Slashing'},
+            'skillmodtype': {'description': 'Skill mod type', 'type': 'string', 'enum': [entry for skill in get_all_skills() for entry in skill.values()], 'example': 'Abjuration'},
+            'expansion': {'description': 'Expansion name', 'type': 'string', 'enum': [], 'example': 'Classic'},
+            'stat_filters': {'description': 'Array of stat filter objects: {stat: string, value: int}', 'type': 'array', 'items': {'type': 'object', 'properties': {'stat': {'type': 'string'}, 'value': {'type': 'integer'}}}, 'example': [{'stat': 'hp', 'value': 50}]},
+            'stat_weights': {'description': 'Array of stat weight objects: {stat: string, weight: float}', 'type': 'array', 'items': {'type': 'object', 'properties': {'stat': {'type': 'string'}, 'weight': {'type': 'number'}}}, 'example': [{'stat': 'damage', 'weight': 1.5}]},
+            'exclude_expansions': {'description': 'Array of expansion names to exclude', 'type': 'array', 'items': {'type': 'string'}, 'example': ['Kunark', 'Velious']},
+            'elemental_damage_type': {'description': 'Weapon elemental damage type', 'type': 'string', 'enum': ['Magic', 'Fire', 'Cold', 'Poison', 'Disease', 'Chromatic', 'Prismatic', 'Phys', 'Corruption'], 'example': 'Fire'},
+            'bane_damage_type': {'description': 'Weapon bane damage type', 'type': 'string', 'enum': ['body_14', 'race_217', 'race_236'], 'example': 'body_14'},
+            'proc': {'description': 'Weapons with proc: None (include), True (only)', 'type': 'string', 'enum': ['None', 'True'], 'example': 'None'},
+            'click': {'description': 'Items with click effect: None (include), True (only)', 'type': 'string', 'enum': ['None', 'True'], 'example': 'None'},
+            'proc_level': {'description': 'Required level to proc', 'type': 'integer', 'example': 0},
+            'click_level': {'description': 'Required level to click', 'type': 'integer', 'example': 0},
+            'pet_search': {'description': 'Search for pet items', 'type': 'boolean', 'example': False},
+            'show_full_detail': {'description': 'Show item detail table', 'type': 'boolean', 'example': False},
+            'show_weight_detail': {'description': 'Show only weight details (requires one weight)', 'type': 'boolean', 'example': False},
+            'ignore_zero': {'description': 'Include zero weight items (requires one weight)', 'type': 'boolean', 'example': False},
+            'sympathetic': {'description': 'Sympathetic effect filter', 'type': 'string', 'enum': ['None', 'all_strike', '24356', '24357', '24358', '24359', '24360', '24361', '24362', '24363', '24364', '24365', 'all_heal', '24434', '24435', '24436', '24437', '24438', '24439', '24440', '24441', '24442', '24443'], 'example': 'None'},
+            'page': {'description': 'Page number for pagination (starts at 1)', 'type': 'integer', 'example': 1},
+            'page_size': {'description': 'Number of items per page (default 20, max 200)', 'type': 'integer', 'example': 20}
+        },
+        responses={
+            200: ('Success', fields.Raw(description='Paginated item search results with total, page, page_size, and pages. Each item includes all stats, effects, icons, and nested spell/effect info needed for the results table.')),
+            400: ('Invalid parameters', error_model),
+            404: ('Item not found', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        import time
+        req_start = time.time()
+        # Parse query params
+        name = request.args.get('name')
+        slot = request.args.get('slot')
+        class_name = request.args.get('class')
+        item_type = request.args.get('item_type')
+        skillmodtype = request.args.get('skillmodtype')
+        expansion = request.args.get('expansion')
+        elemental_damage_type = request.args.get('elemental_damage_type')
+        bane_damage_type = request.args.get('bane_damage_type')
+        proc = request.args.get('proc')
+        click = request.args.get('click')
+        pet_search = request.args.get('pet_search', type=lambda v: v.lower() == 'true' if v else False)
+        sympathetic = request.args.get('sympathetic')
+        stat_filters = request.args.get('stat_filters')
+        stat_weights = request.args.get('stat_weights')
+        exclude_expansions = request.args.get('exclude_expansions')
+        proc_level = request.args.get('proc_level', type=int)
+        click_level = request.args.get('click_level', type=int)
+        show_full_detail = request.args.get('show_full_detail', type=lambda v: v.lower() == 'true' if v else False)
+        show_weight_detail = request.args.get('show_weight_detail', type=lambda v: v.lower() == 'true' if v else False)
+        ignore_zero = request.args.get('ignore_zero', type=lambda v: v.lower() == 'true' if v else False)
+        page = request.args.get('page', default=1, type=int)
+        page_size = request.args.get('page_size', default=20, type=int)
+
+        # Parse JSON arrays if present
+        import json as _json
+        if stat_filters:
+            try:
+                stat_filters = _json.loads(stat_filters)
+            except Exception:
+                stat_filters = []
+        else:
+            stat_filters = []
+        if stat_weights:
+            try:
+                stat_weights = _json.loads(stat_weights)
+            except Exception:
+                stat_weights = []
+        else:
+            stat_weights = []
+        if exclude_expansions:
+            try:
+                exclude_expansions = _json.loads(exclude_expansions)
+            except Exception:
+                exclude_expansions = []
+        else:
+            exclude_expansions = []
+
+        # Build Redis search params
+        redis_params = {}
+        if name:
+            redis_params['name'] = name
+        if slot:
+            redis_params['slot'] = slot
+        if class_name:
+            redis_params['class'] = class_name
+        if item_type:
+            redis_params['type'] = item_type
+        if expansion:
+            redis_params['expansion'] = expansion
+        if elemental_damage_type:
+            redis_params['elemental_damage_type'] = elemental_damage_type
+        if bane_damage_type:
+            redis_params['bane_damage_type'] = bane_damage_type
+        if proc and proc == 'True':
+            redis_params['proc'] = 'True'
+        if click and click == 'True':
+            redis_params['click'] = 'True'
+        if pet_search:
+            redis_params['pet_search'] = True
+        if sympathetic and sympathetic != 'None':
+            redis_params['sympathetic'] = sympathetic
+
+        logger.info(f"[SEARCH] Redis params: {redis_params}")
+        t0 = time.time()
+        items = search_items_from_redis(redis_params)
+        t1 = time.time()
+        logger.info(f"[PROFILE] Redis search took {t1-t0:.4f} seconds for params: {redis_params}")
+        logger.info(f"[SEARCH] Items from Redis: {len(items)}")
+
+        # Post-process for stat_filters, stat_weights, exclude_expansions, proc_level, click_level
+        filtered_items = []
+        for item in items:
+            # Exclude expansions
+            if exclude_expansions and item.get('expansion_name') in exclude_expansions:
+                continue
+            # Stat filters
+            stat_pass = True
+            for stat_filter in stat_filters:
+                stat = stat_filter.get('stat')
+                value = stat_filter.get('value')
+                if stat and value is not None:
+                    try:
+                        if int(item.get(stat, 0)) < int(value):
+                            stat_pass = False
+                            break
+                    except Exception:
+                        stat_pass = False
+                        break
+            if not stat_pass:
+                continue
+            # Proc/click level
+            if proc_level and int(item.get('proc_level', 0)) < proc_level:
+                continue
+            if click_level and int(item.get('click_level', 0)) < click_level:
+                continue
+            filtered_items.append(item)
+
+        # Stat weights (sort by weighted score if provided)
+        if stat_weights:
+            def weighted_score(item):
+                score = 0.0
+                for weight in stat_weights:
+                    stat = weight.get('stat')
+                    w = weight.get('weight', 1.0)
+                    try:
+                        score += float(item.get(stat, 0)) * float(w)
+                    except Exception:
+                        continue
+                return score
+            filtered_items.sort(key=weighted_score, reverse=True)
+
+        total = len(filtered_items)
+        # Pagination
+        start = (page - 1) * page_size
+        end = start + page_size
+        paged_items = filtered_items[start:end]
+        logger.info(f"[SEARCH] Post-processed and paginated items: {len(paged_items)} (total {total})")
+
+        # Enrichment and result construction
+        enriched = []
+        enrich_start = time.time()
+        required_fields = [
+            'id', 'name', 'type', 'slot_names', 'expansion_name', 'is_quest_item', 'npcs',
+            'serialized', 'itemtype_name'
+        ]
+        for item in paged_items:
+            item_id = int(item['id']) if 'id' in item else None
+            from api.cache import get_redis_client
+            client = get_redis_client()
+            zone_npc_key = f"itemZoneNpc:{item_id}" if item_id else None
+            zone_npc_json = client.get(zone_npc_key) if client and zone_npc_key else None
+            npcs = []
+            if zone_npc_json:
+                try:
+                    npcs = json.loads(zone_npc_json)
+                except Exception as e:
+                    logger.warning(f"Failed to decode itemZoneNpc for item {item_id}: {e}")
+                    npcs = []
+            else:
+                try:
+                    npcs = item_db.get_item_npcs(item_id) if item_id else []
+                    client.set(zone_npc_key, json.dumps(npcs))
+                except Exception as e:
+                    logger.warning(f"Failed to set itemZoneNpc for item {item_id}: {e}")
+            # Build result dict with all required fields
+            result = {
+                'id': item_id,
+                'name': item.get('name', item.get('Name', 'Unknown Item')),
+                'type': item.get('type', item.get('itemtype_name', '')),
+                'slot_names': item.get('slot_names', ''),
+                'expansion_name': item.get('expansion_name', ''),
+                'is_quest_item': item.get('is_quest_item', False),
+                'npcs': npcs,
+                'serialized': item.get('serialized', ''),
+                'itemtype_name': item.get('itemtype_name', item.get('type', ''))
+            }
+            # Ensure all required fields are present
+            for k in required_fields:
+                if k not in result:
+                    result[k] = ''
+            # Add toggles for detail/weight/zero/sympathetic as needed
+            if show_full_detail:
+                result['full_detail'] = item
+            if show_weight_detail and stat_weights:
+                result['weight_score'] = weighted_score(item)
+            if ignore_zero:
+                result['full_detail'] = {k: v for k, v in item.items() if str(v) != '0'}
+            if sympathetic and sympathetic != 'None':
+                result['sympathetic'] = item.get('sympathetic', '')
+            enriched.append(result)
+        enrich_end = time.time()
+        logger.info(f"[PROFILE] Enrichment took {enrich_end-enrich_start:.4f} seconds for {len(enriched)} items")
+        req_end = time.time()
+        logger.info(f"[PROFILE] Total /items/search request time: {req_end-req_start:.4f} seconds")
+        return {
+            'results': enriched,
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'pages': (total + page_size - 1) // page_size
+        }
+
 def init_routes(api):
     """Initialize all routes"""
     logger.info("Initializing API routes")
     
     # Add resources to the v1 namespace
     v1.add_resource(ItemResource, '/items')
+    v1.add_resource(ItemTypesResource, '/items/types')
+    v1.add_resource(ItemSlotsResource, '/items/slots')
     v1.add_resource(SpellResource, '/spells')
     v1.add_resource(SpellClassesResource, '/spells/classes')
     v1.add_resource(SpellsByClassResource, '/spells/list/<string:class_names>')
@@ -1477,6 +2143,9 @@ def init_routes(api):
     v1.add_resource(CustomItemsResource, '/expansion-items/custom')
     v1.add_resource(CustomItemResource, '/expansion-items/custom/<int:item_id>/<int:expansion_id>')
     v1.add_resource(ImportItemsResource, '/expansion-items/import')
+    v1.add_resource(CacheClearResource, '/cache/clear')
+    v1.add_resource(WeightSetsResource, '/user/weight-sets')
+    v1.add_resource(WeightSetResource, '/user/weight-sets/<int:weight_set_id>')
 
 
     # Add authentication namespace
@@ -1486,3 +2155,676 @@ def init_routes(api):
     auth.create_default_admin()
     
     logger.info("API routes initialization complete")
+
+# Weight Set API Endpoints
+class WeightSetsResource(Resource):
+    """Get all weight sets for the authenticated user"""
+    
+    @write_auth_required
+    @v1.doc('get_weight_sets',
+        responses={
+            200: ('Success', weight_sets_list_model),
+            401: ('Unauthorized', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get all weight sets for the authenticated user"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for weight sets
+            import local
+            
+            # Get weight sets with proper ID mapping
+            user_id = user.id
+            with local.Session(bind=local.local_engine) as session:
+                # Get all weight sets for this user with their IDs
+                weights_query = session.query(local.Weights).filter(local.Weights.uid == user_id)
+                weights_result = weights_query.all()
+                
+                weight_sets = []
+                for weight_entry in weights_result:
+                    # Get the weight entries for this weight set
+                    weight_entries_query = session.query(local.WeightEntry).filter(local.WeightEntry.wid == weight_entry.wid)
+                    weight_entries = weight_entries_query.all()
+                    
+                    # Convert to API format
+                    weights = []
+                    for entry in weight_entries:
+                        stat_name = local.utils.get_stat_name(entry.stat)
+                        weights.append({
+                            'stat': entry.stat,
+                            'value': float(entry.value)
+                        })
+                    
+                    weight_sets.append({
+                        'id': weight_entry.wid,  # Use actual database ID
+                        'name': weight_entry.name,
+                        'description': f'Weight set: {weight_entry.name}',
+                        'weights': weights,
+                        'created_at': datetime.now().isoformat(),  # TODO: Add created_at to Weights table
+                        'updated_at': datetime.now().isoformat()   # TODO: Add updated_at to Weights table
+                    })
+            
+            return {'weight_sets': weight_sets}
+            
+        except Exception as e:
+            logger.error(f"Error getting weight sets: {e}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('create_weight_set',
+        body=weight_set_update_model,
+        responses={
+            201: ('Success', weight_set_model),
+            400: ('Invalid parameters', error_model),
+            401: ('Unauthorized', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def post(self):
+        """Create a new weight set"""
+        logger.info("POST /user/weight-sets called")
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            logger.info(f"User dict: {user_dict}")
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            logger.info(f"Created user object with ID: {user.id}")
+            
+            data = request.get_json()
+            logger.info(f"Request data: {data}")
+            if not data:
+                return {'message': 'No data provided'}, 400
+            
+            name = data.get('name')
+            description = data.get('description', '')
+            weights = data.get('weights', [])
+            
+            logger.info(f"Parsed data - name: {name}, description: {description}, weights: {weights}")
+            
+            if not name:
+                return {'message': 'Name is required'}, 400
+            
+            if not weights:
+                return {'message': 'At least one weight is required'}, 400
+            
+            # Convert weights to the format expected by local.add_weights_set
+            filters = {}
+            for weight in weights:
+                stat = weight.get('stat')
+                value = weight.get('value')
+                if stat and value is not None:
+                    filters[stat] = float(value)
+            
+            logger.info(f"Converted filters: {filters}")
+            
+            # Import local functions for weight sets
+            logger.info("Importing local module...")
+            import local
+            logger.info("Local module imported successfully")
+            
+            logger.info(f"Creating weight set with name: {name}, filters: {filters}")
+            weight_set_id = local.add_weights_set(user, name, filters)
+            logger.info(f"Weight set created with ID: {weight_set_id}")
+            
+            # Return the created weight set
+            created_weight_set = {
+                'id': weight_set_id,
+                'name': name,
+                'description': description,
+                'weights': weights,
+                'created_at': datetime.now().isoformat(),
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            logger.info(f"Returning created weight set: {created_weight_set}")
+            return created_weight_set, 201
+            
+        except Exception as e:
+            logger.error(f"Error creating weight set: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            return {'message': 'Internal server error'}, 500
+
+class WeightSetResource(Resource):
+    """Get, update, or delete a specific weight set"""
+    
+    @write_auth_required
+    @v1.doc('get_weight_set',
+        params={
+            'weight_set_id': {'description': 'Weight set ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        responses={
+            200: ('Success', weight_set_model),
+            401: ('Unauthorized', error_model),
+            404: ('Weight set not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self, weight_set_id):
+        """Get a specific weight set"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for weight sets
+            import local
+            weight_set_data = local.get_weight_set(weight_set_id, user)
+            
+            if not weight_set_data:
+                return {'message': 'Weight set not found'}, 404
+            
+            # Convert the data structure to match our API model
+            weights = []
+            for stat_name, stat_data in weight_set_data['stats'].items():
+                weights.append({
+                    'stat': stat_data['stat'],
+                    'value': float(stat_data['value'])
+                })
+            
+            weight_set = {
+                'id': weight_set_id,
+                'name': weight_set_data['name'],
+                'description': f'Weight set: {weight_set_data["name"]}',
+                'weights': weights,
+                'created_at': datetime.now().isoformat(),  # Placeholder
+                'updated_at': datetime.now().isoformat()   # Placeholder
+            }
+            
+            return weight_set
+            
+        except Exception as e:
+            logger.error(f"Error getting weight set {weight_set_id}: {e}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('update_weight_set',
+        params={
+            'weight_set_id': {'description': 'Weight set ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        body=weight_set_update_model,
+        responses={
+            200: ('Success', weight_set_model),
+            400: ('Invalid parameters', error_model),
+            401: ('Unauthorized', error_model),
+            404: ('Weight set not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def put(self, weight_set_id):
+        """Update a weight set"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
+            
+            weights = data.get('weights', [])
+            if not weights:
+                return {'message': 'At least one weight is required'}, 400
+            
+            # Convert weights to the format expected by local.update_weights_set
+            filters = {}
+            for weight in weights:
+                stat = weight.get('stat')
+                value = weight.get('value')
+                if stat and value is not None:
+                    filters[stat] = float(value)
+            
+            # Import local functions for weight sets
+            import local
+            result = local.update_weights_set(weight_set_id, filters, user)
+            
+            if not result:
+                return {'message': 'Weight set not found or access denied'}, 404
+            
+            # Return the updated weight set
+            updated_weight_set = {
+                'id': weight_set_id,
+                'name': data.get('name', 'Updated Weight Set'),
+                'description': data.get('description', ''),
+                'weights': weights,
+                'created_at': datetime.now().isoformat(),  # Placeholder
+                'updated_at': datetime.now().isoformat()
+            }
+            
+            return updated_weight_set
+            
+        except Exception as e:
+            logger.error(f"Error updating weight set {weight_set_id}: {e}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('delete_weight_set',
+        params={
+            'weight_set_id': {'description': 'Weight set ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        responses={
+            200: ('Success', success_message_model),
+            401: ('Unauthorized', error_model),
+            404: ('Weight set not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def delete(self, weight_set_id):
+        """Delete a weight set"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for weight sets
+            import local
+            success = local.delete_weights_set(user, weight_set_id)
+            
+            if not success:
+                return {'message': 'Weight set not found or access denied'}, 404
+            
+            return {'message': 'Weight set deleted successfully'}
+            
+        except Exception as e:
+            logger.error(f"Error deleting weight set {weight_set_id}: {e}")
+            return {'message': 'Internal server error'}, 500
+
+# Character models
+character_model = v1.model('Character', {
+    'id': fields.Integer(description='Character ID', example=1),
+    'name': fields.String(description='Character name', example='MyWarrior'),
+    'class1': fields.String(description='Primary character class', example='Warrior'),
+    'class2': fields.String(description='Secondary character class', example=''),
+    'class3': fields.String(description='Tertiary character class', example=''),
+    'level': fields.Integer(description='Character level', example=50),
+    'character_set': fields.String(description='Character set name', example='Tank Set'),
+    'inventory_blob': fields.String(description='Inventory data as JSON string'),
+    'created_at': fields.DateTime(description='Creation date'),
+    'updated_at': fields.DateTime(description='Last update date')
+})
+
+character_create_model = v1.model('CharacterCreate', {
+    'name': fields.String(required=True, description='Character name', example='MyWarrior'),
+    'class1': fields.String(required=True, description='Primary character class', example='Warrior'),
+    'class2': fields.String(description='Secondary character class', example=''),
+    'class3': fields.String(description='Tertiary character class', example=''),
+    'level': fields.Integer(required=True, description='Character level', example=50),
+    'character_set': fields.String(description='Character set name', example='Tank Set'),
+    'inventory_blob': fields.String(description='Inventory data as JSON string')
+})
+
+character_update_model = v1.model('CharacterUpdate', {
+    'name': fields.String(description='Character name', example='MyWarrior'),
+    'class1': fields.String(description='Primary character class', example='Warrior'),
+    'class2': fields.String(description='Secondary character class', example=''),
+    'class3': fields.String(description='Tertiary character class', example=''),
+    'level': fields.Integer(description='Character level', example=50),
+    'character_set': fields.String(description='Character set name', example='Tank Set'),
+    'inventory_blob': fields.String(description='Inventory data as JSON string')
+})
+
+characters_list_model = v1.model('CharactersList', {
+    'characters': fields.List(fields.Nested(character_model), description='List of user characters')
+})
+
+# Character routes
+@v1.route('/characters')
+class CharactersResource(Resource):
+    """Get all characters for the authenticated user or create a new character"""
+    
+    @write_auth_required
+    @v1.doc('get_characters',
+        responses={
+            200: ('Success', characters_list_model),
+            401: ('Unauthorized', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self):
+        """Get all characters for the authenticated user"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for characters
+            import local
+            characters_data = local.get_characters(user)
+            
+            # Convert the data structure to match our API model
+            characters = []
+            for char_data in characters_data:
+                character = {
+                    'id': char_data['id'],
+                    'name': char_data['name'],
+                    'class1': char_data['classes'][0] if len(char_data['classes']) > 0 else '',
+                    'class2': char_data['classes'][1] if len(char_data['classes']) > 1 else '',
+                    'class3': char_data['classes'][2] if len(char_data['classes']) > 2 else '',
+                    'level': char_data['level'],
+                    'character_set': char_data['character_set'],
+                    'inventory_blob': char_data['inventory_blob'],
+                    'created_at': char_data['created_at'],
+                    'updated_at': char_data['updated_at']
+                }
+                characters.append(character)
+            
+            return {'characters': characters}
+            
+        except Exception as e:
+            logger.error(f"Error getting characters: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('create_character',
+        body=character_create_model,
+        responses={
+            201: ('Success', character_model),
+            400: ('Invalid parameters', error_model),
+            401: ('Unauthorized', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def post(self):
+        """Create a new character"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
+            
+            name = data.get('name')
+            class1 = data.get('class1')
+            class2 = data.get('class2', '')
+            class3 = data.get('class3', '')
+            level = data.get('level')
+            character_set = data.get('character_set', '')
+            inventory_blob = data.get('inventory_blob', '')
+            
+            if not name or not class1 or level is None:
+                return {'message': 'Name, class1, and level are required'}, 400
+            
+            # Build classes list
+            classes = [class1]
+            if class2:
+                classes.append(class2)
+            if class3:
+                classes.append(class3)
+            
+            # Import local functions for characters
+            import local
+            character_data = local.add_character(user, name, classes, level, character_set, inventory_blob)
+            
+            # Return the created character
+            created_character = {
+                'id': character_data['id'],
+                'name': character_data['name'],
+                'class1': character_data['classes'][0] if len(character_data['classes']) > 0 else '',
+                'class2': character_data['classes'][1] if len(character_data['classes']) > 1 else '',
+                'class3': character_data['classes'][2] if len(character_data['classes']) > 2 else '',
+                'level': character_data['level'],
+                'character_set': character_data['character_set'],
+                'inventory_blob': character_data['inventory_blob'],
+                'created_at': character_data['created_at'],
+                'updated_at': character_data['updated_at']
+            }
+            
+            return created_character, 201
+            
+        except Exception as e:
+            logger.error(f"Error creating character: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            return {'message': 'Internal server error'}, 500
+
+@v1.route('/characters/<int:character_id>')
+class CharacterResource(Resource):
+    """Get, update, or delete a specific character"""
+    
+    @write_auth_required
+    @v1.doc('get_character',
+        params={
+            'character_id': {'description': 'Character ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        responses={
+            200: ('Success', character_model),
+            401: ('Unauthorized', error_model),
+            404: ('Character not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def get(self, character_id):
+        """Get a specific character"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for characters
+            import local
+            character_data = local.get_character(character_id, user)
+            
+            if not character_data:
+                return {'message': 'Character not found'}, 404
+            
+            character = {
+                'id': character_id,
+                'name': character_data['name'],
+                'class1': character_data['classes'][0] if len(character_data['classes']) > 0 else '',
+                'class2': character_data['classes'][1] if len(character_data['classes']) > 1 else '',
+                'class3': character_data['classes'][2] if len(character_data['classes']) > 2 else '',
+                'level': character_data['level'],
+                'character_set': character_data['character_set'],
+                'inventory_blob': character_data['inventory_blob'],
+                'created_at': character_data['created_at'],
+                'updated_at': character_data['updated_at']
+            }
+            
+            return character
+            
+        except Exception as e:
+            logger.error(f"Error getting character {character_id}: {e}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('update_character',
+        params={
+            'character_id': {'description': 'Character ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        body=character_update_model,
+        responses={
+            200: ('Success', character_model),
+            400: ('Invalid parameters', error_model),
+            401: ('Unauthorized', error_model),
+            404: ('Character not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def put(self, character_id):
+        """Update a character"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            data = request.get_json()
+            if not data:
+                return {'message': 'No data provided'}, 400
+            
+            # Build classes list if classes are provided
+            classes = None
+            if 'class1' in data or 'class2' in data or 'class3' in data:
+                class1 = data.get('class1', '')
+                class2 = data.get('class2', '')
+                class3 = data.get('class3', '')
+                classes = [class1]
+                if class2:
+                    classes.append(class2)
+                if class3:
+                    classes.append(class3)
+            
+            # Import local functions for characters
+            import local
+            result = local.update_character(
+                cid=character_id,
+                user=user,
+                name=data.get('name'),
+                classes=classes,
+                level=data.get('level'),
+                character_set=data.get('character_set'),
+                inventory_blob=data.get('inventory_blob')
+            )
+            
+            if not result:
+                return {'message': 'Character not found or access denied'}, 404
+            
+            # Return the updated character
+            updated_character = {
+                'id': character_id,
+                'name': result['name'],
+                'class1': result['classes'][0] if len(result['classes']) > 0 else '',
+                'class2': result['classes'][1] if len(result['classes']) > 1 else '',
+                'class3': result['classes'][2] if len(result['classes']) > 2 else '',
+                'level': result['level'],
+                'character_set': result['character_set'],
+                'inventory_blob': result['inventory_blob'],
+                'created_at': result['created_at'],
+                'updated_at': result['updated_at']
+            }
+            
+            return updated_character
+            
+        except Exception as e:
+            logger.error(f"Error updating character {character_id}: {e}")
+            return {'message': 'Internal server error'}, 500
+
+    @write_auth_required
+    @v1.doc('delete_character',
+        params={
+            'character_id': {'description': 'Character ID', 'type': 'integer', 'in': 'path', 'example': 1}
+        },
+        responses={
+            200: ('Success', success_message_model),
+            401: ('Unauthorized', error_model),
+            404: ('Character not found', error_model),
+            500: ('Server error', error_model)
+        },
+        security='apikey'
+    )
+    def delete(self, character_id):
+        """Delete a character"""
+        try:
+            # Get user from request context (set by middleware)
+            user_dict = request.current_user
+            if not user_dict:
+                return {'message': 'Authentication required'}, 401
+            
+            # Create a simple user object for local functions
+            class UserObject:
+                def __init__(self, user_dict):
+                    self.id = user_dict['id']
+            
+            user = UserObject(user_dict)
+            
+            # Import local functions for characters
+            import local
+            success = local.delete_character(character_id, user)
+            
+            if not success:
+                return {'message': 'Character not found or access denied'}, 404
+            
+            return {'message': 'Character deleted successfully'}
+            
+        except Exception as e:
+            logger.error(f"Error deleting character {character_id}: {e}")
+            return {'message': 'Internal server error'}, 500

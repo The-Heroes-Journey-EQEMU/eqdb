@@ -4,29 +4,18 @@ import logging
 from api.db_manager import db_manager
 from api.db.zone_settings import ZONE_LEVEL_CHART, continent_zones
 from api.db.npc import NPCDB
+from api.cache import cache_results
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class ZoneDB:
-    _zone_cache = None  # Class-level cache for shortname -> (zoneidnumber, long_name)
-    _zone_cache_populated = False
     # ZONE_LEVEL_CHART and continent_zones are now imported from zone_settings.py
 
     def __init__(self):
         """Initialize the ZoneDB class."""
         pass
-
-    def _populate_zone_cache(self):
-        """Populate the in-memory cache for zone long names."""
-        engine = db_manager.get_engine_for_table('zone')
-        with engine.connect() as conn:
-            query = text("SELECT short_name, zoneidnumber, long_name FROM zone")
-            results = conn.execute(query).fetchall()
-            ZoneDB._zone_cache = {row._mapping['short_name']: (row._mapping['zoneidnumber'], row._mapping['long_name']) for row in results}
-            ZoneDB._zone_cache_populated = True
-            logger.info(f"Zone cache populated with {len(ZoneDB._zone_cache)} entries.")
 
     def get_zone_raw_data(self, zone_id=None, name=None):
         """Get raw zone data from the database"""
@@ -121,6 +110,7 @@ class ZoneDB:
                 return zone_data
             return None
 
+    @cache_results(ttl=86400)
     def get_connected_zones(self, short_name):
         """Get all connected zones for a given short_name, excluding those in the exclusion list."""
         from api.utils import get_exclusion_list
@@ -164,6 +154,7 @@ class ZoneDB:
                 # Filter out the current zone from the results
                 return [dict(row._mapping) for row in results if row._mapping['short_name'] != short_name]
 
+    @cache_results(ttl=86400)
     def get_zone_details_by_short_name(self, short_name):
         """Get extended zone details by short_name."""
         from api.db.expansion import ExpansionDB
@@ -206,17 +197,18 @@ class ZoneDB:
                 return zone_data
             return None
 
+    @cache_results(ttl=86400)  # Cache for 24 hours
     def get_zone_long_name(self, shortname):
-        """Get zone id and long name by shortname, using cache if available."""
-        if ZoneDB._zone_cache is None or not ZoneDB._zone_cache_populated:
-            logger.debug("Zone cache not populated, loading from database.")
-            self._populate_zone_cache()
-        if shortname in ZoneDB._zone_cache:
-            logger.debug(f"Zone lookup for shortname {shortname} served from cache.")
-            return ZoneDB._zone_cache[shortname]
-        logger.warning(f"Zone shortname {shortname} not found in cache.")
+        """Get zone id and long name by shortname, using Redis cache."""
+        engine = db_manager.get_engine_for_table('zone')
+        with engine.connect() as conn:
+            query = text("SELECT zoneidnumber, long_name FROM zone WHERE short_name = :shortname")
+            result = conn.execute(query, {"shortname": shortname}).fetchone()
+            if result:
+                return result._mapping['zoneidnumber'], result._mapping['long_name']
         return None, "Unknown Zone"
 
+    @cache_results(ttl=86400)
     def get_zone_waypoint(self, short_name):
         """Fetch waypoint for a given zone short_name from thj_waypoints."""
         engine = db_manager.get_engine_for_table('thj_waypoints')
@@ -265,6 +257,7 @@ class ZoneDB:
                 }
             return waypoints_by_continent
 
+    @cache_results(ttl=86400)
     def get_all_zones_by_expansion(self):
         """Get all zones grouped by expansion."""
         from api.db.expansion import ExpansionDB
@@ -344,6 +337,7 @@ class ZoneDB:
                 })
             return zones_by_expansion
 
+    @cache_results(ttl=86400)
     def get_zone_spawns_by_short_name(self, short_name):
         """Get spawn data for a given zone short_name."""
         npc_db = NPCDB()
@@ -396,7 +390,7 @@ class ZoneDB:
                     }
 
                 race_id = row_dict['npc_race']
-                race_name = NPCDB._race_cache.get(race_id, str(race_id))
+                race_name = npc_db.get_race_name(race_id)
 
                 spawn_groups[spawn_key]['npcs'].append({
                     'npc_name': row_dict['npc_name'],

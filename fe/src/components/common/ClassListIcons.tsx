@@ -1,4 +1,5 @@
 import React from 'react';
+import Card from '@/components/common/Card';
 
 interface ClassListIconsProps {
   classes: string[];
@@ -14,8 +15,8 @@ const ClassListIcons: React.FC<ClassListIconsProps> = ({
   classIdMap,
 }) => {
   return (
-    <div className="bg-card border border-border rounded-lg p-6 mb-8">
-      <div className="bg-background border border-border rounded-lg p-4">
+    <Card className="bg-card border border-border p-6 mb-8">
+      <div className="bg-background border border-border p-4">
         <div className="grid grid-cols-2 md:grid-cols-8 gap-4">
           {classes.map((cls) => {
             const formattedCls = cls.toLowerCase().replace(/ /g, '-');
@@ -39,7 +40,7 @@ const ClassListIcons: React.FC<ClassListIconsProps> = ({
           })}
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

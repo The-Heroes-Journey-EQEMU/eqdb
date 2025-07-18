@@ -1,10 +1,10 @@
 export interface User {
-  id: string;
-  username: string;
-  avatar?: string;
-  email?: string;
+  id: number;
+  email: string;
+  is_admin: boolean;
   created_at: string;
-  updated_at: string;
+  last_login: string;
+  preferences: string; // JSON string
 }
 
 export interface UserPreferences {
@@ -57,7 +57,19 @@ export interface WeightSet {
 }
 
 export interface Weight {
-  stat_name: string;
-  weight: number;
+  stat: string;
+  value: number;
+}
+
+// API request/response types
+export interface CreateWeightSetRequest {
+  name: string;
   description?: string;
+  weights: Weight[];
+}
+
+export interface UpdateWeightSetRequest {
+  name?: string;
+  description?: string;
+  weights?: Weight[];
 } 

@@ -5,6 +5,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   hover?: boolean
 }
 
+const OUTER_RADIUS = '24px';
+const INNER_RADIUS = '16px';
+const CARD_PADDING = '8px';
+
 const Card: React.FC<CardProps> = ({ 
   className = '', 
   variant = 'default', 
@@ -13,13 +17,13 @@ const Card: React.FC<CardProps> = ({
   ...props 
 }) => {
   const variants = {
-    default: 'bg-card border border-border',
-    elevated: 'bg-card shadow-lg',
-    outlined: 'bg-card border-2 border-border'
+    default: `bg-card border border-border`,
+    elevated: `bg-card shadow-lg`,
+    outlined: `bg-card border-2 border-border`
   }
 
   const classes = [
-    'rounded-lg',
+    `rounded-[${OUTER_RADIUS}]`,
     variants[variant],
     hover && 'hover:shadow-md transition-shadow duration-200',
     className
@@ -45,7 +49,7 @@ export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
 export const CardHeader: React.FC<CardHeaderProps> = ({ className = '', children, ...props }) => {
   return (
     <div
-      className={`px-6 py-4 border-b border-border ${className}`}
+      className={`px-[${CARD_PADDING}] py-[${CARD_PADDING}] border-b border-border rounded-t-[${INNER_RADIUS}] ${className}`}
       {...props}
     >
       {children}
@@ -58,7 +62,7 @@ export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 export const CardBody: React.FC<CardBodyProps> = ({ className = '', children, ...props }) => {
   return (
     <div
-      className={`px-6 py-4 ${className}`}
+      className={`px-[${CARD_PADDING}] py-[${CARD_PADDING}] rounded-b-[${INNER_RADIUS}] ${className}`}
       {...props}
     >
       {children}
@@ -72,7 +76,7 @@ interface CardFooterProps {
 }
 
 export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => (
-  <div className={`border-t border-gray-200 pt-3 mt-3 ${className}`}>
+  <div className={`border-t border-gray-200 pt-3 mt-3 rounded-b-[${INNER_RADIUS}] ${className}`}>
     {children}
   </div>
 )

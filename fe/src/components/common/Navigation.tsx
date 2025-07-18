@@ -36,9 +36,9 @@ const Navigation: React.FC = () => {
       href: '/items',
       type: 'main',
       children: [
-        { id: 'item-search', name: 'Item Search', href: '/items/search', parentId: 'items' },
-        { id: 'armor-search', name: 'Armor Search', href: '/items/armor-search', parentId: 'items' },
-        { id: 'weapon-search', name: 'Weapon Search', href: '/items/weapon-search', parentId: 'items' },
+        { id: 'item-search', name: 'Item Search', href: '/items/search?tab=Items', parentId: 'items' },
+        { id: 'armor-search', name: 'Armor Search', href: '/items/search?tab=Armor', parentId: 'items' },
+        { id: 'weapon-search', name: 'Weapon Search', href: '/items/search?tab=Weapons', parentId: 'items' },
       ],
     },
     {
@@ -49,6 +49,7 @@ const Navigation: React.FC = () => {
       children: [
         { id: 'spell-list', name: 'Spell List', href: '/spells/list', parentId: 'spells' },
         { id: 'spell-search', name: 'Spell Search', href: '/spells/search', parentId: 'spells' },
+        { id: 'pets', name: 'Pets', href: '/spells/pets', parentId: 'spells' },
       ],
     },
     {
@@ -66,6 +67,8 @@ const Navigation: React.FC = () => {
     { id: 'factions', name: 'Factions', href: '/factions', type: 'main' },
     { id: 'quests', name: 'Quests', href: '/quests', type: 'main' },
   ];
+
+
 
   // Get current navigation items (base + dynamic)
   const getCurrentNavigation = (): NavigationItem[] => {

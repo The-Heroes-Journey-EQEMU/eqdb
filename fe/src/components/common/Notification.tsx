@@ -52,7 +52,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   }
 
   return (
-    <div className={`border rounded-lg p-4 ${typeClasses[type]}`}>
+    <div className={`border rounded-[24px] p-[8px] ${typeClasses[type]}`}>
       <div className="flex items-start">
         <div className={`flex-shrink-0 ${iconClasses[type]}`}>
           {icons[type]}

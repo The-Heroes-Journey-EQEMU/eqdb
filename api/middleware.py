@@ -13,7 +13,11 @@ def api_key_required(f):
         # Check for JWT token first
         try:
             verify_jwt_in_request()
-            return f(*args, **kwargs)
+            current_user_id = get_jwt_identity()
+            user_data = auth.get_user_by_id(int(current_user_id))
+            if user_data:
+                request.current_user = user_data
+                return f(*args, **kwargs)
         except Exception:
             pass
         
@@ -97,4 +101,4 @@ def admin_required(f):
         
         return f(*args, **kwargs)
     
-    return decorated_function 
+    return decorated_function

@@ -269,6 +269,75 @@ def create_models(api, v1):
         'waypoint_z': fields.Float(description='Waypoint Z'),
     })
 
+    # Weight Set models
+    weight_model = v1.model('Weight', {
+        'stat': fields.String(description='Stat name', example='hp'),
+        'value': fields.Float(description='Weight value', example=1.5)
+    })
+
+    weight_set_model = v1.model('WeightSet', {
+        'id': fields.Integer(description='Weight set ID', example=1),
+        'name': fields.String(description='Weight set name', example='Tank Weights'),
+        'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+        'weights': fields.List(fields.Nested(weight_model), description='List of stat weights'),
+        'created_at': fields.DateTime(description='Creation date'),
+        'updated_at': fields.DateTime(description='Last update date')
+    })
+
+    weight_set_create_model = v1.model('WeightSetCreate', {
+        'name': fields.String(required=True, description='Weight set name', example='Tank Weights'),
+        'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+        'weights': fields.List(fields.Nested(weight_model), required=True, description='List of stat weights')
+    })
+
+    weight_set_update_model = v1.model('WeightSetUpdate', {
+        'name': fields.String(description='Weight set name', example='Tank Weights'),
+        'description': fields.String(description='Weight set description', example='Weights optimized for tanking'),
+        'weights': fields.List(fields.Nested(weight_model), description='List of stat weights')
+    })
+
+    weight_sets_list_model = v1.model('WeightSetsList', {
+        'weight_sets': fields.List(fields.Nested(weight_set_model), description='List of user weight sets')
+    })
+
+    # Character models
+    character_model = v1.model('Character', {
+        'id': fields.Integer(description='Character ID', example=1),
+        'name': fields.String(description='Character name', example='MyWarrior'),
+        'class1': fields.String(description='Primary character class', example='Warrior'),
+        'class2': fields.String(description='Secondary character class', example=''),
+        'class3': fields.String(description='Tertiary character class', example=''),
+        'level': fields.Integer(description='Character level', example=50),
+        'character_set': fields.String(description='Character set name', example='Tank Set'),
+        'inventory_blob': fields.String(description='Inventory data as JSON string'),
+        'created_at': fields.DateTime(description='Creation date'),
+        'updated_at': fields.DateTime(description='Last update date')
+    })
+
+    character_create_model = v1.model('CharacterCreate', {
+        'name': fields.String(required=True, description='Character name', example='MyWarrior'),
+        'class1': fields.String(required=True, description='Primary character class', example='Warrior'),
+        'class2': fields.String(description='Secondary character class', example=''),
+        'class3': fields.String(description='Tertiary character class', example=''),
+        'level': fields.Integer(required=True, description='Character level', example=50),
+        'character_set': fields.String(description='Character set name', example='Tank Set'),
+        'inventory_blob': fields.String(description='Inventory data as JSON string')
+    })
+
+    character_update_model = v1.model('CharacterUpdate', {
+        'name': fields.String(description='Character name', example='MyWarrior'),
+        'class1': fields.String(description='Primary character class', example='Warrior'),
+        'class2': fields.String(description='Secondary character class', example=''),
+        'class3': fields.String(description='Tertiary character class', example=''),
+        'level': fields.Integer(description='Character level', example=50),
+        'character_set': fields.String(description='Character set name', example='Tank Set'),
+        'inventory_blob': fields.String(description='Inventory data as JSON string')
+    })
+
+    characters_list_model = v1.model('CharactersList', {
+        'characters': fields.List(fields.Nested(character_model), description='List of user characters')
+    })
+
     models = {
         'item_model': item_model,
         'zone_details_model': zone_details_model,
@@ -285,7 +354,16 @@ def create_models(api, v1):
         'api_key_model': api_key_model,
         'api_key_create_model': api_key_create_model,
         'api_key_response_model': api_key_response_model,
-        'login_response_model': login_response_model
+        'login_response_model': login_response_model,
+        'weight_model': weight_model,
+        'weight_set_model': weight_set_model,
+        'weight_set_create_model': weight_set_create_model,
+        'weight_set_update_model': weight_set_update_model,
+        'weight_sets_list_model': weight_sets_list_model,
+        'character_model': character_model,
+        'character_create_model': character_create_model,
+        'character_update_model': character_update_model,
+        'characters_list_model': characters_list_model
     }
 
     return models

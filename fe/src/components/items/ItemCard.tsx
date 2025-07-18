@@ -12,8 +12,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   return (
-    <Link to={`/items/details/${item.id}`} className="card rounded-md overflow-hidden">
-      <div className="p-2 bg-gray-800 flex flex-col items-center justify-center min-h-[145px]">
+    <Link to={`/items/details/${item.id}`} className="card rounded-[24px] overflow-hidden">
+      <div className="p-[8px] bg-gray-800 flex flex-col items-center justify-center min-h-[145px] rounded-b-[16px]">
         <img
           src={`/item_icons/item_${item.icon}.png`}
           alt={item.name}

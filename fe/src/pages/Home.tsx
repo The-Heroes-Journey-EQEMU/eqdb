@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import ThemeTest from '@/components/common/ThemeTest'
+import Card from '@/components/common/Card';
 
 const Home: React.FC = () => {
   const searchCategories = [
@@ -50,8 +50,6 @@ const Home: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Theme Test Component */}
-      <ThemeTest />
       
       {/* Hero Section */}
       <div className="text-center mb-12">
@@ -59,14 +57,14 @@ const Home: React.FC = () => {
         <p className="text-xl text-muted-foreground mb-8">
           Search and explore EverQuest game data including items, spells, NPCs, zones, and more.
         </p>
-        <div className="bg-card border border-border rounded-lg p-6 max-w-2xl mx-auto">
+        <Card className="p-6 max-w-2xl mx-auto">
           <h2 className="text-lg font-semibold mb-2 text-foreground">About EQDB</h2>
           <p className="text-muted-foreground">
             EQDB is a comprehensive database for EverQuest players. Search for items, spells, NPCs, 
             zones, and quests to help with your adventures in Norrath. All data is sourced from 
             the official EverQuest game files and organized for easy searching.
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Search Categories */}
@@ -77,11 +75,13 @@ const Home: React.FC = () => {
             <Link
               key={category.path}
               to={category.path}
-              className={`${category.color} text-primary-foreground rounded-lg p-6 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
+              className={`shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
             >
-              <div className="text-4xl mb-4">{category.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{category.title}</h3>
-              <p className="text-primary-foreground/80">{category.description}</p>
+              <Card className={`${category.color} text-primary-foreground p-6 flex flex-col items-center`}>
+                <div className="text-4xl mb-4">{category.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{category.title}</h3>
+                <p className="text-primary-foreground/80">{category.description}</p>
+              </Card>
             </Link>
           ))}
         </div>
@@ -112,7 +112,7 @@ const Home: React.FC = () => {
 
       {/* Features */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-card border border-border rounded-lg p-6">
+        <Card className="p-6">
           <h3 className="text-xl font-semibold mb-4 text-foreground">🔍 Advanced Search</h3>
           <p className="text-muted-foreground mb-4">
             Search by name, ID, type, class, and more with our comprehensive search filters.
@@ -122,9 +122,9 @@ const Home: React.FC = () => {
             <li>• Multiple filter options</li>
             <li>• Real-time search results</li>
           </ul>
-        </div>
+        </Card>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <Card className="p-6">
           <h3 className="text-xl font-semibold mb-4 text-foreground">📊 Detailed Information</h3>
           <p className="text-muted-foreground mb-4">
             Get comprehensive details about items, spells, and game content.
@@ -134,7 +134,7 @@ const Home: React.FC = () => {
             <li>• Spell effects and requirements</li>
             <li>• NPC locations and drops</li>
           </ul>
-        </div>
+        </Card>
       </div>
     </div>
   )

@@ -7,6 +7,7 @@ import ZoneDetails from '@/components/zones/ZoneDetails';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ItemCard from '@/components/items/ItemCard';
 import ZoneSpawns from '@/components/ZoneSpawns';
+import { ZoneSpawn } from '@/services/zoneService';
 
 const ItemsTab: React.FC<{ items: ZoneItem[]; loading: boolean; onLoad: () => void }> = ({ items, loading, onLoad }) => {
   useEffect(() => {
@@ -38,6 +39,7 @@ export const ZoneDetailPage: React.FC = () => {
   const [zoneDetails, setZoneDetails] = useState<ZoneDetailsType | null>(null);
   const [connectedZones, setConnectedZones] = useState<ConnectedZone[]>([]);
   const [zoneItems, setZoneItems] = useState<ZoneItem[]>([]);
+  const [zoneSpawns, setZoneSpawns] = useState<ZoneSpawn[]>([]);
   const [loading, setLoading] = useState(true);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,15 +65,24 @@ export const ZoneDetailPage: React.FC = () => {
       if (!identifier) return;
       try {
         setLoading(true);
+        // Reset states for the new zone
+        setZone(null);
+        setZoneItems([]);
+        setConnectedZones([]);
+        setZoneSpawns([]);
+        setActiveTab('Items');
+
         const zoneData = await zoneService.getZoneByIdentifier(identifier);
         setZone(zoneData);
 
-        const [detailsData, connectedData] = await Promise.all([
+        const [detailsData, connectedData, spawnsData] = await Promise.all([
           zoneService.getZoneDetails(zoneData.short_name),
-          zoneService.getConnectedZones(zoneData.short_name)
+          zoneService.getConnectedZones(zoneData.short_name),
+          zoneService.getZoneSpawns(zoneData.short_name)
         ]);
         setZoneDetails(detailsData);
         setConnectedZones(connectedData);
+        setZoneSpawns(spawnsData);
 
         setError(null);
       } catch (err) {
@@ -112,7 +123,7 @@ export const ZoneDetailPage: React.FC = () => {
 
             {/* Right Column: Zone Info */}
             <div style={{ flex: '3 1 0' }} className="p-0">
-              {zoneDetails && <ZoneDetails shortName={zone.short_name} />}
+              {zoneDetails && <ZoneDetails zoneDetails={zoneDetails} />}
             </div>
           </div>
 
@@ -129,7 +140,7 @@ export const ZoneDetailPage: React.FC = () => {
                   {/* Tab Content */}
                   <div className="pt-4 min-h-[12rem]">
                     {activeTab === 'Items' && <ItemsTab items={zoneItems} loading={itemsLoading} onLoad={fetchItems} />}
-                    {activeTab === 'Spawns' && <ZoneSpawns shortName={zone.short_name} />}
+                    {activeTab === 'Spawns' && <ZoneSpawns shortName={zone.short_name} spawns={zoneSpawns} />}
                   </div>
                 </div>
               </Card>

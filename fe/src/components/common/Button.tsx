@@ -2,7 +2,7 @@ import React from 'react'
 import LoadingSpinner from './LoadingSpinner'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'warning'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   leftIcon?: React.ReactNode
@@ -21,14 +21,15 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200'
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-[24px] focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200 px-[8px] py-[8px]'
   
   const variantClasses = {
     primary: 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary disabled:bg-primary/50',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:ring-secondary disabled:bg-secondary/50',
     outline: 'border border-border text-foreground hover:bg-muted focus:ring-primary disabled:bg-muted/50',
     ghost: 'text-foreground hover:bg-muted focus:ring-primary disabled:text-muted-foreground',
-    danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive disabled:bg-destructive/50'
+    danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive disabled:bg-destructive/50',
+    warning: 'bg-warning text-warning-foreground hover:bg-warning/90 focus:ring-warning disabled:bg-warning/50'
   }
 
   const sizeClasses = {
@@ -76,4 +77,4 @@ const Button: React.FC<ButtonProps> = ({
   )
 }
 
-export default Button 
+export default Button

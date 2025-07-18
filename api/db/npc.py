@@ -1,32 +1,33 @@
 from sqlalchemy import text
 from api.db_manager import db_manager
 import logging
+from api.cache import cache_results
+from utils import get_bane_dmg_race
 
 logger = logging.getLogger(__name__)
 
 class NPCDB:
-    _race_cache = None
-
     def __init__(self):
         """Initialize the NPCDB class."""
-        if NPCDB._race_cache is None:
-            self._populate_race_cache()
+        pass
 
-    def _populate_race_cache(self):
-        """Populate the in-memory cache for race names from the 'old' database."""
-        logger.info("Populating race cache...")
+    @cache_results(ttl=86400)  # Cache for 24 hours
+    def get_race_name(self, race_id):
+        """Get the name of a race by its ID."""
         try:
-            # Explicitly use the 'old' database engine for the db_str table
+            # Use canonical Python mapping first
+            race_name = get_bane_dmg_race(race_id)
+            if race_name and not race_name.startswith('Unknown'):
+                return race_name
+            # Fallback to DB query for rare/legacy cases
             engine = db_manager._engines['old']
             with engine.connect() as conn:
-                query = text("SELECT id, value FROM db_str WHERE type = 12")
-                results = conn.execute(query).fetchall()
-                NPCDB._race_cache = {row._mapping['id']: row._mapping['value'] for row in results}
-                logger.info(f"Race cache populated with {len(NPCDB._race_cache)} entries.")
+                query = text("SELECT value FROM db_str WHERE id = :race_id AND type = 12")
+                result = conn.execute(query, {"race_id": race_id}).fetchone()
+                return result[0] if result else str(race_id)
         except Exception as e:
-            logger.error(f"Failed to populate race cache: {e}")
-            # Initialize with an empty cache on failure to prevent repeated attempts
-            NPCDB._race_cache = {}
+            logger.error(f"Failed to get race name for ID {race_id}: {e}")
+            return str(race_id)
 
     def get_npc_raw_data(self, npc_id=None, name=None, zone=None):
         """Get raw NPC data from the database"""
@@ -57,6 +58,7 @@ class NPCDB:
                 return [dict(row._mapping) for row in results]
             return None
 
+    @cache_results(ttl=900)
     def get_npcs_by_zone(self, zone_short_name):
         """Get NPCs for a specific zone by short name"""
         engine = db_manager.get_engine_for_table('npc_types')
@@ -95,13 +97,12 @@ class NPCDB:
             
             results = conn.execute(query, {"zone_short_name": zone_short_name}).fetchall()
             
-            # Map race IDs to names using the cache
+            # Map race IDs to names using the new method
             npcs = []
             for row in results:
                 npc_data = dict(row._mapping)
                 race_id = npc_data.get('race')
-                # Use the cache, with a fallback to the ID itself if not found
-                npc_data['race'] = NPCDB._race_cache.get(race_id, str(race_id))
+                npc_data['race'] = self.get_race_name(race_id)
                 npcs.append(npc_data)
                 
             return npcs
