@@ -40,7 +40,7 @@ This will start the React development server at http://localhost:3100
 
 ## Authentication System
 
-EQDB now includes a comprehensive local user account system with JWT authentication and API key management.
+EQDB includes a comprehensive local user account system with JWT authentication and API key management.
 
 ### Default Admin Account
 - **Email**: aepod23@gmail.com
@@ -75,6 +75,18 @@ All API endpoints require authentication. You can authenticate using either:
 - `DELETE /api/v1/auth/api-keys/<id>` - Delete API key
 - `GET /api/v1/auth/users` - List all users (admin only)
 - `POST /api/v1/auth/users` - Create new user (admin only)
+
+### Frontend Authentication
+The frontend now includes a complete authentication system:
+- **Login Page**: `/login` - User authentication with email/password
+- **User Profile**: `/user` - Protected route for user settings and preferences
+- **Protected Routes**: Automatic redirection for unauthenticated users
+- **User Menu**: Header integration with user status and logout functionality
+
+### Database Storage
+- **Current**: SQLite database (`local_db.db`) for user data
+- **Future**: Planned migration to MariaDB for production use
+- **Tables**: `users`, `api_keys`, and related user data tables
 
 ## Project Structure
 
@@ -114,6 +126,13 @@ The frontend is built using modern React/TypeScript and follows an **API-driven 
 
 ### Recent Updates (v2.1.0.1)
 
+#### Authentication System
+- **Complete Frontend Integration**: Login, user profile, and protected routes
+- **JWT Token Management**: Automatic token refresh and storage
+- **User Context**: Global authentication state management
+- **Protected Routes**: Automatic redirection for unauthenticated users
+- **User Menu**: Header integration with authentication status
+
 #### Theming System
 - **CSS Variables**: Implemented comprehensive theming using CSS custom properties
 - **Dark Theme**: Default dark theme with proper contrast and accessibility
@@ -148,6 +167,15 @@ For detailed frontend development information, see:
 - [Frontend README](fe/README.md) - Complete frontend documentation
 - [API Integration Guide](fe/API_INTEGRATION.md) - API-driven development approach
 - [Implementation Plan](fe/IMPLEMENTATION_PLAN.md) - Development roadmap
+
+### Storybook / Style Guide
+- A static style guide is now available at `/storybook` in the frontend. This page demonstrates the current design system and component styles, including cards, buttons, inputs, skeletons, and more. No API calls are made from this page, so it is safe for design review and UI testing.
+- **Design System Update:**
+  - All cards, boxes, and buttons now use:
+    - Outer border radius: 24px
+    - Inner border radius: 16px
+    - Padding: 8px
+  - These values are applied consistently for a modern, unified look. See `/storybook` for live examples.
 
 ## Map Conversion System
 
@@ -199,3 +227,43 @@ The map conversion system is currently in development. For detailed information 
 - Large static dictionaries such as `ZONE_LEVEL_CHART` and `continent_zones` have been moved to `api/db/zone_settings.py`.
 - If you need to add or update static zone-related data, edit `api/db/zone_settings.py` instead of `api/db/zone.py`.
 - This keeps the main codebase cleaner and makes static data easier to maintain and share across modules.
+
+## API Response Enhancement for Items
+
+The item detail API now returns both the raw and human-readable values for item type and slots:
+
+```
+{
+  "itemtype": 1,
+  "itemtype_name": "2H Slashing",
+  "slots": 2,
+  "slot_names": "Primary",
+  ...
+}
+```
+
+- `itemtype_name` is generated using `get_type_string` from `utils.py`.
+- `slot_names` is generated using `get_slot_string` from `utils.py`.
+- The mapping logic for these fields is based on the `db_str` table (`type=4` for itemtype, `type=24` for slots) and the logic in `utils.py`.
+
+See `knowledge_graph.md` for more details on the mapping tables and logic.
+
+## Refactor: db_str Lookups Now Use Canonical Python Mappings
+
+- All standard lookups for item types, slots, and classes now use canonical Python mappings and utility functions from `utils.py`:
+  - Item types: `Util.get_categorized_item_types()`
+  - Item slots: `Util.get_categorized_item_slots()`
+  - Item classes: `{i: get_class_string(i) for i in range(1, 17)}`
+  - Races: `get_bane_dmg_race(race_id)`
+- The application no longer queries the `db_str` table for these mappings during item indexing, enrichment, or API lookups.
+- **Rare/legacy cases:**
+  - If a race ID is not mapped in `get_bane_dmg_race`, the code falls back to a direct `db_str` query (type=12). This is documented in `api/db/npc.py` and should be rare.
+- This change significantly reduces database load and improves performance, especially for bulk operations like Redis indexing.
+- If you add new mappings, update the relevant utility in `utils.py`.
+
+## Recent Changes
+
+### Performance Optimization for Item Search
+- The `/api/v1/items/search` endpoint now uses Redis for fast item search and item detail retrieval.
+- If item details are missing from the Redis cache, the system will fall back to the database, populate the cache, and return the enriched result.
+- This change significantly improves response times for most item search queries, especially for common lookups.

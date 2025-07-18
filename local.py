@@ -2,6 +2,7 @@
 import configparser
 import os
 import random
+from datetime import datetime
 
 from sqlalchemy import and_, create_engine, or_
 from sqlalchemy.orm import Session
@@ -20,7 +21,7 @@ local_engine = create_engine(local_database)
 LocalBase = declarative_base()
 
 # Import the models from create_local_db.py
-from create_local_db import IdentifiedItems, IDEntry, Contributor, GearList, GearListEntry, Restricts, RestrictEntry, Weights, WeightEntry
+from create_local_db import IdentifiedItems, IDEntry, Contributor, GearList, GearListEntry, Restricts, RestrictEntry, Weights, WeightEntry, Characters
 
 
 def get_gear_lists(user):
@@ -671,3 +672,189 @@ def get_leaderboard():
         contributors.append(contributor)
 
     return contributors
+
+
+def get_characters(user):
+    """Get all characters for a user"""
+    with Session(bind=local_engine) as session:
+        query = session.query(Characters).filter(Characters.uid == user.id)
+        result = query.all()
+    
+    characters = []
+    for entry in result:
+        # Build classes list, filtering out None values
+        classes = [entry.class1]
+        if entry.class2:
+            classes.append(entry.class2)
+        if entry.class3:
+            classes.append(entry.class3)
+        
+        character = {
+            'id': entry.cid,
+            'name': entry.name,
+            'classes': classes,
+            'level': entry.level,
+            'character_set': entry.character_set,
+            'inventory_blob': entry.inventory_blob,
+            'created_at': entry.created_at.isoformat() if entry.created_at else None,
+            'updated_at': entry.updated_at.isoformat() if entry.updated_at else None
+        }
+        characters.append(character)
+    
+    return characters
+
+
+def get_character(cid, user):
+    """Get a specific character by ID for a user"""
+    with Session(bind=local_engine) as session:
+        query = session.query(Characters).filter(
+            Characters.cid == cid,
+            Characters.uid == user.id
+        )
+        result = query.first()
+    
+    if not result:
+        return None
+    
+    # Build classes list, filtering out None values
+    classes = [result.class1]
+    if result.class2:
+        classes.append(result.class2)
+    if result.class3:
+        classes.append(result.class3)
+    
+    character = {
+        'id': result.cid,
+        'name': result.name,
+        'classes': classes,
+        'level': result.level,
+        'character_set': result.character_set,
+        'inventory_blob': result.inventory_blob,
+        'created_at': result.created_at.isoformat() if result.created_at else None,
+        'updated_at': result.updated_at.isoformat() if result.updated_at else None
+    }
+    
+    return character
+
+
+def add_character(user, name, classes, level, character_set=None, inventory_blob=None):
+    """Add a new character for a user"""
+    with Session(bind=local_engine) as session:
+        # Check if character name already exists for this user
+        existing = session.query(Characters).filter(
+            Characters.uid == user.id,
+            Characters.name == name
+        ).first()
+        
+        if existing:
+            raise ValueError(f"Character '{name}' already exists for this user")
+        
+        # Ensure we have at least one class
+        if not classes or len(classes) == 0:
+            raise ValueError("At least one class is required")
+        
+        # Extract up to 3 classes
+        class1 = classes[0] if len(classes) > 0 else None
+        class2 = classes[1] if len(classes) > 1 else None
+        class3 = classes[2] if len(classes) > 2 else None
+        
+        new_character = Characters(
+            uid=user.id,
+            name=name,
+            class1=class1,
+            class2=class2,
+            class3=class3,
+            level=level,
+            character_set=character_set,
+            inventory_blob=inventory_blob
+        )
+        
+        session.add(new_character)
+        session.commit()
+        
+        # Return the created character
+        return {
+            'id': new_character.cid,
+            'name': new_character.name,
+            'classes': [c for c in [class1, class2, class3] if c],
+            'level': new_character.level,
+            'character_set': new_character.character_set,
+            'inventory_blob': new_character.inventory_blob,
+            'created_at': new_character.created_at.isoformat() if new_character.created_at else None,
+            'updated_at': new_character.updated_at.isoformat() if new_character.updated_at else None
+        }
+
+
+def update_character(cid, user, name=None, classes=None, level=None, character_set=None, inventory_blob=None):
+    """Update a character for a user"""
+    with Session(bind=local_engine) as session:
+        query = session.query(Characters).filter(
+            Characters.cid == cid,
+            Characters.uid == user.id
+        )
+        result = query.first()
+        
+        if not result:
+            return None
+        
+        # Check if new name conflicts with existing character
+        if name and name != result.name:
+            existing = session.query(Characters).filter(
+                Characters.uid == user.id,
+                Characters.name == name,
+                Characters.cid != cid
+            ).first()
+            
+            if existing:
+                raise ValueError(f"Character '{name}' already exists for this user")
+        
+        # Update fields
+        if name is not None:
+            result.name = name
+        if classes is not None:
+            # Ensure we have at least one class
+            if len(classes) == 0:
+                raise ValueError("At least one class is required")
+            
+            # Extract up to 3 classes
+            result.class1 = classes[0] if len(classes) > 0 else None
+            result.class2 = classes[1] if len(classes) > 1 else None
+            result.class3 = classes[2] if len(classes) > 2 else None
+        if level is not None:
+            result.level = level
+        if character_set is not None:
+            result.character_set = character_set
+        if inventory_blob is not None:
+            result.inventory_blob = inventory_blob
+        
+        result.updated_at = datetime.utcnow()
+        session.commit()
+        
+        # Return the updated character
+        return {
+            'id': result.cid,
+            'name': result.name,
+            'classes': [c for c in [result.class1, result.class2, result.class3] if c],
+            'level': result.level,
+            'character_set': result.character_set,
+            'inventory_blob': result.inventory_blob,
+            'created_at': result.created_at.isoformat() if result.created_at else None,
+            'updated_at': result.updated_at.isoformat() if result.updated_at else None
+        }
+
+
+def delete_character(cid, user):
+    """Delete a character for a user"""
+    with Session(bind=local_engine) as session:
+        query = session.query(Characters).filter(
+            Characters.cid == cid,
+            Characters.uid == user.id
+        )
+        result = query.first()
+        
+        if not result:
+            return False
+        
+        session.delete(result)
+        session.commit()
+        return True
