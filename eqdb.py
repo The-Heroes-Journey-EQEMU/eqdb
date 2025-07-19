@@ -803,6 +803,9 @@ def item_search():
                     if 'proc_level' in data:
                         if int(data['proc_level']) > 0:
                             filters.update({'proclevel2': data['proc_level']})
+    if data['proc_type'] != 'None':
+        filters.update({'proc_type': data['proc_type']})
+        print(filters)
 
     # Handle Click Effect Items
     if 'click' in data:

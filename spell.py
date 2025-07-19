@@ -264,7 +264,7 @@ def get_spells_by_class(class_id, min_level=1, max_level=65):
     return data
 
 
-def get_spell_data(spell_id, basic_data=True):
+def get_spell_data(spell_id, basic_data=True, skip_effect=False):
     """Returns human readible spell data."""
     excl_list = utils.get_exclusion_list('spells')
     if spell_id in excl_list:
@@ -300,6 +300,8 @@ def get_spell_data(spell_id, basic_data=True):
         if result.buffdurationformula > 0:
             base.update({'min_duration': parse_duration(result)}),
             base.update({'max_duration': parse_duration(result, min_val=False)})
+        if skip_effect:
+            return base
         components = []
         for idx in range(1, 5):
             item_id = getattr(result, f'components{idx}')
@@ -1158,7 +1160,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Summon Familiar: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 109:
         # CreateItemInBag
-        item_name = items.get_item_raw_data(min_val)
+        item_name = items.get_item_name(min_val)
         if no_item_links:
             return f'Summon item: {item_name}'
         return f'Summon item (In Bag): <a href="/item/detail/{min_val}">{item_name}</a>'

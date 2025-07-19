@@ -410,6 +410,7 @@ def get_era_items(kwargs):
     quest_item_ids = []
     special_item_ids = []
     ts_item_ids = []
+    quest_items = []
     for era in kwargs['eras']:
         zone_id_list = utils.get_era_zones(era)
         for zone_id in zone_id_list:
@@ -469,9 +470,7 @@ def get_era_items(kwargs):
         else:
             filters.append(Item.skillmodtype == kwargs['skillmodtype'])
     if 'i_type' in kwargs:
-        if kwargs['i_type'] == 'Any':
-            pass
-        elif kwargs['i_type'] == 'Augment':
+        if kwargs['i_type'] == 'Augment':
             aug_search = True
         elif kwargs['i_type'] == 'Any 1H Weapon':
             weapon_or_filters.append(Item.itemtype == utils.lookup_weapon_types('One Hand Slash'))
@@ -522,6 +521,7 @@ def get_era_items(kwargs):
             filter(weapon_or_params).\
             filter(symp_or_params).\
             group_by(Item.id)
+        print(query)
         result = query.all()
 
     for entry in result:
@@ -530,7 +530,6 @@ def get_era_items(kwargs):
         base_items.append(new_item)
 
     if quest_item_ids:
-        quest_items = []
         item_id_filters = []
         for entry in quest_item_ids:
             item_id_filters.append(Item.id == entry)
@@ -607,7 +606,7 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     focus_or_filters = []
 
     skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
-                    'sympathetic', 'eras', 'w_eff', 'pet_search', 'skillmodtype']
+                    'sympathetic', 'eras', 'w_eff', 'pet_search', 'skillmodtype', 'proc_type']
     bane_body = False
     for entry in kwargs:
         if entry in skip_filters:
@@ -678,6 +677,23 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         if entry.id in excl_list:
             continue
         entry = utils.ReducedItem((dict(entry._mapping)))
+        if 'proc_type' in kwargs:
+            if entry.proceffect > 0:
+                spell_data = spell.get_spell_data(entry.proceffect, basic_data=True, skip_effect=True)
+                # Check lifetap
+                if kwargs['proc_type'] == 'Lifetap':
+                    target_type = spell.parse_target_type(spell_data['target_type'])
+                    if target_type != "Life Tap":
+                        continue
+                # Check debuff
+                elif kwargs['proc_type'] == 'Debuff':
+                    if 'min_duration' not in spell_data:
+                        continue
+                # Check resist type
+                else:
+                    if kwargs['proc_type'] not in spell_data['resist']:
+                        continue
+
         if 'sympathetic' in kwargs:
             if kwargs['sympathetic'] == 'all_strike':
                 if entry.clickeffect < 24356 or entry.clickeffect > 24365:

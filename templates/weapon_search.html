@@ -567,6 +567,20 @@ function createOption(ddl, text, value) {
                         <td><input type="radio" name="proc" value="True"> Only</td>
                     </tr>
                     <tr>
+                        <td>Proc Type:</td>
+                        <td><select name="proc_type" id="proc_type">
+                            <option value="None" selected="selected">--Any Proc Type--</option>
+                            <option value="Magic">Magic Damage</option>
+                            <option value="Disease">Disease Damage</option>
+                            <option value="Poison">Poison Damage</option>
+                            <option value="Cold">Cold Damage</option>
+                            <option value="Fire">Fire Damage</option>
+                            <option value="Lifetap">Lifetap Damage</option>
+                            <option value="Unresistable">Unresistable Damage</option>
+                            <option value="Debuff">Debuff</option>
+                        </select></td>
+                    </tr>
+                    <tr>
                         <td>Required Level to Proc</td>
                         <td><select name="proc_level" id="proc_level">
                             <option value="0" selected="selected">Any Level</option>
@@ -602,22 +616,6 @@ function createOption(ddl, text, value) {
                                 <option value="race_236">Seru</option>
                             </select>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>Focus Type:</td>
-                        <td colspan="3"><select name="spell_type" id="spell_type"
-                                                onchange="configureDropDownLists(this,document.getElementById('focus_type'))">
-                            <option value="" selected="selected">--All Items--</option>
-                            <option value="Beneficial">Beneficial Spells</option>
-                            <option value="Detrimental">Detrimental Spells</option>
-                            <option value="Pet">Pet Focuses</option>
-                        </select></td>
-                    </tr>
-                    <tr>
-                        <td>Focus Effect:</td>
-                        <td colspan="2"><select name="focus_type" id="focus_type">
-                            <!-- js populates -->
-                        </select></td>
                     </tr>
                     <tr>
                         <td>Include Zero weight items<br>(Requires one weight)</td>

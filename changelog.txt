@@ -1,4 +1,16 @@
+==2.2==
+* New feature: Click Item Search
+    * Search for items that have specific effects such as increase AC, HP, stats, etc
+    * Replaces the 'search for click items' on armor search page
+* Proc search for weapons has been expanded
+    * Can now limit the proc weapons returned by spell resist type, such as magic, lifetap, etc
+
+==2.1.2.2==
+DEPLOYED: 7/16/2025
+* Fixed a parsing error with mage spells.
+
 ==2.1.2.1==
+DEPLOYED: 7/13/2025
 * Fixed a user bleed over issue for Weights and Stat Restriction sets on the User Area page.
 
 ==2.1.2==
