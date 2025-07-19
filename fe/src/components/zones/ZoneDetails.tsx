@@ -1,0 +1,69 @@
+import React from 'react';
+import { ZoneDetails as ZoneDetailsType } from '@/services/zoneService';
+import { Table, TableBody, TableCell, TableRow } from '@/components/common/Table';
+
+interface ZoneDetailsProps {
+  zoneDetails: ZoneDetailsType | null;
+}
+
+const ZoneDetails: React.FC<ZoneDetailsProps> = ({ zoneDetails }) => {
+
+  if (!zoneDetails) {
+    return <div>No details found for this zone.</div>;
+  }
+
+  return (
+    <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell className="text-xs text-white">Zone ID</TableCell>
+              <TableCell>{zoneDetails.zoneidnumber}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Expansion</TableCell>
+              <TableCell>{zoneDetails.expansion}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Short Name</TableCell>
+              <TableCell>{zoneDetails.short_name}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Bindable</TableCell>
+              <TableCell>{zoneDetails.canbind ? 'Yes' : 'No'}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Levitation</TableCell>
+              <TableCell>{zoneDetails.canlevitate ? 'Allowed' : 'Not Allowed'}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Zone Type</TableCell>
+              <TableCell>{zoneDetails.castoutdoor ? 'Outdoor' : 'Indoor'}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Level Range</TableCell>
+              <TableCell>{zoneDetails.zone_level_range}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Experience Multiplier</TableCell>
+              <TableCell>{zoneDetails.zone_exp_multiplier}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Succor Location</TableCell>
+              <TableCell>{zoneDetails.safe_x}, {zoneDetails.safe_y}, {zoneDetails.safe_z}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell className="text-xs text-white">Newbie Zone</TableCell>
+              <TableCell>{zoneDetails.newbie_zone ? 'Yes' : 'No'}</TableCell>
+            </TableRow>
+            {zoneDetails.waypoint_x && (
+              <TableRow>
+                <TableCell className="text-xs text-white">Waypoint</TableCell>
+                <TableCell>{zoneDetails.waypoint_x}, {zoneDetails.waypoint_y}, {zoneDetails.waypoint_z}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+    </Table>
+  );
+};
+
+export default ZoneDetails;

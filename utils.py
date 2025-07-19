@@ -3433,3 +3433,107 @@ def get_stat_translations():
             'spelldmg': 'Spell Damage',
             'attack': 'Attack'
             }
+
+
+# Item type and slot categorization for dynamic filtering
+WEAPON_TYPES = {
+    0: '1H Slashing',
+    1: '2H Slashing',
+    2: '1H Piercing',
+    3: '1H Blunt',
+    4: '2H Blunt',
+    35: '2H Piercing',
+    5: 'Archery',
+    45: 'Hand to Hand',
+    7: 'Throwing'
+}
+
+ARMOR_TYPES = {
+    8: 'Shield',
+    9: 'Armor',
+    10: 'Armor',
+    11: 'Armor',
+    12: 'Armor',
+    13: 'Armor',
+    14: 'Armor',
+    15: 'Armor',
+    16: 'Armor',
+    17: 'Armor',
+    18: 'Armor',
+    19: 'Armor',
+    20: 'Armor',
+    21: 'Armor',
+    22: 'Armor',
+    23: 'Armor',
+    24: 'Armor',
+    25: 'Armor',
+    26: 'Armor',
+    27: 'Armor',
+    28: 'Armor',
+    29: 'Armor',
+    30: 'Armor',
+    31: 'Armor',
+    32: 'Armor',
+    33: 'Armor',
+    34: 'Armor'
+}
+
+WEAPON_SLOTS = {
+    8192: 'Primary',
+    16384: 'Secondary',
+    2048: 'Range',
+    4194304: 'Ammo'
+}
+
+ARMOR_SLOTS = {
+    4: 'Head',
+    8: 'Face',
+    32: 'Neck',
+    64: 'Shoulders',
+    128: 'Arms',
+    256: 'Back',
+    512: 'Wrist',
+    4096: 'Hands',
+    131072: 'Chest',
+    262144: 'Legs',
+    524288: 'Feet',
+    1048576: 'Waist',
+    32768: 'Finger',
+    2: 'Ear',
+    1: 'Charm'
+}
+
+class Util:
+    @staticmethod
+    def get_categorized_item_types(category=None):
+        """Get item types filtered by category."""
+        if category == 'weapon':
+            return WEAPON_TYPES
+        elif category == 'armor':
+            return ARMOR_TYPES
+        else:
+            all_types = {}
+            all_types.update(WEAPON_TYPES)
+            all_types.update(ARMOR_TYPES)
+            return all_types
+
+    @staticmethod
+    def get_categorized_item_slots(category=None):
+        """Get item slots filtered by category."""
+        if category == 'weapon':
+            return WEAPON_SLOTS
+        elif category == 'armor':
+            return ARMOR_SLOTS
+        else:
+            all_slots = {}
+            all_slots.update(WEAPON_SLOTS)
+            all_slots.update(ARMOR_SLOTS)
+            return all_slots
+
+    @staticmethod
+    def get_object_type(obj_id):
+        return get_object_type(obj_id)
+
+    @staticmethod
+    def parse_skill(skill_num):
+        return parse_skill(skill_num)

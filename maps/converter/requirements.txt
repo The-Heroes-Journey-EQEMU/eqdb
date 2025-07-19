@@ -1,0 +1,31 @@
+# EQDB Map Converter Dependencies
+# Core dependencies for 3D map conversion system
+
+# glTF export library
+pygltflib>=1.15.0
+
+# Numerical computing and array operations
+numpy>=1.21.0
+
+# Command line interface (for future CLI tools)
+click>=8.0.0
+
+# Database operations (SQLite is built-in, but listed for clarity)
+# sqlite3 is part of Python standard library
+
+# Logging (built-in, but listed for clarity)
+# logging is part of Python standard library
+
+# Type hints support
+typing-extensions>=4.0.0
+
+# Path handling
+pathlib2>=2.3.0; python_version < "3.4"
+
+# Development dependencies (optional)
+# pytest>=6.0.0  # For running tests
+# black>=21.0.0  # For code formatting
+# flake8>=3.8.0  # For linting
+
+# Added psutil dependency
+psutil>=5.8.0 

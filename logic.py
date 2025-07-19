@@ -6,7 +6,7 @@ import os
 
 import utils
 
-from sqlalchemy import create_engine, and_, or_, Column, Integer
+from sqlalchemy import create_engine, and_, or_, Column, Integer, String
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.ext.automap import automap_base
 
@@ -30,6 +30,13 @@ Base = automap_base()
 class ItemRedirection(Base):
     __tablename__ = 'items'
     id = Column(Integer, primary_key=True)
+
+
+class DbStr(Base):
+    __tablename__ = 'db_str'
+    id = Column(Integer, primary_key=True)
+    type = Column(Integer)
+    value = Column(String)
 
 
 Base.prepare(autoload_with=engine)

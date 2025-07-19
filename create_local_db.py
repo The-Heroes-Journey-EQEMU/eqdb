@@ -2,7 +2,7 @@
 import configparser
 import os
 
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 
@@ -83,6 +83,21 @@ class GearListEntry(LocalBase):
     slot = Column(String)
     augslot = Column(String)
     item_id = Column(Integer)
+
+
+class Characters(LocalBase):
+    __tablename__ = 'characters'
+    cid = Column(Integer, primary_key=True)
+    uid = Column(Integer)
+    name = Column(String)
+    class1 = Column(String)
+    class2 = Column(String)
+    class3 = Column(String)
+    level = Column(Integer)
+    character_set = Column(String)
+    inventory_blob = Column(String)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
 
 
 def main():
