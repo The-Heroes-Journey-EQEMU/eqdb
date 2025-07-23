@@ -3,20 +3,14 @@ import json
 import logging
 import os
 
-from flask import Flask, render_template, request, flash, redirect, url_for, jsonify
+from flask import Flask, render_template, request, flash, redirect, url_for
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 
-import npc
-import pets
 import spell
-import tradeskills
-import zones
 import utils
-import factions
 import local
-import items
 import logic
-
+from routes import apis, pets, spells, zones, tradeskills, npcs, items, factions
 
 # Application Setup
 here = os.path.dirname(__file__)
@@ -57,50 +51,18 @@ app_log.addHandler(afh)
 app_log.setLevel(logging.DEBUG)
 ALLOWED_EXTENSIONS = {'txt'}
 
+""" BLUEPRINTS """
+app.register_blueprint(apis.api_pages)
+app.register_blueprint(pets.pet_pages)
+app.register_blueprint(spells.spell_pages)
+app.register_blueprint(zones.zone_pages)
+app.register_blueprint(tradeskills.tradeskill_pages)
+app.register_blueprint(npcs.npc_pages)
+app.register_blueprint(items.item_pages)
+app.register_blueprint(factions.faction_pages)
+
 
 """ MAIN METHODS """
-
-
-@app.route("/api/v1/loot")
-def get_loot_json():
-    loot_id = request.args.get('id')
-    npc_id = request.args.get('npc_id')
-    data = items.get_loot_json(loot_id=loot_id, npc_id=npc_id)
-    return jsonify(data)
-
-
-@app.route("/api/v1/trades")
-def get_tradeskill_json():
-    name = request.args.get('name')
-    ts_id = request.args.get('id')
-    data = tradeskills.get_tradeskill_json(ts_id=ts_id, ts_name=name)
-    return jsonify(data)
-
-
-@app.route("/api/v1/npcs")
-def get_npc_json():
-    name = request.args.get('name')
-    npc_id = request.args.get('id')
-    zone = request.args.get('zone')
-    data = npc.get_npc_raw_data(npc_id=npc_id, name=name, zone=zone)
-    return jsonify(data)
-
-
-@app.route("/api/v1/items")
-def get_item_json():
-    name = request.args.get('name')
-    item_id = request.args.get('id')
-    i_type = request.args.get('type')
-    data = items.get_item_json(name=name, item_id=item_id, i_type=i_type)
-    return jsonify(data)
-
-
-@app.route("/api/v1/spells")
-def get_spell_json():
-    name = request.args.get('name')
-    spell_id = request.args.get('id')
-    data = spell.get_spell_raw_data(spell_id=spell_id, spell_name=name)
-    return jsonify(data)
 
 
 @app.route("/site_error")
@@ -420,43 +382,6 @@ def identify_unattributed():
         return render_template('identify_result.html', item=item, data=data)
 
 
-@app.route("/pet/listing/<int:class_id>", methods=['GET'])
-def pet_listing_result(class_id):
-    data, game_class = pets.get_all_class_pets(class_id)
-    return render_template('pet_listing_result.html', data=data, g_class=game_class)
-
-
-@app.route("/pet/listing", methods=['GET'])
-def pet_listing():
-    return render_template('pet_listing.html')
-
-
-@app.route("/pet/detail/<pet_sum_name>")
-def pet_detail(pet_sum_name):
-    data = pets.get_pet_data(pet_sum_name)
-    return render_template('pet_detail.html', data=data)
-
-
-@app.route("/spell/listing", methods=['GET'])
-def spell_listing():
-    class_id = request.args.get('class_id')
-    if not class_id:
-        return render_template('spell_listing.html')
-    else:
-        data = spell.get_spells_by_class(class_id, min_level=1, max_level=65)
-        return render_template('spell_listing_result.html', data=data)
-
-
-@app.route("/zone/waypoint/listing")
-def waypoint_listing():
-    return render_template('waypoint_listing.html', data=zones.waypoint_listing())
-
-
-@app.route("/faction/detail/<int:faction_id>")
-def faction_detail(faction_id):
-    return render_template('faction_detail.html', data=factions.get_faction(faction_id))
-
-
 @app.route("/search/all", methods=['POST'])
 def all_search():
     name = request.form['all_names']
@@ -471,79 +396,6 @@ def all_search():
         return redirect(url_for('main_page'))
     data = logic.all_search(name=name)
     return render_template('all_search_result.html', search_txt=name, data=data)
-
-
-@app.route("/search/faction", methods=['GET', 'POST'])
-def faction_search():
-    if request.method == 'GET':
-        return render_template('faction_search.html')
-    else:
-        faction_name = request.form['faction_name']
-        if len(faction_name) > 50:
-            flash('Search by name limited to 50 characters.')
-            return redirect(url_for('faction_search'))
-        elif len(faction_name) < 3:
-            flash('Search by name requires at least 3 characters')
-            return redirect(url_for('faction_search'))
-        if not faction_name.isascii():
-            flash('Only ASCII characters are allowed.')
-            return redirect(url_for('npc_search'))
-        data = factions.get_factions(faction_name)
-        return render_template('faction_search_result.html', data=data)
-
-
-@app.route("/search/tradeskill", methods=['GET', 'POST'])
-def tradeskill_search():
-    if request.method == 'GET':
-        return render_template('tradeskill_search.html')
-    else:
-        tradeskill_name = request.form['tradeskill_name']
-        trivial = request.form.get('trivial')
-        trivial_min = request.form.get('trivial_min')
-        tradeskill = request.form.get('tradeskill')
-        remove_no_fail = request.form.get('no_fail')
-        if tradeskill == 'None':
-            tradeskill = None
-        if len(tradeskill_name) > 50:
-            flash('Search by name limited to 50 characters.')
-            return redirect(url_for('tradeskill_search'))
-        elif 0 < len(tradeskill_name) < 3:
-            flash('Search by name requires at least 3 characters.')
-            return redirect(url_for('tradeskill_search'))
-        if not tradeskill_name.isascii():
-            flash('Only ASCII characters are allowed.')
-            return redirect(url_for('tradeskill_search'))
-        data = tradeskills.get_tradeskills(name=tradeskill_name, trivial=trivial,
-                                           tradeskill=tradeskill, remove_no_fail=remove_no_fail,
-                                           trivial_min=trivial_min)
-        return render_template('tradeskill_search_result.html', data=data)
-
-
-@app.route("/tradeskill/detail/<int:ts_id>")
-def tradeskill_detail(ts_id):
-    data = tradeskills.get_tradeskill_detail(ts_id)
-    return render_template('tradeskill_detail.html', data=data)
-
-
-@app.route("/npc/raw/<int:npc_id>")
-def npc_raw(npc_id):
-    raw_data = npc.get_npc_raw_data(npc_id)
-    return render_template('raw_data.html', data=raw_data)
-
-
-@app.route("/npc/detail/<int:npc_id>")
-def npc_detail(npc_id):
-    return render_template('npc_detail.html', data=npc.get_npc_detail(npc_id))
-
-
-@app.route("/zone/detail/<int:zone_id>")
-def zone_detail(zone_id):
-    return render_template('zone_detail.html', data=zones.get_zone_detail(zone_id))
-
-
-@app.route("/zone/listing")
-def zone_listing():
-    return render_template('zone_listing.html', data=zones.get_zone_listing())
 
 
 @app.route("/identify/leaderboard/", methods=['GET'])
@@ -597,99 +449,6 @@ def tester():
         return redirect(url_for('error'))
     # data, slots = logic._debugger()
     return render_template('blank.html')
-
-
-@app.route("/item/detail/<int:item_id>")
-def item_detail(item_id):
-    data = logic.get_item_data(item_id, full=True)
-    return render_template('item_detail.html', item=data, item_id=item_id)
-
-
-@app.route("/item/raw/<int:item_id>")
-def item_raw(item_id):
-    raw_data = items.get_item_raw_data(item_id)
-    return render_template('raw_data.html', data=raw_data)
-
-
-@app.route("/search/npc", methods=['GET', 'POST'])
-def npc_search():
-    if request.method == 'GET':
-        return render_template('npc_search.html')
-    else:
-        npc_name = request.form['npc_name']
-        if len(npc_name) > 50:
-            flash('Search by name limited to 50 characters.')
-            return redirect(url_for('npc_search'))
-        elif len(npc_name) < 3:
-            flash('Search by name requires at least 3 characters')
-            return redirect(url_for('npc_search'))
-        if not npc_name.isascii():
-            flash('Only ASCII characters are allowed.')
-            return redirect(url_for('npc_search'))
-        data = npc.get_npcs(npc_name)
-        return render_template('npc_search_result.html', data=data)
-
-
-@app.route("/item/search", methods=['GET', 'POST'])
-def item_fast_search():
-    if request.method == 'GET':
-        return render_template('item_fast_search.html')
-    else:
-        # Do some validation
-        item_name = request.form.get('item_name')
-        tradeskill = request.form.get('tradeskill')
-        if tradeskill == 'none':
-            tradeskill = None
-        equippable = request.form.get('equippable')
-        if equippable == 'none':
-            equippable = None
-        itype = request.form.get('itype')
-        no_glamour = request.form.get('no_glamour')
-        only_aug = request.form.get('only_aug')
-
-        if len(item_name) > 50:
-            flash('Search by name limited to 50 characters.')
-            return redirect(url_for('item_fast_search'))
-        if len(item_name) < 3:
-            flash('Search by name requires at least 3 characters')
-            return redirect(url_for('item_fast_search'))
-        if not item_name.isascii():
-            flash('Only ASCII characters are allowed.')
-            return redirect(url_for('item_fast_search'))
-        data = items.get_fast_item(item_name, tradeskill=tradeskill, equippable=equippable,
-                                   itype=itype, no_glamours=no_glamour, only_aug=only_aug)
-        return render_template('item_fast_search_result.html', data=data)
-
-
-@app.route("/search/spell", methods=['GET', 'POST'])
-def spell_search():
-    if request.method == 'GET':
-        return render_template('spell_search.html')
-    else:
-        spell_name = request.form['spell_name']
-        if len(spell_name) > 50:
-            flash('Search by name limited to 50 characters.')
-            return redirect(url_for('spell_search'))
-        elif len(spell_name) < 3:
-            flash('Search by name requires at least 3 characters')
-            return redirect(url_for('spell_search'))
-        if not spell_name.isascii():
-            flash('Only ASCII characters are allowed.')
-            return redirect(url_for('spell_search'))
-        data = spell.get_spells(spell_name)
-        return render_template('spell_search_result.html', data=data)
-
-
-@app.route("/spell/detail/<int:spell_id>")
-def spell_detail(spell_id):
-    base_data, slots = spell.get_full_spell_data(spell_id)
-    return render_template('spell_detail.html', data=base_data, slots=slots)
-
-
-@app.route("/spell/raw/<int:spell_id>")
-def spell_raw(spell_id):
-    raw_data = spell.get_spell_raw_data(spell_id)
-    return render_template('raw_data.html', data=raw_data)
 
 
 @app.route("/search/item", methods=['POST'])
@@ -805,7 +564,7 @@ def item_search():
                             filters.update({'proclevel2': data['proc_level']})
     if data['proc_type'] != 'None':
         filters.update({'proc_type': data['proc_type']})
-        print(filters)
+        show_proc = True
 
     # Handle Click Effect Items
     if 'click' in data:
@@ -1003,12 +762,6 @@ def armor_search():
                                weights_json=json.dumps(weights))
     else:
         return redirect(url_for('item_search'), code=307)
-
-
-@app.route("/report/<item_id>", methods=['GET', 'POST'])
-def report_item(item_id):
-    if request.method == 'GET':
-        return render_template('item_report.html', item=logic.get_item_data(item_id))
 
 
 if __name__ == "__main__":

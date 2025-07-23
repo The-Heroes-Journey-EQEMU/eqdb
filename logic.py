@@ -65,11 +65,11 @@ Pets = Base.classes.pets
 
 # Important that these goes here to stop circular import
 import spell
-import factions
-import zones
-import tradeskills
+import faction
+import zone
+import tradeskill
 import npc
-import items
+import item
 
 
 def _debugger():
@@ -142,12 +142,12 @@ def send_error_email(error, referrer):
 
 
 def all_search(name=None):
-    return {'tradeskill': tradeskills.get_tradeskills(name=name),
-            'game_items': items.get_fast_item(name),
+    return {'tradeskill': tradeskill.get_tradeskills(name=name),
+            'game_items': item.get_fast_item(name),
             'spells': spell.get_spells(name),
             'npcs': npc.get_npcs(name),
-            'zones': zones.get_zone(name),
-            'factions': factions.get_factions(name)}
+            'zones': zone.get_zone(name),
+            'factions': faction.get_factions(name)}
 
 
 def get_item_data(item_id, full=False):
@@ -521,7 +521,6 @@ def get_era_items(kwargs):
             filter(weapon_or_params).\
             filter(symp_or_params).\
             group_by(Item.id)
-        print(query)
         result = query.all()
 
     for entry in result:
@@ -606,11 +605,27 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
     focus_or_filters = []
 
     skip_filters = ['item_name', 'g_class_1', 'g_class_2', 'g_class_3', 'g_slot', 'i_type', 'no_rent', 'sub_type',
-                    'sympathetic', 'eras', 'w_eff', 'pet_search', 'skillmodtype', 'proc_type']
+                    'sympathetic', 'eras', 'w_eff', 'pet_search', 'skillmodtype']
     bane_body = False
     for entry in kwargs:
         if entry in skip_filters:
             continue
+        elif entry == 'proc_type':
+            filters.append(Item.proceffect == SpellsNew.id)
+            if kwargs['proc_type'] == 'Lifetap':
+                filters.append(SpellsNew.targettype == 13)
+            elif kwargs['proc_type'] == 'Debuff':
+                filters.append(SpellsNew.buffduration > 0)
+                filters.append(SpellsNew.effectid1 == 0)
+            elif kwargs['proc_type'] == 'Rune':
+                filters.append(SpellsNew.effectid1 == 55)
+            elif kwargs['proc_type'] == 'Healing':
+                filters.append(SpellsNew.effectid1 == 0)
+                filters.append(SpellsNew.effect_base_value1 > 0)
+            else:
+                filters.append(SpellsNew.resisttype == kwargs['proc_type'])
+                filters.append(SpellsNew.effectid1 == 0)
+                filters.append(SpellsNew.effect_base_value1 < 0)
         elif entry == 'proc':
             filters.append(Item.proceffect >= 1)
         elif 'proclevel2' in entry:
@@ -677,33 +692,6 @@ def get_items_with_filters(weights, ignore_zero, **kwargs):
         if entry.id in excl_list:
             continue
         entry = utils.ReducedItem((dict(entry._mapping)))
-        if 'proc_type' in kwargs:
-            if entry.proceffect > 0:
-                spell_data = spell.get_spell_data(entry.proceffect, basic_data=True, skip_effect=True)
-                # Check lifetap
-                if kwargs['proc_type'] == 'Lifetap':
-                    target_type = spell.parse_target_type(spell_data['target_type'])
-                    if target_type != "Life Tap":
-                        continue
-                # Check debuff
-                elif kwargs['proc_type'] == 'Debuff':
-                    if 'min_duration' not in spell_data:
-                        continue
-                # Check resist type
-                else:
-                    if kwargs['proc_type'] not in spell_data['resist']:
-                        continue
-
-        if 'sympathetic' in kwargs:
-            if kwargs['sympathetic'] == 'all_strike':
-                if entry.clickeffect < 24356 or entry.clickeffect > 24365:
-                    continue
-            elif kwargs['sympathetic'] == 'all_heal':
-                if entry.clickeffect < 24434 or entry.clickeffect > 24443:
-                    continue
-            else:
-                if entry.clickeffect != int(kwargs['sympathetic']):
-                    continue
         entry.npc_id = lookup_table[entry.id]['npc_id']
         entry.npc_name = lookup_table[entry.id]['npc_name']
         entry.focus_type = kwargs.get('focus_type')

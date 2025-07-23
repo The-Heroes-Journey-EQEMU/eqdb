@@ -476,7 +476,7 @@ EQDB :: Item :: {{item.Name}}
             {% endif %}
             {% if item.worneffect > 0 %}
             <tr>
-                <td nowrap="1" colspan="3"><b>Worn:</b> <a href="{{url_for('spell_detail', spell_id=item.worneffect)}}"
+                <td nowrap="1" colspan="3"><b>Worn:</b> <a href="{{url_for('spells.spell_detail', spell_id=item.worneffect)}}"
                                                            data-url="{{item.worneffect}}" class="spell-tooltip-link">{{item.worn_name}}</a>
                 </td>
             </tr>
@@ -484,7 +484,7 @@ EQDB :: Item :: {{item.Name}}
             {% if item.proceffect > 0 %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Effect:</b> <a
-                        href="{{url_for('spell_detail', spell_id=item.proceffect)}}" data-url="{{item.proceffect}}"
+                        href="{{url_for('spells.spell_detail', spell_id=item.proceffect)}}" data-url="{{item.proceffect}}"
                         class="spell-tooltip-link">{{item.proc_name}}</a> (Combat)
                 </td>
             </tr>
@@ -497,7 +497,7 @@ EQDB :: Item :: {{item.Name}}
             {% if item.clickeffect > 0 %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Effect:</b> <a
-                        href="{{url_for('spell_detail', spell_id=item.clickeffect)}}" data-url="{{item.clickeffect}}"
+                        href="{{url_for('spells.spell_detail', spell_id=item.clickeffect)}}" data-url="{{item.clickeffect}}"
                         class="spell-tooltip-link">{{item.click_name}}</a>
                     {% if item.casttime == 0 %}
                     (Casting Time: Instant)
@@ -520,7 +520,7 @@ EQDB :: Item :: {{item.Name}}
             {% if item.focuseffect > 0 %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Effect:</b> <a
-                        href="{{url_for('spell_detail', spell_id=item.focuseffect)}}" data-url="{{item.focuseffect}}"
+                        href="{{url_for('spells.spell_detail', spell_id=item.focuseffect)}}" data-url="{{item.focuseffect}}"
                         class="spell-tooltip-link">{{item.focus_name}}</a> (Worn)
                 </td>
             </tr>
@@ -528,7 +528,7 @@ EQDB :: Item :: {{item.Name}}
             {% if item.bardeffect > 0 %}
             <tr>
                 <td nowrap="1" colspan='3'><b>Effect:</b> <a
-                        href="{{url_for('spell_detail', spell_id=item.bardeffect)}}" data-url="{{item.bardeffect}}"
+                        href="{{url_for('spells.spell_detail', spell_id=item.bardeffect)}}" data-url="{{item.bardeffect}}"
                         class="spell-tooltip-link">{{item.inst_name}}</a> (Worn)
                 </td>
             </tr>
@@ -558,7 +558,7 @@ EQDB :: Item :: {{item.Name}}
             {% endif %}
             {% if item.scrolleffect > 0 %}
             <tr>
-                <td nowrap="1" colspan="3"><b>Teaches:</b> <a href="{{url_for('spell_detail', spell_id=item.scrolleffect)}}" data-url="{{item.scrolleffect}}"
+                <td nowrap="1" colspan="3"><b>Teaches:</b> <a href="{{url_for('spells.spell_detail', spell_id=item.scrolleffect)}}" data-url="{{item.scrolleffect}}"
                         class="spell-tooltip-link">{{item.scrolleffectname}}</a></td>
             </tr>
             {% endif %}
@@ -666,17 +666,18 @@ EQDB :: Item :: {{item.Name}}
                 <b>Item Tint:</b> <div class="box" style="background-color:rgb({{item.red}}, {{item.green}}, {{item.blue}});"></div>
                 {% if item.thj_enabled %}
                 {% if item.id < 1000000 %}
-                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Enchanted Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id+2000000)}}" data-url="{{item.id+2000000}}" class="tooltip-link">Legendary Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Enchanted Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id+2000000)}}" data-url="{{item.id+2000000}}" class="tooltip-link">Legendary Version</a><br>
                 {% elif 1000000 < item.id < 2000000 %}
-                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Base Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Legendary Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Base Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id+1000000)}}" data-url="{{item.id+1000000}}" class="tooltip-link">Legendary Version</a><br>
                 {% else %}
-                <a href="{{url_for('item_detail', item_id=item.id-2000000)}}" data-url="{{item.id-2000000}}" class="tooltip-link">Base Version</a><br>
-                <a href="{{url_for('item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Enchanted Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id-2000000)}}" data-url="{{item.id-2000000}}" class="tooltip-link">Base Version</a><br>
+                <a href="{{url_for('items.item_detail', item_id=item.id-1000000)}}" data-url="{{item.id-1000000}}" class="tooltip-link">Enchanted Version</a><br>
                 {% endif %}
                 {% endif %}
-                <a href="{{url_for('item_raw', item_id=item.id)}}">Raw Item Data</a>
+                <br><br>
+                <a href="{{url_for('items.item_raw', item_id=item.id)}}">Raw Item Data</a>
             </div>
             {% if item.droppers %}
             <div class="tab-pane fade p-3 border-end border-bottom border-start bg-body-tertiary" id="dropper"
@@ -689,8 +690,8 @@ EQDB :: Item :: {{item.Name}}
                     </thead>
                     {% for entry in item.droppers %}
                     <tr>
-                        <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
-                        <td><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a></td>
+                        <td><a href="{{url_for('npcs.npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+                        <td><a href="{{url_for('zones.zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a></td>
                         <td>{{entry.chance}}%</td>
                     </tr>
                     {% endfor %}
@@ -707,7 +708,7 @@ EQDB :: Item :: {{item.Name}}
                     <ul>
                         {% for entry in item.vendors[zone] %}
 
-                        <li><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
+                        <li><a href="{{url_for('npcs.npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></li>
 
                         {% endfor %}
                     </ul>
@@ -721,7 +722,7 @@ EQDB :: Item :: {{item.Name}}
                  role="tabpanel" aria-labelledby="foraged-tab">
                 <ul>
                     {% for entry in item.foraged %}
-                    <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
+                    <li><a href="{{url_for('zones.zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
                         ({{entry.chance}}% Chance)
                     </li>
                     {% endfor %}
@@ -733,7 +734,7 @@ EQDB :: Item :: {{item.Name}}
                  role="tabpanel" aria-labelledby="ground-tab">
                 <ul>
                     {% for entry in item.ground %}
-                    <li><a href="{{url_for('zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
+                    <li><a href="{{url_for('zones.zone_detail', zone_id=entry.zone_id)}}">{{entry.zone_name}}</a>
                         ({{entry.y}}, {{entry.x}})
                     </li>
                     {% endfor %}
@@ -746,7 +747,7 @@ EQDB :: Item :: {{item.Name}}
                 Item is created by:<br>
                 <ul>
                     {% for entry in item.ts_result %}
-                    <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
+                    <li><a href="{{url_for('tradeskills.tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -757,7 +758,7 @@ EQDB :: Item :: {{item.Name}}
                 Item is a component in:<br>
                 <ul>
                     {% for entry in item.ts_component %}
-                    <li><a href="{{url_for('tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
+                    <li><a href="{{url_for('tradeskills.tradeskill_detail', ts_id=entry.ts_id)}}">{{entry.ts_name}}</a></li>
                     {% endfor %}
                 </ul>
             </div>

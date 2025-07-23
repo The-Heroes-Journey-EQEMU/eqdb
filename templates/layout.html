@@ -100,9 +100,10 @@ $(document).ready(function() {
                     </a>
                     <div class="dropdown-menu">
                         <ul>
-                            <a class="nav-link" href="{{ url_for('item_fast_search') }}">Item Search</a>
+                            <a class="nav-link" href="{{ url_for('items.item_fast_search') }}">Item Search</a>
                             <a class="nav-link" href="{{ url_for('armor_search') }}">Armor Search</a>
                             <a class="nav-link" href="{{ url_for('weapon_search') }}">Weapon Search</a>
+                            <a class="nav-link" href="{{ url_for('items.click_item_search') }}">Click Item Search</a>
                         </ul>
                     </div>
                 </li>
@@ -113,8 +114,8 @@ $(document).ready(function() {
                     </a>
                     <div class="dropdown-menu">
                         <ul>
-                            <a class="nav-link" href="{{ url_for('spell_search') }}">Spell Search</a>
-                            <a class="nav-link" href="{{ url_for('spell_listing') }}">Class Spells</a>
+                            <a class="nav-link" href="{{ url_for('spells.spell_search') }}">Spell Search</a>
+                            <a class="nav-link" href="{{ url_for('spells.spell_listing') }}">Class Spells</a>
                         </ul>
                     </div>
                 </li>
@@ -125,22 +126,22 @@ $(document).ready(function() {
                     </a>
                     <div class="dropdown-menu">
                         <ul>
-                            <a class="nav-link" href="{{ url_for('zone_listing') }}">Zone List</a>
-                            <a class="nav-link" href="{{ url_for('waypoint_listing') }}">Waypoints</a>
+                            <a class="nav-link" href="{{ url_for('zones.zone_listing') }}">Zone List</a>
+                            <a class="nav-link" href="{{ url_for('zones.waypoint_listing') }}">Waypoints</a>
                         </ul>
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('npc_search') }}">NPCs</a>
+                    <a class="nav-link" href="{{ url_for('npcs.npc_search') }}">NPCs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('tradeskill_search') }}">Tradeskills</a>
+                    <a class="nav-link" href="{{ url_for('tradeskills.tradeskill_search') }}">Tradeskills</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('faction_search') }}">Factions</a>
+                    <a class="nav-link" href="{{ url_for('factions.faction_search') }}">Factions</a>
                 </li>
                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('pet_listing') }}">Pets</a>
+                    <a class="nav-link" href="{{ url_for('pets.pet_listing') }}">Pets</a>
                 </li>
                 <form class="d-flex input-group w-auto" role="search" id="searchForm"
                       action="{{ url_for('all_search') }}" method="post" novalidate>

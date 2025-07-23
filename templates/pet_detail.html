@@ -112,7 +112,7 @@ EQDB :: Pet :: {{data.pet_name}}
             {% for entry in data.spells %}
             <tr>
                 <td><img src="/static/spell_icons/{{entry.icon}}.png"></td>
-                <td><a href="{{url_for('spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
+                <td><a href="{{url_for('spells.spell_detail', spell_id=entry.spell_id)}}" data-url="{{entry.spell_id}}" class="spell-tooltip-link">{{entry.spell_name}}</a></td>
                 <td>{{entry.spell_type}}</td>
                 {% if entry.proc_chance is not none %}
                 <td>{{entry.proc_chance}}%</td>

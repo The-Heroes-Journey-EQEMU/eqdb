@@ -5,10 +5,10 @@ from math import ceil
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-import items
+import item
 import logic
 import utils
-import zones
+import zone
 from logic import SpellsNew, engine, Item
 
 LEVEL_CAP = 65
@@ -28,6 +28,7 @@ def get_full_spell_data(spell_id):
     focus = []
     worn = []
     bard = []
+    scroll = []
 
     with Session(bind=engine) as session:
         # Find all the items that have this as a proc
@@ -95,11 +96,25 @@ def get_full_spell_data(spell_id):
                          'item_name': item_name,
                          'icon': icon})
 
+        # Find all the items that teach this.
+        query = session.query(Item.id, Item.Name, Item.icon).filter(Item.scrolleffect == spell_id)
+        result = query.all()
+        for entry in result:
+            item_id = entry[0]
+            if item_id in item_excl_list:
+                continue
+            item_name = entry[1]
+            icon = entry[2]
+            scroll.append({'item_id': item_id,
+                           'item_name': item_name,
+                           'icon': icon})
+    print(scroll)
     spell_data.update({'procs': procs,
                        'clicks': clicks,
                        'focus': focus,
                        'worn': worn,
-                       'bard': bard})
+                       'bard': bard,
+                       'scroll': scroll})
 
     return spell_data, slots
 
@@ -306,7 +321,7 @@ def get_spell_data(spell_id, basic_data=True, skip_effect=False):
         for idx in range(1, 5):
             item_id = getattr(result, f'components{idx}')
             if item_id != -1:
-                item_name = items.get_item_name(item_id)
+                item_name = item.get_item_name(item_id)
                 components.append({'item_id': item_id,
                                    'name': item_name,
                                    'count': getattr(result, f'component_counts{idx}')})
@@ -740,7 +755,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
                 return f'Summon item: {data.name.lstrip("Summon ")}'
             else:
                 return f'Summon Item: {data.name}'
-        item_name = items.get_item_name(min_val)
+        item_name = item.get_item_name(min_val)
         return f'Summon item: <a href="/item/detail/{min_val}">{item_name}</a>'
     elif spa == 33:
         # Spawn NPC
@@ -1037,7 +1052,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         if data.teleport_zone == 'same':
             return f'Teleport Group to Safe Spot'
         else:
-            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
+            zone_id, zone_name = zone.get_zone_long_name(data.teleport_zone)
             return f'Teleport Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 84:
         # HP-NPC-ONLY (but really, its gravity flux)
@@ -1058,7 +1073,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         if data.teleport_zone == 'same':
             return f'Evacuate Group to Safe Spot'
         else:
-            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
+            zone_id, zone_name = zone.get_zone_long_name(data.teleport_zone)
             return f'Evacuate Group to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 89:
         # Change Size
@@ -1144,7 +1159,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         if not data.teleport_zone:
             return 'Translocate to Bind'
         else:
-            zone_id, zone_name = zones.get_zone_long_name(data.teleport_zone)
+            zone_id, zone_name = zone.get_zone_long_name(data.teleport_zone)
             return f'Translocate to <a href="/zone/detail/{zone_id}">{zone_name}</a>'
     elif spa == 105:
         # Anti-Gate (NPC Only)
@@ -1160,7 +1175,7 @@ def translate_spa(spa, min_val, limit_val, formula, max_val, min_level, data, no
         return f'Summon Familiar: <a href="/pet/detail/{data.teleport_zone}">{data.teleport_zone}</a>'
     elif spa == 109:
         # CreateItemInBag
-        item_name = items.get_item_name(min_val)
+        item_name = item.get_item_name(min_val)
         if no_item_links:
             return f'Summon item: {item_name}'
         return f'Summon item (In Bag): <a href="/item/detail/{min_val}">{item_name}</a>'

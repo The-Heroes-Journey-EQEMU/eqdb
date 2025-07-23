@@ -561,15 +561,6 @@ function createOption(ddl, text, value) {
                         <td><input type="radio" name="click" value="True"> Only</td>
                     </tr>
                     <tr>
-                        <td>Required Level to Click</td>
-                        <td><select name="click_level" id="click_level">
-                            <option value="0" selected="selected">Any Level</option>
-                            {% for i in range(1,66) %}
-                            <option value="{{i}}">{{i}}</option>
-                            {% endfor %}
-                        </select></td>
-                    </tr>
-                    <tr>
                         <td><abbr title="Includes Beneficial, Detrimental, and Pet Focuses; Melee worn effects; and Bard Instrument Modifiers">
                                 Focus/Worn Type:
                                 </abbr></td>
@@ -588,36 +579,6 @@ function createOption(ddl, text, value) {
                         <td colspan="2"><select name="focus_type" id="focus_type">
                             <!-- js populates -->
                         </select></td>
-                    </tr>
-                    <tr>
-                        <td>Sympathetics:</td>
-                        <td>
-                            <select name="sympathetic" id="sympathetic">
-                                <option value="None" selected="selected">Not Required</option>
-                                <option value="all_strike">Any Strike</option>
-                                <option value="24356">Strike I</option>
-                                <option value="24357">Strike II</option>
-                                <option value="24358">Strike III</option>
-                                <option value="24359">Strike IV</option>
-                                <option value="24360">Strike V</option>
-                                <option value="24361">Strike VI</option>
-                                <option value="24362">Strike VII</option>
-                                <option value="24363">Strike VIII</option>
-                                <option value="24364">Strike IX</option>
-                                <option value="24365">Strike X</option>
-                                <option value="all_heal">Any Healing</option>
-                                <option value="24434">Healing I</option>
-                                <option value="24435">Healing II</option>
-                                <option value="24436">Healing III</option>
-                                <option value="24437">Healing IV</option>
-                                <option value="24438">Healing V</option>
-                                <option value="24439">Healing VI</option>
-                                <option value="24440">Healing VII</option>
-                                <option value="24441">Healing VIII</option>
-                                <option value="24442">Healing IX</option>
-                                <option value="24443">Healing X</option>
-                            </select>
-                        </td>
                     </tr>
                     <tr>
                         <td>Include Zero weight items<br>(Requires one weight)</td>

@@ -3,7 +3,11 @@
     * Search for items that have specific effects such as increase AC, HP, stats, etc
     * Replaces the 'search for click items' on armor search page
 * Proc search for weapons has been expanded
-    * Can now limit the proc weapons returned by spell resist type, such as magic, lifetap, etc
+    * Can now limit the proc weapons returned by type (damage type, debuffs, healing, or rune)
+* Refactored how page routing is done in Flask.
+    * Shouldn't have an impact on regular usage, but will help developers on the underlying code
+* Fixed a typo on the About page for the items api
+* Added link to spell scroll item on spells that can be taught to the player
 
 ==2.1.2.2==
 DEPLOYED: 7/16/2025

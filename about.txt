@@ -57,8 +57,8 @@ Specifying Show Only Weight Details will show only the stats on the item that yo
 Tradeskills are still being actively worked on to pull in the correct tradeskill items for each expansion.  Unfortunately, this is proving to be difficult to do, so for the moment, tradeskill items are confined to Planes of Power well-known high strength tradeskill items such as Ornate and Elemental armors, and the bows from the elemental planes.
 
 ==API LISTING==
-https://eqdb.net/api/v1/item?id=            Search items by item id
-https://eqdb.net/api/v1/item?name=          Search items by partial name (50 results maximum)
+https://eqdb.net/api/v1/items?id=            Search items by item id
+https://eqdb.net/api/v1/items?name=          Search items by partial name (50 results maximum)
 https://eqdb.net/api/v1/spells?id=          Search spells by spell id
 https://eqdb.net/api/v1/spells?name=        Search spells by partial name (50 results maximum)
 https://eqdb.net/api/v1/npcs?id=            Search NPCs by NPC id

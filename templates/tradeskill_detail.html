@@ -54,7 +54,7 @@ EQDB :: Recipe :: {{data.name}}
         {% for entry in data.components %}
         <tr>
             <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
-            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
+            <td><a href="{{url_for('items.item_detail', item_id=entry.item_id)}}" data-url="{{entry.item_id}}" class="tooltip-link">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
         {% endfor %}
@@ -79,7 +79,7 @@ EQDB :: Recipe :: {{data.name}}
         {% for entry in data.success %}
         <tr>
             <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
-            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td><a href="{{url_for('items.item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
         {% endfor %}
@@ -96,7 +96,7 @@ EQDB :: Recipe :: {{data.name}}
         {% for entry in data.fail %}
         <tr>
             <td><div class="icon-container"><span class="item-icon" style='background-image:url(/static/item_icons/item_{{entry.icon}}.png);background-position:-200px -40px;display:inline-block;height:40px;width:40px;' title='Icon {{entry.icon}}'></span></div></td>
-            <td><a href="{{url_for('item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
+            <td><a href="{{url_for('items.item_detail', item_id=entry.item_id)}}">{{entry.item_name}}</a></td>
             <td>{{entry.count}}</td>
         </tr>
         {% endfor %}

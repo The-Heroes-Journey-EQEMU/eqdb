@@ -19,7 +19,7 @@ EQDB :: Faction :: {{data.name}}
     {% for zone_name in data.positive %}
           {% for entry in data.positive[zone_name] %}
           <tr>
-          <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+          <td><a href="{{url_for('npcs.npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
             <td>{{zone_name}}</td>
             <td>+{{entry.value}}</td>
           </tr>
@@ -38,7 +38,7 @@ EQDB :: Faction :: {{data.name}}
     {% for zone_name in data.positive %}
           {% for entry in data.negative[zone_name] %}
           <tr>
-          <td><a href="{{url_for('npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
+          <td><a href="{{url_for('npcs.npc_detail', npc_id=entry.npc_id)}}">{{entry.npc_name}}</a></td>
             <td>{{zone_name}}</td>
             <td>{{entry.value}}</td>
           </tr>
