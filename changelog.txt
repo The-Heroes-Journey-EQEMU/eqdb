@@ -1,4 +1,5 @@
 ==2.2==
+DEPLOYED: 7/22/2025
 * New feature: Click Item Search
     * Search for items that have specific effects such as increase AC, HP, stats, etc
     * Replaces the 'search for click items' on armor search page
